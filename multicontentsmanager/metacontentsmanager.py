@@ -1,4 +1,3 @@
-import logging
 from notebook.services.contents.manager import ContentsManager
 from notebook.services.contents.largefilemanager import LargeFileManager
 
@@ -8,7 +7,6 @@ class MetaContentsManager(ContentsManager):
         self._contents_managers = {'': LargeFileManager(**kwargs)}
         self._kwargs = kwargs
         self._inited = False
-        self.log = logging  # for s3 contents
 
     def init(self, managers=None):
         if self._inited:
