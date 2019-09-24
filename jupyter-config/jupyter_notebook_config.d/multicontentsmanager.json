@@ -1,5 +1,6 @@
 {
   "NotebookApp": {
+    "contents_manager_class": "multicontentsmanager.metacontentsmanager.MetaContentsManager",
     "nbserver_extensions": {
       "multicontentsmanager": true
     }

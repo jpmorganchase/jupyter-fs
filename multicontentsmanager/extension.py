@@ -17,4 +17,5 @@ def load_jupyter_server_extension(nb_server_app):
     print('Installing multicontentsmanager handler on path %s' % url_path_join(base_url, 'multicontents'))
 
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'multicontents/get'), GetHandler, {})])
+    import ipdb; ipdb.set_trace()
     nb_server_app.contents_manager = MetaContentsManager()
