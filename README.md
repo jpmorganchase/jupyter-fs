@@ -35,7 +35,37 @@ Add the following to your `jupyter_notebook_config.json`:
 ```
 
 
-Register additional contents managers in your `jupyter_notebook_config.py` as follows:
+Register additional contents managers in your `jupyter_notebook_config.py`. As an example, an [S3Contents](https://github.com/danielfrg/s3contents) manager is added as follows:
+
+```
+from s3contents import S3ContentsManager
+c.MultiContentsManager.contents_managers = \
+{
+    's3': S3ContentsManager
+}
 
 
+c.S3ContentsManager.bucket = '<your bucket>'
+c.S3ContentsManager.endpoint_url = '<your endpoint>.amazonaws.com'
+
+
+
+
+
+## SECRET
+c.S3ContentsManager.access_key_id = '<your access key>'
+c.S3ContentsManager.secret_access_key = '<your secret key>'
+
+
+```
+
+
+During application startup, you should see something like this in the logs:
+```
+MultiContentsManager active with 2 managers
+Installing multicontentsmanager handler on path /multicontents
+```
+
+
+And in the UI, you will see your contents manager available:
 

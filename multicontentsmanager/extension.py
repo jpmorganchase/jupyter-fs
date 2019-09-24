@@ -15,7 +15,7 @@ def load_jupyter_server_extension(nb_server_app):
     base_url = web_app.settings['base_url']
     host_pattern = '.*$'
 
-    managers = nb_server_app.config.get('MultiContentsManager', {}).get('ContentsManagers', {})
+    managers = nb_server_app.config.get('MultiContentsManager', {}).get('contents_managers', {})
 
     if isinstance(nb_server_app.contents_manager, MetaContentsManager):
         nb_server_app.contents_manager.init(managers)

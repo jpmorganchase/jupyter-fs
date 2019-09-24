@@ -20,7 +20,7 @@
   },
   "files": [
     "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
-    "style/**/*.css"
+    "style/**/*.{css,svg}"
   ],
   "jupyterlab": {
     "extension": true,
@@ -36,15 +36,11 @@
     }
   },
   "dependencies": {
-    "@jupyterlab/application": "^1.0.0",
-    "@jupyterlab/apputils": "^1.0.0",
+    "@jupyterlab/application": "^1.0.1",
+    "@jupyterlab/apputils": "^1.0.1",
     "@jupyterlab/coreutils": "^3.0.0",
-    "@jupyterlab/docmanager": "^1.0.0",
-    "@jupyterlab/filebrowser": "^1.0.0",
-    "@jupyterlab/launcher": "^1.0.0",
-    "@jupyterlab/mainmenu": "^1.0.0",
-    "@jupyterlab/notebook": "^1.0.0",
-    "@phosphor/disposable": "^1.1.2"
+    "@jupyterlab/docmanager": "^1.0.1",
+    "jupyterlab_filetree": "^0.2.1"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.5.5",

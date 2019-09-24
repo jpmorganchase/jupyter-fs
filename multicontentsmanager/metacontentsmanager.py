@@ -1,3 +1,4 @@
+import logging
 from notebook.services.contents.manager import ContentsManager
 from notebook.services.contents.largefilemanager import LargeFileManager
 
@@ -7,17 +8,22 @@ class MetaContentsManager(ContentsManager):
         self._contents_managers = {'': LargeFileManager(**kwargs)}
         self._kwargs = kwargs
         self._inited = False
+        self.log = logging  # for s3 contents
 
     def init(self, managers=None):
         if self._inited:
             return
         self._inited = True
-        self._contents_managers.update({_[0]: _[1] for _ in (managers or {}).values()})
+        self._contents_managers.update({_[0]: _[1] for _ in (managers or {}).items()})
 
     def _which_manager(self, path):
         for k in self._contents_managers:
-            basepath = path + ':'
+            if not k:
+                continue
+            basepath = k + ':'
             if path.startswith(basepath):
+                return self._contents_managers[k], path.replace(basepath, '')
+            elif path.startswith('/') and path[1:].startswith(basepath):
                 return self._contents_managers[k], path.replace(basepath, '')
         return self._contents_managers[''], path.replace(basepath, '')
 

@@ -1,30 +1,22 @@
 import {
-  ICommandPalette,
-} from "@jupyterlab/apputils";
-
-// import {
-//   PageConfig,
-// } from "@jupyterlab/coreutils";
+  ILayoutRestorer, IRouter, JupyterFrontEnd, JupyterFrontEndPlugin,
+} from "@jupyterlab/application";
 
 import {
-  ILayoutRestorer, JupyterFrontEnd, JupyterFrontEndPlugin,
-} from "@jupyterlab/application";
+  IWindowResolver,
+} from "@jupyterlab/apputils";
+
+import {
+  PageConfig,
+} from "@jupyterlab/coreutils";
 
 import {
   IDocumentManager,
 } from "@jupyterlab/docmanager";
 
 import {
-  IFileBrowserFactory,
-} from "@jupyterlab/filebrowser";
-
-import {
-  ILauncher,
-} from "@jupyterlab/launcher";
-
-import {
-  IMainMenu,
-} from "@jupyterlab/mainmenu";
+  constructFileTreeWidget,
+} from "jupyterlab_filetree";
 
 import "../style/index.css";
 
@@ -34,20 +26,29 @@ const extension: JupyterFrontEndPlugin<void> = {
   activate,
   autoStart: true,
   id: "multicontentsmanager",
-  optional: [ILauncher],
-  requires: [IDocumentManager, ICommandPalette, ILayoutRestorer, IMainMenu, IFileBrowserFactory],
+  requires: [JupyterFrontEnd.IPaths, IWindowResolver, ILayoutRestorer, IDocumentManager, IRouter],
 };
 
-function activate(app: JupyterFrontEnd,
-                  docManager: IDocumentManager,
-                  palette: ICommandPalette,
-                  restorer: ILayoutRestorer,
-                  mainMenu: IMainMenu,
-                  browser: IFileBrowserFactory,
-                  launcher: ILauncher | null) {
+function activate(app: JupyterFrontEnd, paths: JupyterFrontEnd.IPaths, resolver: IWindowResolver, restorer: ILayoutRestorer, manager: IDocumentManager, router: IRouter) {
 
-  // tslint:disable-next-line:no-console
-  console.log("JupyterLab extension multicontentsmanager is activated!");
+  // grab templates from serverextension
+  fetch(new Request(PageConfig.getBaseUrl() + "multicontents/get",
+                    {method: "get"})).then(async (value: Response) => {
+    if (value.ok) {
+      const keys = await value.json() as string[];
+
+      // tslint:disable-next-line:no-console
+      console.log("JupyterLab extension multicontentsmanager is activated!");
+      for ( const s of keys) {
+        constructFileTreeWidget(app, s, s || "file", "left", paths, resolver, restorer, manager, router);
+        // tslint:disable-next-line:no-console
+        console.log("Adding contents manager for " + s);
+      }
+    } else {
+      // tslint:disable-next-line:no-console
+      console.warn("MultiContentsManager failed to activate");
+    }
+  });
 }
 
 export default extension;
