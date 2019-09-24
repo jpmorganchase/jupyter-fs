@@ -12,7 +12,7 @@ class MetaContentsManager(ContentsManager):
         if self._inited:
             return
         self._inited = True
-        self._contents_managers.update({_[0]: _[1] for _ in (managers or {}).items()})
+        self._contents_managers.update({_[0]: _[1](**self._kwargs) for _ in (managers or {}).items()})
 
     def _which_manager(self, path):
         for k in self._contents_managers:
@@ -23,7 +23,7 @@ class MetaContentsManager(ContentsManager):
                 return self._contents_managers[k], path.replace(basepath, '')
             elif path.startswith('/') and path[1:].startswith(basepath):
                 return self._contents_managers[k], path.replace(basepath, '')
-        return self._contents_managers[''], path.replace(basepath, '')
+        return self._contents_managers[''], path
 
     def run_pre_save_hook(self, model, path, **kwargs):
         """Run the pre-save hook if defined, and log errors"""
