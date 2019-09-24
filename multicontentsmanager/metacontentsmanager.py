@@ -3,9 +3,16 @@ from notebook.services.contents.largefilemanager import LargeFileManager
 
 
 class MetaContentsManager(ContentsManager):
-    def __init__(self, managers=None, **kwargs):
+    def __init__(self, **kwargs):
         self._contents_managers = {'': LargeFileManager(**kwargs)}
-        self._contents_managers.update({_[0]: _[1] for _ in (managers or [])})
+        self._kwargs = kwargs
+        self._inited = False
+
+    def init(self, managers=None):
+        if self._inited:
+            return
+        self._inited = True
+        self._contents_managers.update({_[0]: _[1] for _ in (managers or {}).values()})
 
     def _which_manager(self, path):
         for k in self._contents_managers:

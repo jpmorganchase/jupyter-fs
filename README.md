@@ -17,3 +17,25 @@ pip install multicontentsmanager
 jupyter labextension install multicontentsmanager
 jupyter serverextension enable --py multicontentsmanager
 ```
+
+
+## Configure
+
+Add the following to your `jupyter_notebook_config.json`:
+
+```
+{
+  "NotebookApp": {
+    "contents_manager_class": "multicontentsmanager.metacontentsmanager.MetaContentsManager",
+    "nbserver_extensions": {
+      "multicontentsmanager": true
+    }
+  }
+}
+```
+
+
+Register additional contents managers in your `jupyter_notebook_config.py` as follows:
+
+
+

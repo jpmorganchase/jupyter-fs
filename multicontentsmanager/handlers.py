@@ -1,10 +1,10 @@
+import json
 from notebook.base.handlers import IPythonHandler
 
 
 class GetHandler(IPythonHandler):
-    def initialize(self):
-        pass
+    def initialize(self, keys=None):
+        self.keys = keys or []
 
     def get(self):
-        self.finish({})
-        return
+        self.finish(json.dumps(self.keys))
