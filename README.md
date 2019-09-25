@@ -63,4 +63,4 @@ Installing multicontentsmanager handler on path /multicontents
 
 
 And in the UI, you will see your contents manager available:
-
+![](https://raw.githubusercontent.com/timkpaine/multicontentsmanager/master/docs/example.gif)
