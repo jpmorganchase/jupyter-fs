@@ -15,6 +15,7 @@ class MetaContentsManager(ContentsManager):
         self._contents_managers.update({_[0]: _[1](**self._kwargs) for _ in (managers or {}).items()})
 
     def _which_manager(self, path):
+        print('path: {}'.format(path))
         for k in self._contents_managers:
             if not k:
                 continue
