@@ -46,11 +46,6 @@ c.MultiContentsManager.contents_managers = \
 
 
 c.S3ContentsManager.bucket = '<your bucket>'
-c.S3ContentsManager.endpoint_url = '<your endpoint>.amazonaws.com'
-
-
-
-
 
 ## SECRET
 c.S3ContentsManager.access_key_id = '<your access key>'
