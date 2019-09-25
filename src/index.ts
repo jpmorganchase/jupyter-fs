@@ -29,7 +29,12 @@ const extension: JupyterFrontEndPlugin<void> = {
   requires: [JupyterFrontEnd.IPaths, IWindowResolver, ILayoutRestorer, IDocumentManager, IRouter],
 };
 
-function activate(app: JupyterFrontEnd, paths: JupyterFrontEnd.IPaths, resolver: IWindowResolver, restorer: ILayoutRestorer, manager: IDocumentManager, router: IRouter) {
+function activate(app: JupyterFrontEnd,
+                  paths: JupyterFrontEnd.IPaths,
+                  resolver: IWindowResolver,
+                  restorer: ILayoutRestorer,
+                  manager: IDocumentManager,
+                  router: IRouter) {
 
   // grab templates from serverextension
   fetch(new Request(PageConfig.getBaseUrl() + "multicontents/get",

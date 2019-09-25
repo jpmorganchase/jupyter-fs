@@ -1,6 +1,4 @@
 from notebook.services.contents.largefilemanager import LargeFileManager
-import os
-import os.path
 
 
 class AbsolutePathFileManager(LargeFileManager):
