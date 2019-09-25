@@ -64,3 +64,20 @@ Installing multicontentsmanager handler on path /multicontents
 
 And in the UI, you will see your contents managers available:
 ![](https://raw.githubusercontent.com/timkpaine/multicontentsmanager/master/docs/example.gif)
+
+
+We can add additional contents managers:
+
+```
+c.MultiContentsManager.contents_managers = \
+{
+    's3': S3ContentsManager,
+    'file2': AbsolutePathFileManager(root_dir=os.path.expanduser("~/Downloads"))
+}
+```
+
+Here I utilize an `AbsolutePathFileManager` to grab another folder on my system for use. Remember, remote filesystems are still remote, and locally you may need to move around the filesystem with a `os.chdir` command (or equivalent in other languages).
+
+Here, I have the above `s3` and `AbsolutePathFileManager`, along with the original contents manager, for a total of 3 seperate spaces. 
+
+![](https://raw.githubusercontent.com/timkpaine/multicontentsmanager/master/docs/example2.gif)

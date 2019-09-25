@@ -40,7 +40,7 @@ function activate(app: JupyterFrontEnd, paths: JupyterFrontEnd.IPaths, resolver:
       // tslint:disable-next-line:no-console
       console.log("JupyterLab extension multicontentsmanager is activated!");
       for ( const s of keys) {
-        constructFileTreeWidget(app, s, s || "file", "left", paths, resolver, restorer, manager, router);
+        constructFileTreeWidget(app, s, s, "left", paths, resolver, restorer, manager, router);
         // tslint:disable-next-line:no-console
         console.log("Adding contents manager for " + s);
       }

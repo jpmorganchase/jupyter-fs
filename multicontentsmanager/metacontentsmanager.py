@@ -12,18 +12,17 @@ class MetaContentsManager(ContentsManager):
         if self._inited:
             return
         self._inited = True
-        self._contents_managers.update({_[0]: _[1](**self._kwargs) for _ in (managers or {}).items()})
+        self._contents_managers.update({_[0]: _[1](**self._kwargs) if isinstance(_[1], type) else _[1] for _ in (managers or {}).items()})
 
     def _which_manager(self, path):
-        print('path: {}'.format(path))
         for k in self._contents_managers:
             if not k:
                 continue
             basepath = k + ':'
             if path.startswith(basepath):
-                return self._contents_managers[k], path.replace(basepath, '')
+                return self._contents_managers[k], path.replace(basepath, '', 1)
             elif path.startswith('/') and path[1:].startswith(basepath):
-                return self._contents_managers[k], path.replace(basepath, '')
+                return self._contents_managers[k], path.replace(basepath, '', 1)
         return self._contents_managers[''], path
 
     def run_pre_save_hook(self, model, path, **kwargs):
@@ -158,6 +157,7 @@ class MetaContentsManager(ContentsManager):
         """Rename a file and any checkpoints associated with that file."""
         manager, old_path = self._which_manager(old_path)
         _, new_path = self._which_manager(new_path)
+        print(old_path, new_path)
         return manager.rename(old_path, new_path)
 
     def update(self, model, path):
