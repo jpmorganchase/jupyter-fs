@@ -14,7 +14,6 @@ def _resolve_path(path, manager_dict):
 
     Returns a triple of (prefix, manager, manager_relative_path).
     """
-    print("path: {}".format(path))
     parts = path.strip('/').split(":")
     if len(parts) == 1:
         parts.append("")
