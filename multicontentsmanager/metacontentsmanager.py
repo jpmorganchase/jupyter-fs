@@ -1,4 +1,3 @@
-from datetime import datetime
 from tornado.web import HTTPError
 from notebook.services.contents.manager import ContentsManager
 from notebook.services.contents.largefilemanager import LargeFileManager
@@ -8,31 +7,6 @@ from notebook.services.contents.largefilemanager import LargeFileManager
 # Apache 2.0
 # https://github.com/quantopian/pgcontents/blob/2ddca481532a4e983b4370dae8ca7f11da5e5c30/LICENSE
 
-DUMMY_CREATED_DATE = datetime.fromtimestamp(0)
-
-
-def base_model(path):
-    return {
-        "name": path.rsplit('/', 1)[-1],
-        "path": path,
-        "writable": True,
-        "last_modified": None,
-        "created": None,
-        "content": None,
-        "format": None,
-        "mimetype": None,
-    }
-
-
-def base_directory_model(path):
-    m = base_model(path)
-    m.update(
-        type='directory',
-        last_modified=DUMMY_CREATED_DATE,
-        created=DUMMY_CREATED_DATE,
-    )
-    return m
-
 
 def _resolve_path(path, manager_dict):
     """
@@ -40,10 +14,13 @@ def _resolve_path(path, manager_dict):
 
     Returns a triple of (prefix, manager, manager_relative_path).
     """
-    parts = path.strip('/').split('/')
+    print("path: {}".format(path))
+    parts = path.strip('/').split(":")
+    if len(parts) == 1:
+        parts.append("")
 
     # Try to find a sub-manager for the first subdirectory.
-    mgr = manager_dict.get(parts[0].split(':')[0])
+    mgr = manager_dict.get(parts[0])
     if mgr is not None:
         return parts[0], mgr, '/'.join(parts[1:])
 
@@ -76,30 +53,6 @@ def _get_arg(argname, args, kwargs):
         raise TypeError("No value passed for %s" % argname)
 
 
-def _apply_prefix(prefix, model):
-    """
-    Prefix all path entries in model with the given prefix.
-    """
-    if not isinstance(model, dict):
-        raise TypeError("Expected dict for model, got %s" % type(model))
-
-    # We get unwanted leading/trailing slashes if prefix or model['path'] are
-    # '', both of which are legal values.
-    model['path'] = '/'.join((prefix, model['path'])).strip('/')
-    if model['type'] in ('notebook', 'file'):
-        return model
-
-    if model['type'] != 'directory':
-        raise ValueError("Unknown model type %s." % type(model))
-
-    content = model.get('content', None)
-    if content is not None:
-        for sub_model in content:
-            _apply_prefix(prefix, sub_model)
-
-    return model
-
-
 # Dispatch decorators.
 def path_dispatch1(mname, returns_model):
     """
@@ -109,10 +62,7 @@ def path_dispatch1(mname, returns_model):
         path, args = _get_arg('path', args, kwargs)
         prefix, mgr, mgr_path = _resolve_path(path, self._contents_managers)
         result = getattr(mgr, mname)(mgr_path, *args, **kwargs)
-        if returns_model and prefix:
-            return _apply_prefix(prefix, result)
-        else:
-            return result
+        return result
 
     return _wrapper
 
@@ -126,10 +76,7 @@ def path_dispatch2(mname, first_argname, returns_model):
         path, args = _get_arg('path', args, kwargs)
         prefix, mgr, mgr_path = _resolve_path(path, self._contents_managers)
         result = getattr(mgr, mname)(other, mgr_path, *args, **kwargs)
-        if returns_model and prefix:
-            return _apply_prefix(prefix, result)
-        else:
-            return result
+        return result
     return _wrapper
 
 
@@ -141,10 +88,7 @@ def path_dispatch_kwarg(mname, path_default, returns_model):
     def _wrapper(self, path=path_default, **kwargs):
         prefix, mgr, mgr_path = _resolve_path(path, self._contents_managers)
         result = getattr(mgr, mname)(path=mgr_path, **kwargs)
-        if returns_model and prefix:
-            return _apply_prefix(prefix, result)
-        else:
-            return result
+        return result
     return _wrapper
 
 
@@ -175,10 +119,7 @@ def path_dispatch_old_new(mname, returns_model):
             *args,
             **kwargs
         )
-        if returns_model and new_prefix:
-            return _apply_prefix(new_prefix, result)
-        else:
-            return result
+        return result
     return _wrapper
 
 
@@ -198,13 +139,6 @@ class MetaContentsManager(ContentsManager):
     def root_manager(self):
         return self._contents_managers.get('')
 
-    def _extra_root_dirs(self):
-        return [
-            base_directory_model(path)
-            for path in self._contents_managers
-            if path
-        ]
-
     is_hidden = path_dispatch1('is_hidden', False)
     dir_exists = path_dispatch1('dir_exists', False)
     file_exists = path_dispatch_kwarg('file_exists', '', False)
@@ -213,50 +147,8 @@ class MetaContentsManager(ContentsManager):
     save = path_dispatch2('save', 'model', True)
     rename = path_dispatch_old_new('rename', False)
 
-    __get = path_dispatch1('get', True)
-    __delete = path_dispatch1('delete', False)
-
-    def get(self, path, content=True, type=None, format=None):
-        """
-        Special case handling for listing root dir.
-        """
-        path = path.strip('/')
-        if path:
-            return self.__get(path, content=content, type=type, format=format)
-        if not content:
-            return base_directory_model('')
-
-        extra_content = self._extra_root_dirs()
-        rm = self.root_manager
-        if rm is None:
-            root_model = base_directory_model('')
-            root_model.update(
-                format='json',
-                content=extra_content,
-            )
-        else:
-            root_model = rm.get(
-                path,
-                content=content,
-                type=type,
-                format=format,
-            )
-            # Append the extra directories.
-            root_model['content'].extend(extra_content)
-        return root_model
-
-    def delete(self, path):
-        """
-        Ensure that roots of our managers can't be deleted.  This should be
-        enforced by https://github.com/ipython/ipython/pull/8168, but rogue
-        implementations might override this behavior.
-        """
-        path = path.strip('/')
-        if path in self._contents_managers:
-            raise HTTPError(
-                400, "Can't delete root of %s" % self._contents_managers[path]
-            )
-        return self.__delete(path)
+    get = path_dispatch1('get', True)
+    delete = path_dispatch1('delete', False)
 
     create_checkpoint = path_dispatch1('create_checkpoint', False)
     list_checkpoints = path_dispatch1('list_checkpoints', False)
