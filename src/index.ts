@@ -16,7 +16,7 @@ import {
 
 import {
   constructFileTreeWidget,
-} from "jupyterlab_filetree";
+} from "./filetree";
 
 import "../style/index.css";
 
