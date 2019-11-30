@@ -12,6 +12,10 @@ lint: ## run linter
 	flake8 multicontentsmanager 
 	yarn lint
 
+fix:  ## run autopep8/tslint fix
+	autopep8 --in-place -r -a -a multicontentsmanager/
+	./node_modules/.bin/tslint --fix src/*
+
 annotate: ## MyPy type annotation check
 	mypy -s multicontentsmanager
 
