@@ -283,7 +283,7 @@ export class FileTreeWidget extends Widget {
     const commands = this.commands;
     const map = this.sortContents(data);
     for (const index in data) {
-      const sorted_entry = map[parseInt(index)];
+      const sorted_entry = map[parseInt(index, 10)];
       const entry = data[sorted_entry[1]];
       const tr = this.createTreeElement(entry, level);
 
@@ -343,7 +343,7 @@ export class FileTreeWidget extends Widget {
   public sortContents(data: any) {
     const names = [];
     for (const i in data) {
-      names[names.length] = [data[i].name, parseInt(i)];
+      names[names.length] = [data[i].name, parseInt(i, 10)];
     }
     return names.sort();
   }
