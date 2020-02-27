@@ -2,9 +2,9 @@
 A meta `ContentsManager` for installing multiple backends using [JupyterLab Filetree](https://github.com/youngthejames/jupyterlab_filetree)
 
 
-[![Build Status](https://travis-ci.org/timkpaine/multicontentsmanager.svg?branch=master)](https://travis-ci.org/timkpaine/multicontentsmanager)
+[![Build Status](https://dev.azure.com/tpaine154/jupyter/_apis/build/status/timkpaine.multicontentsmanager?branchName=master)](https://dev.azure.com/tpaine154/jupyter/_build/latest?definitionId=20&branchName=master)
 [![GitHub issues](https://img.shields.io/github/issues/timkpaine/multicontentsmanager.svg)]()
-[![codecov](https://codecov.io/gh/timkpaine/multicontentsmanager/branch/master/graph/badge.svg)](https://codecov.io/gh/timkpaine/multicontentsmanager)
+[![Coverage](https://img.shields.io/azure-devops/coverage/tpaine154/jupyter/20)](https://dev.azure.com/tpaine154/jupyter/_build?definitionId=20&_a=summary)
 [![PyPI](https://img.shields.io/pypi/l/multicontentsmanager.svg)](https://pypi.python.org/pypi/multicontentsmanager)
 [![PyPI](https://img.shields.io/pypi/v/multicontentsmanager.svg)](https://pypi.python.org/pypi/multicontentsmanager)
 [![npm](https://img.shields.io/npm/v/multicontentsmanager.svg)](https://www.npmjs.com/package/multicontentsmanager)
