@@ -1,7 +1,32 @@
 from __future__ import print_function
+import json
 from notebook.utils import url_path_join
-from .handlers import GetHandler
-from .metacontentsmanager import MetaContentsManager
+from notebook.base.handlers import IPythonHandler
+from .meta_contents_manager import MetaContentsManager
+
+
+class GetHandler(IPythonHandler):
+    def initialize(self, keys=None):
+        # dont append colon for default
+        self.keys = keys or []
+
+    def get(self):
+        '''Returns all the available contents manager prefixes
+
+        e.g. if the contents manager configuration is something like:
+        {
+            "file": LargeFileContentsManager,
+            "s3": S3ContentsManager,
+            "samba": SambaContentsManager
+        }
+
+        the result here will be:
+        ["file", "s3", "samba"]
+
+        which will allow the frontent to instantiate 3 new filetrees, one
+        for each of the available contents managers.
+        '''
+        self.finish(json.dumps(self.keys))
 
 
 def load_jupyter_server_extension(nb_server_app):

@@ -1,11 +1,15 @@
 from tornado.web import HTTPError
-from notebook.services.contents.manager import ContentsManager
-from notebook.services.contents.largefilemanager import LargeFileManager
 
 # A reference implementation
 # https://github.com/quantopian/pgcontents/blob/master/pgcontents/hybridmanager.py
 # Apache 2.0
 # https://github.com/quantopian/pgcontents/blob/2ddca481532a4e983b4370dae8ca7f11da5e5c30/LICENSE
+#
+# This reference implementation allows you to mount multiple contents managers
+# under the same / path (e.g. in the same frontend contents manager component).
+# Here, we want the ability to distinguish between multiple contents managers
+# via the use of an arbitrary URI prefix e.g. file:, so we make some extensive
+# modifications to support this.
 
 
 def _resolve_path(path, manager_dict):
@@ -87,7 +91,7 @@ def path_second_arg(method_name, first_argname, returns_model):
     return _wrapper
 
 
-def path_dispatch_kwarg(method_name, path_default, returns_model):
+def path_kwarg(method_name, path_default, returns_model):
     """Parameterized decorator for methods that accept path as a second
     argument.
 
@@ -101,7 +105,7 @@ def path_dispatch_kwarg(method_name, path_default, returns_model):
     return _wrapper
 
 
-def path_dispatch_old_new(method_name, returns_model):
+def path_old_new(method_name, returns_model):
     """Decorator for methods accepting old_path and new_path.
 
     e.g. manager.rename(old_path, new_path)
@@ -132,44 +136,3 @@ def path_dispatch_old_new(method_name, returns_model):
         )
         return result
     return _wrapper
-
-
-class MetaContentsManager(ContentsManager):
-    def __init__(self, **kwargs):
-        self._contents_managers = {'': LargeFileManager(**kwargs)}
-        self._kwargs = kwargs
-        self._inited = False
-
-    def init(self, managers=None):
-        if self._inited:
-            return
-        self._inited = True
-        self._contents_managers.update({_[0]: _[1](**self._kwargs) if isinstance(_[1], type) else _[1] for _ in (managers or {}).items()})
-
-    @property
-    def root_manager(self):
-        return self._contents_managers.get('')
-
-    is_hidden = path_first_arg('is_hidden', False)
-    dir_exists = path_first_arg('dir_exists', False)
-    file_exists = path_dispatch_kwarg('file_exists', '', False)
-    exists = path_first_arg('exists', False)
-
-    save = path_second_arg('save', 'model', True)
-    rename = path_dispatch_old_new('rename', False)
-
-    get = path_first_arg('get', True)
-    delete = path_first_arg('delete', False)
-
-    create_checkpoint = path_first_arg('create_checkpoint', False)
-    list_checkpoints = path_first_arg('list_checkpoints', False)
-    restore_checkpoint = path_second_arg(
-        'restore_checkpoint',
-        'checkpoint_id',
-        False,
-    )
-    delete_checkpoint = path_second_arg(
-        'delete_checkpoint',
-        'checkpoint_id',
-        False,
-    )
