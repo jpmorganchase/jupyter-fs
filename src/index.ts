@@ -1,22 +1,8 @@
-import {
-  ILayoutRestorer, IRouter, JupyterFrontEnd, JupyterFrontEndPlugin,
-} from "@jupyterlab/application";
-
-import {
-  IWindowResolver,
-} from "@jupyterlab/apputils";
-
-import {
-  PageConfig,
-} from "@jupyterlab/coreutils";
-
-import {
-  IDocumentManager,
-} from "@jupyterlab/docmanager";
-
-import {
-  constructFileTreeWidget,
-} from "./filetree";
+import {ILayoutRestorer, IRouter, JupyterFrontEnd, JupyterFrontEndPlugin} from "@jupyterlab/application";
+import {IWindowResolver} from "@jupyterlab/apputils";
+import {PageConfig} from "@jupyterlab/coreutils";
+import {IDocumentManager} from "@jupyterlab/docmanager";
+import {constructFileTreeWidget} from "./filetree";
 
 import "../style/index.css";
 
