@@ -9,10 +9,13 @@ from notebook.services.contents.largefilemanager import LargeFileManager
 
 
 def _resolve_path(path, manager_dict):
-    """
-    Resolve a path based on a dictionary of manager prefixes.
+    """Resolve a path based on a dictionary of manager prefixes.
 
-    Returns a triple of (prefix, manager, manager_relative_path).
+    Args:
+        path (str): the path being requested
+        manager_dict (dict): dictionary of available contents managers
+    Returns:
+        tuple: prefix of contents manager, instance of contents manager, relative path to request from contents manager
     """
     parts = path.strip('/').split(":")
     if len(parts) == 1:
@@ -36,11 +39,16 @@ def _resolve_path(path, manager_dict):
 
 
 def _get_arg(argname, args, kwargs):
-    """
-    Get an argument, either from kwargs or from the first entry in args.
+    """Get an argument, either from kwargs or from the first entry in args.
     Raises a TypeError if argname not in kwargs and len(args) == 0.
-
     Mutates kwargs in place if the value is found in kwargs.
+
+    Args:
+        argname (str): argument name to get
+        args (tuple): args to look in
+        kwargs (dict): kwargs to look in
+    Returns:
+        argument, remaining args
     """
     try:
         return kwargs.pop(argname), args
@@ -53,50 +61,50 @@ def _get_arg(argname, args, kwargs):
 
 
 # Dispatch decorators.
-def path_dispatch1(mname, returns_model):
-    """
-    Decorator for methods that accept path as a first argument.
-    """
+def path_first_arg(method_name, returns_model):
+    """Decorator for methods that accept path as a first argument,
+    e.g. manager.get(path, ...)"""
 
     def _wrapper(self, *args, **kwargs):
         path, args = _get_arg('path', args, kwargs)
-        prefix, mgr, mgr_path = _resolve_path(path, self._contents_managers)
-        result = getattr(mgr, mname)(mgr_path, *args, **kwargs)
+        _, mgr, mgr_path = _resolve_path(path, self._contents_managers)
+        result = getattr(mgr, method_name)(mgr_path, *args, **kwargs)
         return result
 
     return _wrapper
 
 
-def path_dispatch2(mname, first_argname, returns_model):
-    """
-    Decorator for methods that accept path as a second argument.
-    """
+def path_second_arg(method_name, first_argname, returns_model):
+    """Decorator for methods that accept path as a second argument.
+    e.g. manager.save(model, path, ...)"""
 
     def _wrapper(self, *args, **kwargs):
         other, args = _get_arg(first_argname, args, kwargs)
         path, args = _get_arg('path', args, kwargs)
-        prefix, mgr, mgr_path = _resolve_path(path, self._contents_managers)
-        result = getattr(mgr, mname)(other, mgr_path, *args, **kwargs)
+        _, mgr, mgr_path = _resolve_path(path, self._contents_managers)
+        result = getattr(mgr, method_name)(other, mgr_path, *args, **kwargs)
         return result
     return _wrapper
 
 
-def path_dispatch_kwarg(mname, path_default, returns_model):
-    """
-    Parameterized decorator for methods that accept path as a second
+def path_dispatch_kwarg(method_name, path_default, returns_model):
+    """Parameterized decorator for methods that accept path as a second
     argument.
+
+    e.g. manager.file_exists(path='')
     """
 
     def _wrapper(self, path=path_default, **kwargs):
-        prefix, mgr, mgr_path = _resolve_path(path, self._contents_managers)
-        result = getattr(mgr, mname)(path=mgr_path, **kwargs)
+        _, mgr, mgr_path = _resolve_path(path, self._contents_managers)
+        result = getattr(mgr, method_name)(path=mgr_path, **kwargs)
         return result
     return _wrapper
 
 
-def path_dispatch_old_new(mname, returns_model):
-    """
-    Decorator for methods accepting old_path and new_path.
+def path_dispatch_old_new(method_name, returns_model):
+    """Decorator for methods accepting old_path and new_path.
+
+    e.g. manager.rename(old_path, new_path)
     """
 
     def _wrapper(self, old_path, new_path, *args, **kwargs):
@@ -110,13 +118,13 @@ def path_dispatch_old_new(mname, returns_model):
             # TODO: Consider supporting this via get+delete+save.
             raise HTTPError(
                 400,
-                "Can't move files between backends ({old} -> {new})".format(
+                "Can't move files between backends yet ({old} -> {new})".format(
                     old=old_path,
                     new=new_path,
                 )
             )
         assert new_prefix == old_prefix
-        result = getattr(new_mgr, mname)(
+        result = getattr(new_mgr, method_name)(
             old_mgr_path,
             new_mgr_path,
             *args,
@@ -142,25 +150,25 @@ class MetaContentsManager(ContentsManager):
     def root_manager(self):
         return self._contents_managers.get('')
 
-    is_hidden = path_dispatch1('is_hidden', False)
-    dir_exists = path_dispatch1('dir_exists', False)
+    is_hidden = path_first_arg('is_hidden', False)
+    dir_exists = path_first_arg('dir_exists', False)
     file_exists = path_dispatch_kwarg('file_exists', '', False)
-    exists = path_dispatch1('exists', False)
+    exists = path_first_arg('exists', False)
 
-    save = path_dispatch2('save', 'model', True)
+    save = path_second_arg('save', 'model', True)
     rename = path_dispatch_old_new('rename', False)
 
-    get = path_dispatch1('get', True)
-    delete = path_dispatch1('delete', False)
+    get = path_first_arg('get', True)
+    delete = path_first_arg('delete', False)
 
-    create_checkpoint = path_dispatch1('create_checkpoint', False)
-    list_checkpoints = path_dispatch1('list_checkpoints', False)
-    restore_checkpoint = path_dispatch2(
+    create_checkpoint = path_first_arg('create_checkpoint', False)
+    list_checkpoints = path_first_arg('list_checkpoints', False)
+    restore_checkpoint = path_second_arg(
         'restore_checkpoint',
         'checkpoint_id',
         False,
     )
-    delete_checkpoint = path_dispatch2(
+    delete_checkpoint = path_second_arg(
         'delete_checkpoint',
         'checkpoint_id',
         False,
