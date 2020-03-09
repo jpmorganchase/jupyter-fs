@@ -133,7 +133,7 @@ class PyFilesystemContentsManager(FileContentsManager):
 
     def _base_model(self, path):
         """Build the common base of a contents model"""
-        info = self._pyfilesystem_instance.getinfo(path, namespaces=['details'])
+        info = self._pyfilesystem_instance.getinfo(path, namespaces=['details', 'access'])
 
         try:
             # size of file

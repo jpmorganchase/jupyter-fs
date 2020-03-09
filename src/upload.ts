@@ -1,10 +1,23 @@
 import { Dialog, showDialog, showErrorMessage, ToolbarButton } from "@jupyterlab/apputils";
-import { IChangedArgs, PageConfig } from "@jupyterlab/coreutils";
-import {IDocumentManager, shouldOverwrite} from "@jupyterlab/docmanager";
+
 import { Contents } from "@jupyterlab/services";
-import { ArrayExt } from "@phosphor/algorithm";
-import { Signal } from "@phosphor/signaling";
-import {FileTreeWidget} from "./filetree";
+
+import { IChangedArgs, PageConfig } from "@jupyterlab/coreutils";
+
+import { fileUploadIcon } from "@jupyterlab/ui-components";
+
+import { ArrayExt } from "@lumino/algorithm";
+
+import { Signal } from "@lumino/signaling";
+
+import {
+  IDocumentManager,
+  shouldOverwrite,
+} from "@jupyterlab/docmanager";
+
+import {
+  FileTreeWidget,
+} from "./filetree";
 
 /**
  * The maximum upload size (in bytes) for notebook version < 5.1.0
@@ -35,7 +48,7 @@ export class Uploader extends ToolbarButton {
 
   constructor(options: any) {
     super({
-      iconClassName: "jp-FileUploadIcon jp-Icon jp-Icon-16",
+      icon: fileUploadIcon,
       onClick: () => {
         this.context = "";
         this._input.click();

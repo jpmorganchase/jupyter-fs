@@ -26,7 +26,7 @@ Add the following to your `jupyter_notebook_config.json`:
 ```
 {
   "NotebookApp": {
-    "contents_manager_class": "multicontentsmanager.metacontentsmanager.MetaContentsManager",
+    "contents_manager_class": "multicontentsmanager.meta_contents_manager.MetaContentsManager",
     "nbserver_extensions": {
       "multicontentsmanager": true
     }

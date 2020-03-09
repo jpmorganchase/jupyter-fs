@@ -14,6 +14,7 @@
     "build:lab": "rimraf lab-dist && mkdirp lab-dist && cd lab-dist && npm pack ..",
     "build:all": "npm run build && npm run build:lab",
     "clean": "rimraf lib",
+    "fix": "./node_modules/.bin/tslint --fix src/* src/*/*",
     "lint": "./node_modules/.bin/tslint './src/*.ts'",
     "prepublishOnly": "npm run build",
     "test": "jest --coverage --collectCoverageFrom=src/*.{ts}"
@@ -36,13 +37,11 @@
     }
   },
   "dependencies": {
-    "@jupyterlab/application": "^1.0.1",
-    "@jupyterlab/apputils": "^1.0.1",
-    "@jupyterlab/coreutils": "^3.0.0",
-    "@jupyterlab/docmanager": "^1.0.1",
-    "@jupyterlab/filebrowser": "^1.0.1",
-    "@jupyterlab/services": "^4.0.1",
-    "@phosphor/algorithm": "^1.1.3",
+    "@jupyterlab/application": "^2.0.0",
+    "@jupyterlab/docmanager": "^2.0.0",
+    "@jupyterlab/filebrowser": "^2.0.0",
+    "@jupyterlab/services": "^5.0.0",
+    "@lumino/algorithm": "^1.2.3",
     "@types/file-saver": "^2.0.1",
     "@types/jszip": "^3.1.6",
     "file-saver": "^2.0.2",
@@ -56,9 +55,9 @@
     "jest": "^24.1.0",
     "jest-transform-css": "^2.0.0",
     "mkdirp": "^0.5.1",
-    "rimraf": "^2.6.1",
+    "rimraf": "^2.6.3",
     "ts-jest": "^23.10.4",
-    "tslint": "^5.14.0",
-    "typescript": "^3.1.6"
+    "tslint": "^5.20.0",
+    "typescript": "^3.5.3"
   }
 }

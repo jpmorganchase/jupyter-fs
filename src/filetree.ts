@@ -1,38 +1,14 @@
-import {
-  ILayoutRestorer, IRouter, JupyterFrontEnd, JupyterFrontEndPlugin,
-} from "@jupyterlab/application";
-
-import {
-  ContentsManager,
-} from "@jupyterlab/services";
-
-import {
-  DocumentRegistry,
-} from "@jupyterlab/docregistry";
-
-import {
-  IDocumentManager, isValidFileName, renameFile,
-} from "@jupyterlab/docmanager";
-
-import {
-  PageConfig, PathExt, Time, URLExt,
-} from "@jupyterlab/coreutils";
-
-import {
-  Clipboard, Dialog, IWindowResolver, showDialog, showErrorMessage, Toolbar, ToolbarButton,
-} from "@jupyterlab/apputils";
-
-import {
-  PanelLayout, Widget,
-} from "@phosphor/widgets";
-
-import {
-  Uploader,
-} from "./upload";
-
-import { saveAs } from "file-saver";
-
-import * as JSZip from "jszip";
+import { ILayoutRestorer, IRouter, JupyterFrontEnd } from "@jupyterlab/application";
+import { Clipboard, Dialog, IWindowResolver, showDialog, showErrorMessage, Toolbar, ToolbarButton } from "@jupyterlab/apputils";
+import { PathExt, Time, URLExt } from "@jupyterlab/coreutils";
+import { IDocumentManager, isValidFileName, renameFile } from "@jupyterlab/docmanager";
+import { DocumentRegistry } from "@jupyterlab/docregistry";
+import { ContentsManager } from "@jupyterlab/services";
+import { LabIcon, newFolderIcon, refreshIcon } from "@jupyterlab/ui-components";
+import { PanelLayout, Widget } from "@lumino/widgets";
+import JSZip from "jszip";
+import { Uploader } from "./upload";
+import { CommandIDs, doRename, fileSizeString, OpenDirectWidget, Patterns, switchView, writeZipFile } from "./utils";
 
 import "../style/index.css";
 
@@ -40,123 +16,6 @@ import "../style/index.css";
 // tslint:disable: variable-name
 // tslint:disable: max-line-length
 // tslint:disable: max-classes-per-file
-
-namespace CommandIDs {
-  export const navigate = "filetree:navigate";
-
-  export const toggle = "filetree:toggle";
-
-  export const refresh = "filetree:refresh";
-
-  export const select = "filetree:select";
-
-  export const set_context = "filetree:set-context";
-
-  export const rename = "filetree:rename";
-
-  export const create_folder = "filetree:create-folder";
-
-  export const create_file = "filetree:create-file";
-
-  export const delete_op = "filetree:delete";
-
-  export const download = "filetree:download";
-
-  export const upload = "filetree:upload";
-
-  export const move = "filetree:move";
-
-  export const copy_path = "filetree:copy_path";
-}
-
-namespace Patterns {
-
-  export const tree = new RegExp(`^${PageConfig.getOption("treeUrl")}([^?]+)`);
-  export const workspace = new RegExp(`^${PageConfig.getOption("workspacesUrl")}[^?\/]+/tree/([^?]+)`);
-
-}
-
-namespace Private {
-
-  export function doRename(text: HTMLElement, edit: HTMLInputElement) {
-    const parent = text.parentElement as HTMLElement;
-    parent.replaceChild(edit, text);
-    edit.focus();
-    const index = edit.value.lastIndexOf(".");
-    if (index === -1) {
-      edit.setSelectionRange(0, edit.value.length);
-    } else {
-      edit.setSelectionRange(0, index);
-    }
-    // handle enter
-    return new Promise<string>((resolve, reject) => {
-      edit.onblur = () => {
-        parent.replaceChild(text, edit);
-        resolve(edit.value);
-      };
-      edit.onkeydown = (event: KeyboardEvent) => {
-        switch (event.keyCode) {
-          case 13: // Enter
-            event.stopPropagation();
-            event.preventDefault();
-            edit.blur();
-            break;
-          case 27: // Escape
-            event.stopPropagation();
-            event.preventDefault();
-            edit.blur();
-            break;
-          case 38: // Up arrow
-            event.stopPropagation();
-            event.preventDefault();
-            if (edit.selectionStart !== edit.selectionEnd) {
-              edit.selectionStart = edit.selectionEnd = 0;
-            }
-            break;
-          case 40: // Down arrow
-            event.stopPropagation();
-            event.preventDefault();
-            if (edit.selectionStart !== edit.selectionEnd) {
-              edit.selectionStart = edit.selectionEnd = edit.value.length;
-            }
-            break;
-          default:
-            break;
-        }
-      };
-    });
-  }
-
-  export function createOpenNode(): HTMLElement {
-    const body = document.createElement("div");
-    const existingLabel = document.createElement("label");
-    existingLabel.textContent = "File Path:";
-
-    const input = document.createElement("input");
-    input.value = "";
-    input.placeholder = "/path/to/file";
-
-    body.appendChild(existingLabel);
-    body.appendChild(input);
-    return body;
-  }
-
-}
-
-class OpenDirectWidget extends Widget {
-
-  constructor() {
-    super({ node: Private.createOpenNode() });
-  }
-
-  public getValue(): string {
-    return this.inputNode.value;
-  }
-
-  get inputNode(): HTMLInputElement {
-    return this.node.getElementsByTagName("input")[0] as HTMLInputElement;
-  }
-}
 
 export class FileTreeWidget extends Widget {
   public cm: ContentsManager;
@@ -300,7 +159,8 @@ export class FileTreeWidget extends Widget {
         tr.onclick = (event) => {
           event.stopPropagation();
           event.preventDefault();
-          if ((event.target as HTMLElement).classList.contains("jp-DirListing-itemIcon")) {
+          const classList = (event.target as HTMLElement).classList;
+          if (classList.contains("jp-DirListing-itemIcon") || classList.contains("jp-icon-selectable")) {
             commands.execute((CommandIDs.select + ":" + this.id), {path});
             // clicks on icon -> expand
             commands.execute((CommandIDs.toggle + ":" + this.id), {row: path, level: level + 1});
@@ -356,18 +216,20 @@ export class FileTreeWidget extends Widget {
     const td3 = document.createElement("td");
     tr.className = "filetree-item";
 
-    const icon = document.createElement("span");
-    icon.className = "jp-DirListing-itemIcon ";
+    let icon = null;
     if (object.type === "directory") {
-      icon.className += this.dr.getFileType("directory").iconClass;
+      icon = LabIcon.resolveElement({icon: this.dr.getFileType("directory").icon});
+      icon.className = "jp-DirListing-itemIcon";
       tr.className += " filetree-folder";
     } else {
       const iconClass = this.dr.getFileTypesForPath(object.path);
       tr.className += " filetree-file";
       if (iconClass.length === 0) {
-        icon.className += this.dr.getFileType("text").iconClass;
+        icon = LabIcon.resolveElement({icon: this.dr.getFileType("text").icon});
+        icon.className = "jp-DirListing-itemIcon";
       } else {
-        icon.className += this.dr.getFileTypesForPath(object.path)[0].iconClass;
+        icon = LabIcon.resolveElement({icon: this.dr.getFileTypesForPath(object.path)[0].icon});
+        icon.className = "jp-DirListing-itemIcon";
       }
     }
 
@@ -441,57 +303,17 @@ export class FileTreeWidget extends Widget {
     const base = this.cm.get(this.basepath + path);
     const next = base.then(async (res) => {
       if (res.type === "directory") {
-        // tslint:disable-next-line: no-console
-        console.log("New Folder: " + res.name);
         const new_folder = zip.folder(res.name);
         for (const c in res.content) {
           await this.wrapFolder(new_folder, res.content[c].path);
         }
       } else {
-        // tslint:disable-next-line: no-console
-        console.log("Upload: " + res.name);
         zip.file(res.name, res.content);
-        // tslint:disable-next-line: no-console
-        console.log(res.content); // need to wait to pull content
       }
     });
     await next;
   }
 
-}
-
-function switchView(mode: any) {
-  if (mode === "none") { return ""; } else { return "none"; }
-}
-
-function fileSizeString(fileBytes: number) {
-    if (fileBytes == null) {
-      return "";
-    }
-    if (fileBytes < 1024) {
-      return fileBytes + " B";
-    }
-
-    let i = -1;
-    const byteUnits = [" KB", " MB", " GB", " TB"];
-    do {
-        fileBytes = fileBytes / 1024;
-        i++;
-    } while (fileBytes > 1024);
-
-    return Math.max(fileBytes, 0.1).toFixed(1) + byteUnits[i];
-}
-
-function writeZipFile(zip: JSZip, path: string) {
-  zip.generateAsync({type: "blob"}).then((content) => {
-    saveAs(content, PathExt.basename(path));
-  });
-}
-
-function activate(app: JupyterFrontEnd, paths: JupyterFrontEnd.IPaths, resolver: IWindowResolver, restorer: ILayoutRestorer, manager: IDocumentManager, router: IRouter) {
-  // tslint:disable-next-line: no-console
-  console.log("JupyterLab extension jupyterlab_filetree is activated!");
-  constructFileTreeWidget(app, "", "filetree-jupyterlab", "left", paths, resolver, restorer, manager, router);
 }
 
 export
@@ -513,17 +335,17 @@ function constructFileTreeWidget(app: JupyterFrontEnd,
 
   app.commands.addCommand((CommandIDs.toggle + ":" + widget.id), {
     execute: (args) => {
-      const row = btoa(args.row as string);
+      const row = args.row as string;
       const level = args.level as number;
 
-      let row_element = widget.node.querySelector("[id='" + row + "']") as HTMLElement;
+      let row_element = widget.node.querySelector("[id='" + btoa(row) + "']") as HTMLElement;
 
-      if (row_element.nextElementSibling && atob(row_element.nextElementSibling.id).startsWith(atob(row))) { // next element in folder, already constructed
+      if (row_element.nextElementSibling && atob(row_element.nextElementSibling.id).startsWith(row + "/")) { // next element in folder, already constructed
         const display = switchView((widget.node.querySelector("[id='" + row_element.nextElementSibling.id + "']") as HTMLElement).style.display);
         widget.controller[row].open = !(widget.controller[row].open);
         const open_flag = widget.controller[row].open;
         // open folder
-        while (row_element.nextElementSibling && atob(row_element.nextElementSibling.id).startsWith(atob(row) + "/")) {
+        while (row_element.nextElementSibling && atob(row_element.nextElementSibling.id).startsWith(row + "/")) {
           row_element = (widget.node.querySelector("[id='" + row_element.nextElementSibling.id + "']") as HTMLElement);
           // check if the parent folder is open
           if (!(open_flag) || widget.controller[PathExt.dirname(atob(row_element.id))].open) {
@@ -531,7 +353,7 @@ function constructFileTreeWidget(app: JupyterFrontEnd,
           }
         }
       } else { // if children elements don't exist yet
-        const base = app.serviceManager.contents.get(widget.basepath + atob(row));
+        const base = app.serviceManager.contents.get(widget.basepath + row);
         base.then((res) => {
           widget.buildTableContents(res.content, level, row_element);
           widget.controller[row] = {last_modified: res.last_modified, open: true};
@@ -658,7 +480,7 @@ function constructFileTreeWidget(app: JupyterFrontEnd,
       const original = text_area.innerHTML;
       const edit = document.createElement("input");
       edit.value = original;
-      Private.doRename(text_area, edit).then((newName) => {
+      doRename(text_area, edit).then((newName) => {
         if (!newName || newName === original) {
           return original;
         }
@@ -786,7 +608,6 @@ function constructFileTreeWidget(app: JupyterFrontEnd,
     label: "Copy Path",
   });
 
-  // everything context menu
   app.contextMenu.addItem({
     command: (CommandIDs.rename + ":" + widget.id),
     rank: 3,
@@ -805,48 +626,28 @@ function constructFileTreeWidget(app: JupyterFrontEnd,
     selector: "div." + widget.id + " > table > *> .filetree-item",
   });
 
-  // files only context menu
   app.contextMenu.addItem({
     command: (CommandIDs.download + ":" + widget.id),
     rank: 1,
     selector: "div." + widget.id + " > table > *> .filetree-file",
   });
 
-  // folder only context menu
   app.contextMenu.addItem({
     command: (CommandIDs.create_folder + ":" + widget.id),
     rank: 2,
-    selector: "div." + widget.id + " > table > *> .filetree-folder",
-  });
-
-  app.contextMenu.addItem({
-    command: (CommandIDs.create_folder + ":" + widget.id),
-    rank: 2,
-    selector: "div." + widget.id,
+    selector: "div." + widget.id + " > table > * > .filetree-folder",
   });
 
   app.contextMenu.addItem({
     command: (CommandIDs.create_file + ":" + widget.id),
     rank: 1,
-    selector: "div." + widget.id + " > table > *> .filetree-folder",
-  });
-
-  app.contextMenu.addItem({
-    command: (CommandIDs.create_file + ":" + widget.id),
-    rank: 1,
-    selector: "div." + widget.id,
+    selector: "div." + widget.id + " > table > * > .filetree-folder",
   });
 
   app.contextMenu.addItem({
     command: (CommandIDs.upload + ":" + widget.id),
     rank: 3,
-    selector: "div." + widget.id + " > table > *> .filetree-folder",
-  });
-
-  app.contextMenu.addItem({
-    command: (CommandIDs.upload + ":" + widget.id),
-    rank: 3,
-    selector: "div." + widget.id,
+    selector: "div." + widget.id + " > table > * > .filetree-folder",
   });
 
   app.contextMenu.addItem({
@@ -857,7 +658,7 @@ function constructFileTreeWidget(app: JupyterFrontEnd,
   });
 
   const new_file = new ToolbarButton({
-    iconClassName: "jp-NewFolderIcon jp-Icon jp-Icon-16",
+    icon: newFolderIcon,
     onClick: () => {
       app.commands.execute((CommandIDs.create_folder + ":" + widget.id), {path: ""});
     },
@@ -868,7 +669,7 @@ function constructFileTreeWidget(app: JupyterFrontEnd,
   widget.toolbar.addItem("upload", uploader);
 
   const refresh = new ToolbarButton({
-    iconClassName: "jp-RefreshIcon jp-Icon jp-Icon-16",
+    icon: refreshIcon,
     onClick: () => {
       app.commands.execute((CommandIDs.refresh + ":" + widget.id));
     },
@@ -880,12 +681,3 @@ function constructFileTreeWidget(app: JupyterFrontEnd,
   //   app.commands.execute(CommandIDs.refresh);
   // }, 10000);
 }
-
-const extension: JupyterFrontEndPlugin<void> = {
-  activate,
-  autoStart: true,
-  id: "jupyterlab_filetree",
-  requires: [JupyterFrontEnd.IPaths, IWindowResolver, ILayoutRestorer, IDocumentManager, IRouter],
-};
-
-export default extension;
