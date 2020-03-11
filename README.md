@@ -1,5 +1,5 @@
-# Multi ContentsManager
-A meta `ContentsManager` for installing multiple backends using [JupyterLab Filetree](https://github.com/youngthejames/jupyterlab_filetree)
+# Jupyter-FS
+A filesystem-like `ContentsManager` backend for Jupyter. This library allows you to hook up multiple file backends to Jupyter and interact with their contents using [JupyterLab Filetree](https://github.com/youngthejames/jupyterlab_filetree).
 
 
 [![Build Status](https://dev.azure.com/tpaine154/jupyter/_apis/build/status/timkpaine.multicontentsmanager?branchName=master)](https://dev.azure.com/tpaine154/jupyter/_build/latest?definitionId=20&branchName=master)
