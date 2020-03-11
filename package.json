@@ -1,5 +1,5 @@
 {
-  "name": "multicontentsmanager",
+  "name": "jupyter-fs",
   "version": "0.0.1",
   "description": "A JupyterLab extension.",
   "author": "Tim Paine",
@@ -28,7 +28,7 @@
     "discovery": {
       "server": {
         "base": {
-          "name": "multicontentsmanager"
+          "name": "jupyter-fs"
         },
         "managers": [
           "pip"
