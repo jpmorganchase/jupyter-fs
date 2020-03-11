@@ -9,7 +9,7 @@ if "%SPHINXBUILD%" == "" (
 )
 set SOURCEDIR=.
 set BUILDDIR=_build
-set SPHINXPROJ=multicontentsmanager
+set SPHINXPROJ=jupyterfs
 
 if "%1" == "" goto help
 

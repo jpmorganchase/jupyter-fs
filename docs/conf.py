@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# multicontentsmanager documentation build configuration file, created by
+# jupyterfs documentation build configuration file, created by
 # sphinx-quickstart on Fri Jan 12 22:07:11 2018.
 #
 # This file is execfile()d with the current directory set to its
@@ -50,7 +50,7 @@ source_suffix = ['.rst', '.md']
 master_doc = 'index'
 
 # General information about the project.
-project = 'multicontentsmanager'
+project = 'jupyterfs'
 copyright = '2018, Tim Paine'
 author = 'Tim Paine'
 
@@ -58,7 +58,7 @@ author = 'Tim Paine'
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 
-_version_py = os.path.join('..', 'multicontentsmanager', '_version.py')
+_version_py = os.path.join('..', 'jupyterfs', '_version.py')
 version_ns = {}
 
 with open(_version_py, mode='r') as version_file:
@@ -125,7 +125,7 @@ html_sidebars = {
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'multicontentsmanagerdoc'
+htmlhelp_basename = 'jupyterfsdoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -152,7 +152,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'multicontentsmanager.tex', 'multicontentsmanager Documentation',
+    (master_doc, 'jupyterfs.tex', 'jupyterfs Documentation',
      'Tim Paine', 'manual'),
 ]
 
@@ -162,7 +162,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'multicontentsmanager', 'multicontentsmanager Documentation',
+    (master_doc, 'jupyterfs', 'jupyterfs Documentation',
      [author], 1)
 ]
 
@@ -173,8 +173,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'multicontentsmanager', 'multicontentsmanager Documentation',
-     author, 'multicontentsmanager', 'One line description of project.',
+    (master_doc, 'jupyterfs', 'jupyterfs Documentation',
+     author, 'jupyterfs', 'One line description of project.',
      'Miscellaneous'),
 ]
 
@@ -201,7 +201,7 @@ def run_copyreadme(_):
 
 def run_apidoc(_):
     out_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'api'))
-    multicontentsmanager_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'multicontentsmanager'))
+    jupyterfs_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'jupyterfs'))
     cmd_path = 'sphinx-apidoc'
     if hasattr(sys, 'real_prefix'):  # Check to see if we are in a virtualenv
         # If we are, assemble the path manually
@@ -211,7 +211,7 @@ def run_apidoc(_):
                            '-M',
                            '-o',
                            out_dir,
-                           multicontentsmanager_dir,
+                           jupyterfs_dir,
                            '--force'])
 
 
