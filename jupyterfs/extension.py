@@ -47,14 +47,14 @@ def load_jupyter_server_extension(nb_server_app):
     base_url = web_app.settings['base_url']
     host_pattern = '.*$'
 
-    managers = nb_server_app.config.get('MultiContentsManager', {}).get('contents_managers', {})
+    managers = nb_server_app.config.get('JupyterFS', {}).get('contents_managers', {})
 
     if isinstance(nb_server_app.contents_manager, MetaContentsManager):
         nb_server_app.contents_manager.init(managers)
-        print('MultiContentsManager active with {} managers'.format(len(nb_server_app.contents_manager._contents_managers)))
+        print('Jupyter-fs active with {} managers'.format(len(nb_server_app.contents_manager._contents_managers)))
 
-        print('Installing multicontentsmanager handler on path %s' % url_path_join(base_url, 'multicontents'))
+        print('Installing jupyter-fs handler on path %s' % url_path_join(base_url, 'multicontents'))
         web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'multicontents/get'), GetHandler, {'keys': list(nb_server_app.contents_manager._contents_managers.keys())})])
 
     else:
-        print('Not using MultiContentsManager')
+        print('Not using jupyter-fs')

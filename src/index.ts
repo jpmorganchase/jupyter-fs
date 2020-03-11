@@ -19,7 +19,7 @@ import "../style/index.css";
 const extension: JupyterFrontEndPlugin<void> = {
   activate,
   autoStart: true,
-  id: "multicontentsmanager",
+  id: "jupyterfs",
   requires: [JupyterFrontEnd.IPaths, IWindowResolver, ILayoutRestorer, IDocumentManager, IRouter],
 };
 
@@ -37,7 +37,7 @@ function activate(app: JupyterFrontEnd,
       const keys = await value.json() as string[];
 
       // tslint:disable-next-line:no-console
-      console.log("JupyterLab extension multicontentsmanager is activated!");
+      console.log("JupyterLab extension jupyterfs is activated!");
       for ( const s of keys) {
         constructFileTreeWidget(app, s, s, "left", paths, resolver, restorer, manager, router);
         // tslint:disable-next-line:no-console
@@ -45,7 +45,7 @@ function activate(app: JupyterFrontEnd,
       }
     } else {
       // tslint:disable-next-line:no-console
-      console.warn("MultiContentsManager failed to activate");
+      console.warn("Jupyter-fs failed to activate");
     }
   });
 }

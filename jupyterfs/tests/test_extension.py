@@ -9,7 +9,7 @@
 # for Coverage
 import tornado.web
 from mock import MagicMock
-from multicontentsmanager.extension import load_jupyter_server_extension, GetHandler
+from jupyterfs.extension import load_jupyter_server_extension, GetHandler
 
 
 class TestExtension:

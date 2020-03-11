@@ -2,20 +2,20 @@
 A filesystem-like `ContentsManager` backend for Jupyter. This library allows you to hook up multiple file backends to Jupyter and interact with their contents using [JupyterLab Filetree](https://github.com/youngthejames/jupyterlab_filetree).
 
 
-[![Build Status](https://dev.azure.com/tpaine154/jupyter/_apis/build/status/timkpaine.multicontentsmanager?branchName=master)](https://dev.azure.com/tpaine154/jupyter/_build/latest?definitionId=20&branchName=master)
-[![GitHub issues](https://img.shields.io/github/issues/timkpaine/multicontentsmanager.svg)]()
+[![Build Status](https://dev.azure.com/tpaine154/jupyter/_apis/build/status/timkpaine.jupyter-fs?branchName=master)](https://dev.azure.com/tpaine154/jupyter/_build/latest?definitionId=20&branchName=master)
+[![GitHub issues](https://img.shields.io/github/issues/timkpaine/jupyter-fs.svg)]()
 [![Coverage](https://img.shields.io/azure-devops/coverage/tpaine154/jupyter/20)](https://dev.azure.com/tpaine154/jupyter/_build?definitionId=20&_a=summary)
-[![PyPI](https://img.shields.io/pypi/l/multicontentsmanager.svg)](https://pypi.python.org/pypi/multicontentsmanager)
-[![PyPI](https://img.shields.io/pypi/v/multicontentsmanager.svg)](https://pypi.python.org/pypi/multicontentsmanager)
-[![npm](https://img.shields.io/npm/v/multicontentsmanager.svg)](https://www.npmjs.com/package/multicontentsmanager)
+[![PyPI](https://img.shields.io/pypi/l/jupyter-fs.svg)](https://pypi.python.org/pypi/jupyter-fs)
+[![PyPI](https://img.shields.io/pypi/v/jupyter-fs.svg)](https://pypi.python.org/pypi/jupyter-fs)
+[![npm](https://img.shields.io/npm/v/jupyter-fs.svg)](https://www.npmjs.com/package/jupyter-fs)
 
 
 ## Install
 
 ```bash
-pip install multicontentsmanager
-jupyter labextension install multicontentsmanager
-jupyter serverextension enable --py multicontentsmanager
+pip install jupyter-fs
+jupyter labextension install jupyter-fs
+jupyter serverextension enable --py jupyter-fs
 ```
 
 
@@ -26,9 +26,9 @@ Add the following to your `jupyter_notebook_config.json`:
 ```
 {
   "NotebookApp": {
-    "contents_manager_class": "multicontentsmanager.meta_contents_manager.MetaContentsManager",
+    "contents_manager_class": "jupyterfs.meta_contents_manager.MetaContentsManager",
     "nbserver_extensions": {
-      "multicontentsmanager": true
+      "jupyterfs": true
     }
   }
 }
@@ -39,7 +39,7 @@ Register additional contents managers in your `jupyter_notebook_config.py`. As a
 
 ```
 from s3contents import S3ContentsManager
-c.MultiContentsManager.contents_managers = \
+c.JupyterFS.contents_managers = \
 {
     's3': S3ContentsManager
 }
@@ -57,13 +57,13 @@ c.S3ContentsManager.secret_access_key = '<your secret key>'
 
 During application startup, you should see something like this in the logs:
 ```
-MultiContentsManager active with 2 managers
-Installing multicontentsmanager handler on path /multicontents
+JupyterFS active with 2 managers
+Installing JupyterFS handler on path /multicontents
 ```
 
 
 And in the UI, you will see your contents managers available:
-![](https://raw.githubusercontent.com/timkpaine/multicontentsmanager/master/docs/example.gif)
+![](https://raw.githubusercontent.com/timkpaine/jupyter-fs/master/docs/example.gif)
 
 
 We can add additional contents managers:
@@ -80,7 +80,7 @@ Here I utilize an `AbsolutePathFileManager` to grab another folder on my system 
 
 Here, I have the above `s3` and `AbsolutePathFileManager`, along with the original contents manager, for a total of 3 seperate spaces. 
 
-![](https://raw.githubusercontent.com/timkpaine/multicontentsmanager/master/docs/example2.gif)
+![](https://raw.githubusercontent.com/timkpaine/jupyter-fs/master/docs/example2.gif)
 
 
 ## Development

@@ -1,0 +1,8 @@
+{
+  "NotebookApp": {
+    "contents_manager_class": "jupyterfs.meta_contents_manager.MetaContentsManager",
+    "nbserver_extensions": {
+      "jupyterfs": true
+    }
+  }
+}
