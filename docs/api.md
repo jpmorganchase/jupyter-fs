@@ -1,21 +1,21 @@
 
 ```eval_rst
-.. automodule:: multicontentsmanager
+.. automodule:: jupyterfs
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: multicontentsmanager.extension
+.. automodule:: jupyterfs.extension
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: multicontentsmanager.handlers
+.. automodule:: jupyterfs.handlers
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: multicontentsmanager.metacontentsmanager
+.. automodule:: jupyterfs.metacontentsmanager
    :members:
    :undoc-members:
    :show-inheritance:
