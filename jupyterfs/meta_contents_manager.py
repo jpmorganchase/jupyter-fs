@@ -1,3 +1,10 @@
+# *****************************************************************************
+#
+# Copyright (c) 2019, the jupyter-fs authors.
+#
+# This file is part of the jupyter-fs library, distributed under the terms of
+# the Apache License 2.0.  The full license can be found in the LICENSE file.
+#
 from notebook.services.contents.manager import ContentsManager
 from notebook.services.contents.largefilemanager import LargeFileManager
 from .pathutils import path_first_arg, path_second_arg, path_kwarg, path_old_new

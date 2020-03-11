@@ -2,25 +2,25 @@ testjs: ## Clean and Make js tests
 	yarn test
 
 testpy: ## Clean and Make unit tests
-	python3.7 -m pytest -v multicontentsmanager/tests --cov=multicontentsmanager
+	python3.7 -m pytest -v jupyterfs/tests --cov=jupyterfs
 
 tests: lint ## run the tests
-	python3.7 -m pytest -v multicontentsmanager/tests --cov=multicontentsmanager --junitxml=python_junit.xml --cov-report=xml --cov-branch
+	python3.7 -m pytest -v jupyterfs/tests --cov=jupyterfs --junitxml=python_junit.xml --cov-report=xml --cov-branch
 	yarn test
 
 lint: ## run linter
-	flake8 multicontentsmanager setup.py
+	flake8 jupyterfs setup.py
 	yarn lint
 
 fix:  ## run autopep8/tslint fix
-	autopep8 --in-place -r -a -a multicontentsmanager/
+	autopep8 --in-place -r -a -a jupyterfs/
 	./node_modules/.bin/tslint --fix src/*
 
 annotate: ## MyPy type annotation check
-	mypy -s multicontentsmanager
+	mypy -s jupyterfs
 
 annotate_l: ## MyPy type annotation check - count only
-	mypy -s multicontentsmanager | wc -l
+	mypy -s jupyterfs | wc -l
 
 clean: ## clean the repository
 	find . -name "__pycache__" | xargs  rm -rf
@@ -37,7 +37,7 @@ install:  ## install to site-packages
 	pip3 install .
 
 serverextension: install ## enable serverextension
-	jupyter serverextension enable --py multicontentsmanager
+	jupyter serverextension enable --py jupyterfs
 
 js:  ## build javascript
 	yarn

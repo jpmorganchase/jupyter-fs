@@ -1,3 +1,10 @@
+# *****************************************************************************
+#
+# Copyright (c) 2019, the jupyter-fs authors.
+#
+# This file is part of the jupyter-fs library, distributed under the terms of
+# the Apache License 2.0.  The full license can be found in the LICENSE file.
+#
 from setuptools import setup, find_packages
 from codecs import open
 from os import path
@@ -11,9 +18,9 @@ pjoin = path.join
 
 ensure_python(('2.7', '>=3.3'))
 
-name = 'multicontentsmanager'
+name = 'jupyter-fs'
 here = path.abspath(path.dirname(__file__))
-version = get_version(pjoin(here, name, '_version.py'))
+version = get_version(pjoin(here, "jupyterfs", '_version.py'))
 
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
@@ -60,10 +67,10 @@ cmdclass['js'] = combine_commands(
 setup(
     name=name,
     version=version,
-    description='Automatically version notebooks from JupyterLab',
+    description='A Filesystem-like mult-contents manager backend for Jupyter',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/timkpaine/multicontentsmanager',
+    url='https://github.com/timkpaine/jupyter-fs',
     author='Tim Paine',
     author_email='t.paine154@gmail.com',
     license='Apache 2.0',
