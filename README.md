@@ -81,3 +81,14 @@ Here I utilize an `AbsolutePathFileManager` to grab another folder on my system 
 Here, I have the above `s3` and `AbsolutePathFileManager`, along with the original contents manager, for a total of 3 seperate spaces. 
 
 ![](https://raw.githubusercontent.com/timkpaine/multicontentsmanager/master/docs/example2.gif)
+
+
+## Development
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+
+
+## License
+
+This software is licensed under the Apache 2.0 license. See the
+[LICENSE](LICENSE) and [AUTHORS](AUTHORS) files for details.
