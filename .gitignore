@@ -1,3 +1,7 @@
+# s3proxy artifacts
+/s3proxy*
+/s3_local/
+
 # Logs
 logs
 *.log
@@ -161,6 +165,15 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# jetbrains ide stuff
+*.iml
+.idea/
+
+# vscode ide stuff
+*.code-workspace
+.history
+.vscode
 
 .DS_Store
 

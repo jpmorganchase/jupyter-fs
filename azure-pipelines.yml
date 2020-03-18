@@ -1,5 +1,90 @@
 trigger:
-- master
+  branches:
+    include:
+    - '*'  # must quote since "*" is a YAML reserved character; we want a string
+
+parameters:
+- name: initializationSteps
+  type: stepList
+  default:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '$(python.version)'
+      displayName: 'Use Python $(python.version)'
+
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '12.x'
+
+    - bash: npm install -g yarn
+      displayName: "Install Yarn"
+
+    - bash: yarn
+      displayName: "Install npm dependencies"
+
+    - script: |
+        python -m pip install --upgrade pip
+        pip install -e .[dev]
+      displayName: 'Install Python dependencies'
+
+    - script: |
+        which python > python.txt
+        set /p PYTHON=<python.txt
+        ln -s %PYTHON% %PYTHON%$(python.version)
+        python --version
+        which python$(python.version)
+      displayName: "Which python"
+
+    - bash: env
+      displayName: "List all environment variables"
+- name: s3proxySteps
+  type: stepList
+  default:
+    - bash: nohup ci/s3_local.sh
+      displayName: "Start up local S3 server"
+
+    - script: curl http://127.0.0.1:9000/
+      displayName: 'Test local S3 server'
+- name: s3proxyMacSteps
+  type: stepList
+  default:
+    - script: |
+        ci/install_docker_desktop_mac.sh
+        ci/start_docker_desktop_mac.sh
+        docker pull andrewgaul/s3proxy
+        nohup sudo docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy &
+        sleep 5
+      displayName: 'Start s3proxy in a docker'
+
+    - script: curl http://127.0.0.1:9000/
+      displayName: 'Test local S3 server'
+- name: testSteps
+  type: stepList
+  default:
+    - script: make lintpy
+      displayName: 'Lint Python'
+
+    - script: make lintjs
+      displayName: 'Lint JS'
+
+    - script: make testpy
+      displayName: 'Test Python'
+
+    - script: make testjs
+      displayName: 'Test JS'
+- name: publishSteps
+  type: stepList
+  default:
+    - task: PublishTestResults@2
+      condition: succeededOrFailed()
+      inputs:
+        testResultsFiles: 'python_junit.xml'
+        testRunTitle: 'Publish test results for Python $(python.version) $(manylinux_flag)'
+
+    - task: PublishCodeCoverageResults@1
+      inputs:
+        codeCoverageTool: Cobertura
+        summaryFileLocation: '$(System.DefaultWorkingDirectory)/*coverage.xml'
 
 jobs:
 - job: 'Linux'
@@ -12,44 +97,10 @@ jobs:
         python.version: '3.7'
 
   steps:
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '$(python.version)'
-      displayName: 'Use Python $(python.version)'
-
-    - task: NodeTool@0
-      inputs:
-        versionSpec: '12.x'
-
-    - bash: npm install -g yarn
-      displayName: "Install Yarn"
-
-    - bash: yarn
-      displayName: "Install Deps"
-
-    - script: |
-        python -m pip install --upgrade pip
-        pip install -e .[dev]
-      displayName: 'Install dependencies'
-
-    - script: |
-        make lint
-      displayName: 'Lint'
-
-    - script:
-        make tests
-      displayName: 'Test'
-
-    - task: PublishTestResults@2
-      condition: succeededOrFailed()
-      inputs:
-        testResultsFiles: 'python_junit.xml'
-        testRunTitle: 'Publish test results for Python $(python.version) $(manylinux_flag)'
-
-    - task: PublishCodeCoverageResults@1
-      inputs: 
-        codeCoverageTool: Cobertura
-        summaryFileLocation: '$(System.DefaultWorkingDirectory)/*coverage.xml'
+    - ${{ parameters.initializationSteps }}
+    - ${{ parameters.s3proxySteps }}
+    - ${{ parameters.testSteps }}
+    - ${{ parameters.publishSteps }}
 
 - job: 'Mac'
   pool:
@@ -61,44 +112,10 @@ jobs:
         python.version: '3.7'
 
   steps:
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '$(python.version)'
-      displayName: 'Use Python $(python.version)'
-
-    - task: NodeTool@0
-      inputs:
-        versionSpec: '12.x'
-
-    - bash: npm install -g yarn
-      displayName: "Install Yarn"
-
-    - bash: yarn
-      displayName: "Install Deps"
-
-    - script: |
-        python -m pip install --upgrade pip
-        pip install -e .[dev]
-      displayName: 'Install dependencies'
-
-    - script: |
-        make lint
-      displayName: 'Lint'
-
-    - script: |
-        make tests
-      displayName: 'Test'
-
-    - task: PublishTestResults@2
-      condition: succeededOrFailed()
-      inputs:
-        testResultsFiles: 'python_junit.xml'
-        testRunTitle: 'Publish test results for Python $(python.version) $(manylinux_flag)'
-
-    - task: PublishCodeCoverageResults@1
-      inputs: 
-        codeCoverageTool: Cobertura
-        summaryFileLocation: '$(System.DefaultWorkingDirectory)/*coverage.xml'
+    - ${{ parameters.s3proxyMacSteps }}
+    - ${{ parameters.initializationSteps }}
+    - ${{ parameters.testSteps }}
+    - ${{ parameters.publishSteps }}
 
 - job: 'Windows'
   pool:
@@ -110,49 +127,7 @@ jobs:
         python.version: '3.7'
 
   steps:
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '$(python.version)'
-      displayName: 'Use Python $(python.version)'
-
-    - task: NodeTool@0
-      inputs:
-        versionSpec: '12.x'
-
-    - bash: npm install -g yarn
-      displayName: "Install Yarn"
-
-    - bash: yarn
-      displayName: "Install Deps"
-
-    - script: |
-        which python > python.txt
-        set /p PYTHON=<python.txt
-        ln -s %PYTHON% %PYTHON%$(python.version)
-        python --version
-        which python$(python.version)
-      displayName: "Which python"
-
-    - script: |
-        python -m pip install --upgrade pip
-        pip install -e .[dev]
-      displayName: 'Install dependencies'
-
-    - script: |
-        make lint
-      displayName: 'Lint'
-
-    - script: |
-        make tests
-      displayName: 'Test'
-
-    - task: PublishTestResults@2
-      condition: succeededOrFailed()
-      inputs:
-        testResultsFiles: 'python_junit.xml'
-        testRunTitle: 'Publish test results for Python $(python.version) $(manylinux_flag)'
-
-    - task: PublishCodeCoverageResults@1
-      inputs: 
-        codeCoverageTool: Cobertura
-        summaryFileLocation: '$(System.DefaultWorkingDirectory)/*coverage.xml'
+    - ${{ parameters.initializationSteps }}
+    - ${{ parameters.s3proxySteps }}
+    - ${{ parameters.testSteps }}
+    - ${{ parameters.publishSteps }}

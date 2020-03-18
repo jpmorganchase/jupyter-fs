@@ -4,13 +4,25 @@ testjs: ## Clean and Make js tests
 testpy: ## Clean and Make unit tests
 	python3.7 -m pytest -v jupyterfs/tests --cov=jupyterfs
 
-tests: lint ## run the tests
+test: lint ## run the tests
 	python3.7 -m pytest -v jupyterfs/tests --cov=jupyterfs --junitxml=python_junit.xml --cov-report=xml --cov-branch
 	yarn test
+
+lintjs: ## run linter
+	yarn lint
+
+lintpy: ## run linter
+	flake8 jupyterfs setup.py
 
 lint: ## run linter
 	flake8 jupyterfs setup.py
 	yarn lint
+
+fixjs:  ## run autopep8/tslint fix
+	./node_modules/.bin/tslint --fix src/*
+
+fixpy:  ## run autopep8/tslint fix
+	autopep8 --in-place -r -a -a jupyterfs/
 
 fix:  ## run autopep8/tslint fix
 	autopep8 --in-place -r -a -a jupyterfs/
@@ -28,6 +40,15 @@ clean: ## clean the repository
 	find . -name ".ipynb_checkpoints" | xargs  rm -rf
 	rm -rf .coverage coverage cover htmlcov logs build dist *.egg-info lib node_modules
 	# make -C ./docs clean
+
+dev_install: ## set up the repo for active development
+	pip install -e .[dev]
+	jupyter serverextension enable --py jupyterfs
+	jlpm build:integrity
+	jupyter labextension link .
+	# verify
+	jupyter serverextension list
+	jupyter labextension list
 
 docs:  ## make documentation
 	make -C ./docs html
