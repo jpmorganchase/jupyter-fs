@@ -255,7 +255,7 @@ class PyFilesystemContentsManager(FileContentsManager):
 
     def _read_notebook(self, path, as_version=4):
         """Read a notebook from a path."""
-        nb = self._read_file(path, 'text')
+        nb, format = self._read_file(path, 'text')
         return nbformat.reads(nb, as_version=as_version)
 
     def _file_model(self, path, content=True, format=None):
