@@ -182,7 +182,9 @@ class PyFilesystemContentsManager(FileContentsManager):
         try:
             model['writable'] = info.permissions.check('u_w')  # TODO check
         except (errors.MissingInfoNamespace,):
-            model['writable'] = False
+            # if relevant namespace is missing, assume writable
+            # TODO: decide if this is wise
+            model['writable'] = True
         except OSError:
             self.log.error("Failed to check write permissions on %s", path)
             model['writable'] = False
