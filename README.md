@@ -67,7 +67,7 @@ And in the UI, you will see your contents managers available:
 We can add additional contents managers:
 
 ```
-c.MultiContentsManager.contents_managers = \
+c.JupyterFS.contents_managers = \
 {
     's3': S3ContentsManager,
     'file2': AbsolutePathFileManager(root_dir=os.path.expanduser("~/Downloads"))

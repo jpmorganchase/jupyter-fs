@@ -10,7 +10,7 @@ import mimetypes
 import nbformat
 from base64 import encodebytes, decodebytes
 from datetime import datetime
-from fs import errors
+from fs import errors, open_fs
 from notebook import _tz as tz
 from notebook.services.contents.filemanager import FileContentsManager
 from notebook.services.contents.filecheckpoints import GenericFileCheckpoints
@@ -18,7 +18,7 @@ from tornado import web
 
 
 class PyFilesystemContentsManager(FileContentsManager):
-    '''This class bridges the gap between Pyfilesystem's filesystem class,
+    """This class bridges the gap between Pyfilesystem's filesystem class,
     and Jupyter Notebook's ContentsManager class. This allows Jupyter to
     leverage all the backends available in Pyfilesystem.
 
@@ -95,11 +95,17 @@ class PyFilesystemContentsManager(FileContentsManager):
         GenericCheckpointsMixin.create_notebook_checkpoint(nb, …):  Create a checkpoint of the current state of a file
         GenericCheckpointsMixin.get_file_checkpoint(…):             Get the content of a checkpoint for a non-notebook file.
         GenericCheckpointsMixin.get_notebook_checkpoint(…):         Get the content of a checkpoint for a notebook.
+    """
+    @classmethod
+    def open_fs(cls, *args, **kwargs):
+        return cls(open_fs(*args, **kwargs))
 
-    '''
+    @classmethod
+    def init_fs(cls, pyfilesystem_class, *args, **kwargs):
+        return cls(pyfilesystem_class(*args, **kwargs))
 
-    def __init__(self, pyfilesystem_class, **kwargs):
-        self._pyfilesystem_instance = pyfilesystem_class(**kwargs)
+    def __init__(self, pyfilesystem_instance):
+        self._pyfilesystem_instance = pyfilesystem_instance
 
     def is_hidden(self, path):
         """Does the API style path correspond to a hidden directory or file?
@@ -175,6 +181,8 @@ class PyFilesystemContentsManager(FileContentsManager):
 
         try:
             model['writable'] = info.permissions.check('u_w')  # TODO check
+        except (errors.MissingInfoNamespace,):
+            model['writable'] = False
         except OSError:
             self.log.error("Failed to check write permissions on %s", path)
             model['writable'] = False
