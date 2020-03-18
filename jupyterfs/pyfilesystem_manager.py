@@ -212,9 +212,11 @@ class PyFilesystemContentsManager(FileContentsManager):
             model['content'] = contents = []
             for name in self._pyfilesystem_instance.listdir(path):
                 os_path = os.path.join(path, name)
-                if (not self._pyfilesystem_instance.islink(os_path)
+                if (
+                    not self._pyfilesystem_instance.islink(os_path)
                     and not self._pyfilesystem_instance.isfile(os_path)
-                        and not self._pyfilesystem_instance.isdir(os_path)):
+                    and not self._pyfilesystem_instance.isdir(os_path)
+                ):
                     self.log.debug("%s not a regular file", os_path)
                     continue
 
@@ -336,7 +338,7 @@ class PyFilesystemContentsManager(FileContentsManager):
         # if is_hidden(path, self.root_dir) and not self.allow_hidden:
         #     raise web.HTTPError(400, u'Cannot create hidden directory %r' % path)
         if not self._pyfilesystem_instance.exists(path):
-            self._pyfilesystem_instance.mkdir(path)
+            self._pyfilesystem_instance.makedir(path)
         elif not self._pyfilesystem_instance.isdir(path):
             raise web.HTTPError(400, u'Not a directory: %s' % (path))
         else:
@@ -387,9 +389,11 @@ class PyFilesystemContentsManager(FileContentsManager):
                 nb = nbformat.from_dict(model['content'])
                 self.check_and_sign(nb, path)
                 self._save_notebook(path, nb)
+                # TODO: decide how to handle checkpoints for non-local fs.
+                # For now, checkpoint pathing seems to be borked.
                 # One checkpoint should always exist for notebooks.
-                if not self.checkpoints.list_checkpoints(path):
-                    self.create_checkpoint(path)
+                # if not self.checkpoints.list_checkpoints(path):
+                #     self.create_checkpoint(path)
             elif model['type'] == 'file':
                 # Missing format will be handled internally by _save_file.
                 self._save_file(path, model['content'], model.get('format'))
