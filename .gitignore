@@ -162,6 +162,15 @@ ENV/
 # mypy
 .mypy_cache/
 
+# jetbrains ide stuff
+*.iml
+.idea/
+
+# vscode ide stuff
+*.code-workspace
+.history
+.vscode
+
 .DS_Store
 
 .autoversion

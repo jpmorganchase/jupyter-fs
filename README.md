@@ -14,8 +14,6 @@ A filesystem-like `ContentsManager` backend for Jupyter. This library allows you
 
 ```bash
 pip install jupyter-fs
-jupyter labextension install jupyter-fs
-jupyter serverextension enable --py jupyter-fs
 ```
 
 
@@ -78,7 +76,7 @@ c.MultiContentsManager.contents_managers = \
 
 Here I utilize an `AbsolutePathFileManager` to grab another folder on my system for use. Remember, remote filesystems are still remote, and locally you may need to move around the filesystem with a `os.chdir` command (or equivalent in other languages).
 
-Here, I have the above `s3` and `AbsolutePathFileManager`, along with the original contents manager, for a total of 3 seperate spaces. 
+Here, I have the above `s3` and `AbsolutePathFileManager`, along with the original contents manager, for a total of 3 seperate spaces.
 
 ![](https://raw.githubusercontent.com/timkpaine/jupyter-fs/master/docs/example2.gif)
 

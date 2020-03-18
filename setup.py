@@ -5,29 +5,30 @@
 # This file is part of the jupyter-fs library, distributed under the terms of
 # the Apache License 2.0.  The full license can be found in the LICENSE file.
 #
-from setuptools import setup, find_packages
 from codecs import open
 from os import path
+from pathlib import Path
+from setuptools import setup, find_packages
+from setuptools.command.develop import develop
+from subprocess import CalledProcessError
 
 from jupyter_packaging import (
-    create_cmdclass, install_npm, ensure_targets,
-    combine_commands, ensure_python, get_version
+    combine_commands, command_for_func, create_cmdclass, ensure_python,
+    ensure_targets, get_version, run
 )
-
-pjoin = path.join
 
 ensure_python(('2.7', '>=3.3'))
 
 name = 'jupyter-fs'
 here = path.abspath(path.dirname(__file__))
-version = get_version(pjoin(here, "jupyterfs", '_version.py'))
+version = get_version(path.join(here, "jupyterfs", '_version.py'))
 
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 requires = [
     'fs>=2.4.11',
-    'jupyterlab>=1.0.0',
+    'jupyterlab>=2.0.0',
     'notebook>=5.7.0',
 ]
 
@@ -42,27 +43,73 @@ dev_requires = requires + [
     'pytest-cov',
 ]
 
-data_spec = [
+data_files_spec = [
     # Lab extension installed by default:
     ('share/jupyter/lab/extensions',
      'lab-dist',
-     'multicontentsmanager-*.tgz'),
+     'jupyter-fs-*.tgz'),
     # Config to enable server extension by default:
     ('etc/jupyter',
      'jupyter-config',
      '**/*.json'),
 ]
 
+def runPackLabextension():
+    if Path('package.json').is_file():
+        try:
+            run(['jlpm', 'build:all'])
+        except CalledProcessError:
+            pass
+pack_labext = command_for_func(runPackLabextension)
 
-cmdclass = create_cmdclass('js', data_files_spec=data_spec)
-cmdclass['js'] = combine_commands(
-    install_npm(here, build_cmd='build:all'),
+class DevelopAndEnable(develop):
+    def run(self):
+        develop.run(self)
+
+        list_cmd = [
+            'jupyter',
+            'serverextension',
+            'list'
+        ]
+        enable_cmd = [
+            'jupyter',
+            'serverextension',
+            'enable',
+            '--py',
+            'jupyterfs'
+        ]
+
+        # TODO: fix this
+        # Currently, if pyproject.toml is present the
+        # `serverextension enable` command fails with
+        # ```
+        #     m, server_exts = _get_server_extension_metadata(package)
+        #   File ".../site-packages/notebook/serverextensions.py", line 328, in _get_server_extension_metadata
+        #     m = import_item(module)
+        #   File ".../site-packages/traitlets/utils/importstring.py", line 42, in import_item
+        #     return __import__(parts[0])
+        # ModuleNotFoundError: No module named 'jupyterfs'
+        # ```
+
+        # # test if `jupyter` cmd is available
+        # try:
+        #     run(list_cmd)
+        # except:
+        #     print('`jupyter` cmd not installed, skipping serverextension activation...')
+        #     return
+
+        # print('Enabling serverextension...')
+        # run(enable_cmd)
+
+cmdclass = create_cmdclass('pack_labext', data_files_spec=data_files_spec)
+cmdclass['pack_labext'] = combine_commands(
+    command_for_func(runPackLabextension),
     ensure_targets([
-        pjoin(here, 'lib', 'index.js'),
-        pjoin(here, 'style', 'index.css')
+        path.join(here, 'lib', 'index.js'),
+        path.join(here, 'style', 'index.css')
     ]),
 )
-
+cmdclass['develop'] = DevelopAndEnable
 
 setup(
     name=name,
@@ -92,6 +139,5 @@ setup(
         'dev': dev_requires
     },
     include_package_data=True,
-    zip_safe=False,
-
+    zip_safe=False
 )

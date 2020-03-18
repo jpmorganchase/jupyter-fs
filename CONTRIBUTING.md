@@ -2,9 +2,18 @@
 
 Thank you for your interest in contributing to jupyter-fs!
 
-We invite you to contribute enhancements. Upon review you will be required to complete the [Contributor License Agreement (CLA)](https://github.com/jpmorganchase/cla) before we are able to merge. 
+We invite you to contribute enhancements. Upon review you will be required to complete the [Contributor License Agreement (CLA)](https://github.com/jpmorganchase/cla) before we are able to merge.
 
 If you have any questions about the contribution process, please feel free to send an email to [open_source@jpmorgan.com](mailto:open_source@jpmorgan.com).
+
+## Install for Development
+
+```bash
+# first cd to your jupyter-fs repo dir, then
+pip install -e .
+jupyter serverextension enable --py jupyterfs
+jupyter labextension link .
+```
 
 ## Guidelines
 
