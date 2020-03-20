@@ -15,7 +15,7 @@ lintpy: ## run linter
 	flake8 jupyterfs setup.py
 
 lints: ## run linter
-	flake8 jupyterfs setup.py
+	flake8 jupyterfs
 	yarn lint
 
 fixjs:  ## run autopep8/tslint fix
@@ -40,6 +40,15 @@ clean: ## clean the repository
 	find . -name ".ipynb_checkpoints" | xargs  rm -rf
 	rm -rf .coverage coverage cover htmlcov logs build dist *.egg-info lib node_modules
 	# make -C ./docs clean
+
+dev_install: ## set up the repo for active development
+	pip install -e .[dev]
+	jupyter serverextension enable --py jupyterfs
+	jlpm build:integrity
+	jupyter labextension link .
+	# verify
+	jupyter serverextension list
+	jupyter labextension list
 
 docs:  ## make documentation
 	make -C ./docs html

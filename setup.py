@@ -64,45 +64,6 @@ def runPackLabextension():
             pass
 pack_labext = command_for_func(runPackLabextension)
 
-class DevelopAndEnable(develop):
-    def run(self):
-        develop.run(self)
-
-        list_cmd = [
-            'jupyter',
-            'serverextension',
-            'list'
-        ]
-        enable_cmd = [
-            'jupyter',
-            'serverextension',
-            'enable',
-            '--py',
-            'jupyterfs'
-        ]
-
-        # TODO: fix this
-        # Currently, if pyproject.toml is present the
-        # `serverextension enable` command fails with
-        # ```
-        #     m, server_exts = _get_server_extension_metadata(package)
-        #   File ".../site-packages/notebook/serverextensions.py", line 328, in _get_server_extension_metadata
-        #     m = import_item(module)
-        #   File ".../site-packages/traitlets/utils/importstring.py", line 42, in import_item
-        #     return __import__(parts[0])
-        # ModuleNotFoundError: No module named 'jupyterfs'
-        # ```
-
-        # # test if `jupyter` cmd is available
-        # try:
-        #     run(list_cmd)
-        # except:
-        #     print('`jupyter` cmd not installed, skipping serverextension activation...')
-        #     return
-
-        # print('Enabling serverextension...')
-        # run(enable_cmd)
-
 cmdclass = create_cmdclass('pack_labext', data_files_spec=data_files_spec)
 cmdclass['pack_labext'] = combine_commands(
     command_for_func(runPackLabextension),
@@ -111,7 +72,7 @@ cmdclass['pack_labext'] = combine_commands(
         path.join(here, 'style', 'index.css')
     ]),
 )
-cmdclass['develop'] = DevelopAndEnable
+cmdclass.pop('develop')
 
 setup(
     name=name,
@@ -119,9 +80,8 @@ setup(
     description='A Filesystem-like mult-contents manager backend for Jupyter',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/timkpaine/jupyter-fs',
-    author='Tim Paine',
-    author_email='t.paine154@gmail.com',
+    url='https://github.com/jpmorganchase/jupyter-fs',
+    author='Tim Paine<t.paine154@gmail.com>, Max Klein <telamonian@hotmail.com>',
     license='Apache 2.0',
     classifiers=[
         'Development Status :: 3 - Alpha',
@@ -141,5 +101,5 @@ setup(
         'dev': dev_requires
     },
     include_package_data=True,
-    zip_safe=False
+    zip_safe=False,
 )
