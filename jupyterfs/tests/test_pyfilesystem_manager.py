@@ -6,7 +6,8 @@
 # the Apache License 2.0.  The full license can be found in the LICENSE file.
 #
 
-import boto3, botocore
+import boto3
+import botocore
 from jupyterfs.pyfilesystem_manager import PyFilesystemContentsManager
 
 test_bucket = 'test'
@@ -38,7 +39,6 @@ def _s3CreateBucket(bucket_name):
     s3Resource = _s3Resource()
 
     # check if bucket already exists
-    bucket = s3Resource.Bucket(bucket_name)
     bucket_exists = True
     try:
         s3Resource.meta.client.head_bucket(Bucket=bucket_name)
