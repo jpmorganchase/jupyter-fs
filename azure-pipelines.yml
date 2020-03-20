@@ -1,5 +1,6 @@
 trigger:
 - master
+- pyfilesystem-s3fs-support
 
 jobs:
 - job: 'Linux'
