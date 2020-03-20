@@ -45,7 +45,7 @@ jobs:
 
     - script: |
         dockerd
-        docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy
+        docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy &
         make tests
       displayName: 'Test'
 
