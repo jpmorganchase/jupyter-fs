@@ -19,10 +19,49 @@ parameters:
       displayName: "Install Yarn"
 
     - bash: yarn
-      displayName: "Install Deps"
+      displayName: "Install npm dependencies"
 
     - bash: nohup ci/s3_local.sh
       displayName: "Start up local S3 server"
+
+    - script: |
+        python -m pip install --upgrade pip
+        pip install -e .[dev]
+      displayName: 'Install Python dependencies'
+
+    - script: |
+        which python > python.txt
+        set /p PYTHON=<python.txt
+        ln -s %PYTHON% %PYTHON%$(python.version)
+        python --version
+        which python$(python.version)
+      displayName: "Which python"
+
+    - script: curl http://127.0.0.1:9000/
+      displayName: 'Test local S3 server'
+- name: testSteps
+  type: stepList
+  default:
+    - script: |
+        make lint
+      displayName: 'Lint'
+
+    - script:
+        make tests
+      displayName: 'Test'
+- name: publishSteps
+  type: stepList
+  default:
+    - task: PublishTestResults@2
+      condition: succeededOrFailed()
+      inputs:
+        testResultsFiles: 'python_junit.xml'
+        testRunTitle: 'Publish test results for Python $(python.version) $(manylinux_flag)'
+
+    - task: PublishCodeCoverageResults@1
+      inputs:
+        codeCoverageTool: Cobertura
+        summaryFileLocation: '$(System.DefaultWorkingDirectory)/*coverage.xml'
 
 jobs:
 - job: 'Linux'
@@ -36,33 +75,8 @@ jobs:
 
   steps:
     - ${{ parameters.initializationSteps }}
-
-    - script: |
-        python -m pip install --upgrade pip
-        pip install -e .[dev]
-      displayName: 'Install dependencies'
-
-    - script: |
-        make lint
-      displayName: 'Lint'
-
-    - script: curl http://127.0.0.1:9000/
-      displayName: 'Test local S3 server'
-
-    - script:
-        make tests
-      displayName: 'Test'
-
-    - task: PublishTestResults@2
-      condition: succeededOrFailed()
-      inputs:
-        testResultsFiles: 'python_junit.xml'
-        testRunTitle: 'Publish test results for Python $(python.version) $(manylinux_flag)'
-
-    - task: PublishCodeCoverageResults@1
-      inputs:
-        codeCoverageTool: Cobertura
-        summaryFileLocation: '$(System.DefaultWorkingDirectory)/*coverage.xml'
+    - ${{ parameters.testSteps }}
+    - ${{ parameters.publishSteps }}
 
 - job: 'Mac'
   pool:
@@ -75,33 +89,8 @@ jobs:
 
   steps:
     - ${{ parameters.initializationSteps }}
-
-    - script: |
-        python -m pip install --upgrade pip
-        pip install -e .[dev]
-      displayName: 'Install dependencies'
-
-    - script: |
-        make lint
-      displayName: 'Lint'
-
-    - script: curl http://127.0.0.1:9000/
-      displayName: 'Test local S3 server'
-
-    - script: |
-        make tests
-      displayName: 'Test'
-
-    - task: PublishTestResults@2
-      condition: succeededOrFailed()
-      inputs:
-        testResultsFiles: 'python_junit.xml'
-        testRunTitle: 'Publish test results for Python $(python.version) $(manylinux_flag)'
-
-    - task: PublishCodeCoverageResults@1
-      inputs:
-        codeCoverageTool: Cobertura
-        summaryFileLocation: '$(System.DefaultWorkingDirectory)/*coverage.xml'
+    - ${{ parameters.testSteps }}
+    - ${{ parameters.publishSteps }}
 
 - job: 'Windows'
   pool:
@@ -114,38 +103,5 @@ jobs:
 
   steps:
     - ${{ parameters.initializationSteps }}
-
-    - script: |
-        which python > python.txt
-        set /p PYTHON=<python.txt
-        ln -s %PYTHON% %PYTHON%$(python.version)
-        python --version
-        which python$(python.version)
-      displayName: "Which python"
-
-    - script: |
-        python -m pip install --upgrade pip
-        pip install -e .[dev]
-      displayName: 'Install dependencies'
-
-    - script: |
-        make lint
-      displayName: 'Lint'
-
-    - script: curl http://127.0.0.1:9000/
-      displayName: 'Test local S3 server'
-
-    - script: |
-        make tests
-      displayName: 'Test'
-
-    - task: PublishTestResults@2
-      condition: succeededOrFailed()
-      inputs:
-        testResultsFiles: 'python_junit.xml'
-        testRunTitle: 'Publish test results for Python $(python.version) $(manylinux_flag)'
-
-    - task: PublishCodeCoverageResults@1
-      inputs:
-        codeCoverageTool: Cobertura
-        summaryFileLocation: '$(System.DefaultWorkingDirectory)/*coverage.xml'
+    - ${{ parameters.testSteps }}
+    - ${{ parameters.publishSteps }}
