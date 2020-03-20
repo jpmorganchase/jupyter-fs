@@ -28,9 +28,6 @@ jobs:
         dockerVersion: 17.09.0-ce
         releaseType: stable
 
-    - bash: docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy
-      displayName: "Start local S3 server in docker"
-
     - bash: npm install -g yarn
       displayName: "Install Yarn"
 
@@ -46,7 +43,9 @@ jobs:
         make lint
       displayName: 'Lint'
 
-    - script:
+    - script: |
+        dockerd
+        docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy
         make tests
       displayName: 'Test'
 
