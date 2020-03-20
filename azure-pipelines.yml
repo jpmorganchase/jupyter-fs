@@ -22,8 +22,14 @@ jobs:
       inputs:
         versionSpec: '12.x'
 
+    - task: DockerInstaller@0
+      displayName: Docker Installer
+      inputs:
+        dockerVersion: 17.09.0-ce
+        releaseType: stable
+
     - bash: docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy
-      displayName: "Start s3/minio in docker"
+      displayName: "Start local S3 server in docker"
 
     - bash: npm install -g yarn
       displayName: "Install Yarn"
@@ -74,8 +80,14 @@ jobs:
       inputs:
         versionSpec: '12.x'
 
+    - task: DockerInstaller@0
+      displayName: Docker Installer
+      inputs:
+        dockerVersion: 17.09.0-ce
+        releaseType: stable
+
     - bash: docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy
-      displayName: "Start s3/minio in docker"
+      displayName: "Start local S3 server in docker"
 
     - bash: npm install -g yarn
       displayName: "Install Yarn"
@@ -126,8 +138,14 @@ jobs:
       inputs:
         versionSpec: '12.x'
 
+    - task: DockerInstaller@0
+      displayName: Docker Installer
+      inputs:
+        dockerVersion: 17.09.0-ce
+        releaseType: stable
+
     - bash: docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy
-      displayName: "Start s3/minio in docker"
+      displayName: "Start local S3 server in docker"
 
     - bash: npm install -g yarn
       displayName: "Install Yarn"
