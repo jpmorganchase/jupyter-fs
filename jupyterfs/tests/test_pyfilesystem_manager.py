@@ -32,42 +32,37 @@ _test_file_model = {
 
 
 def _s3Resource():
-    return boto3.resource('s3', **_boto_kw)
+    s3Resource = boto3.resource('s3', **_boto_kw)
+    s3Resource.meta.client.meta.events.register('choose-signer.s3.*', botocore.handlers.disable_signing)
+    return s3Resource
+
+
+def _s3BucketExists(bucket_name):
+    s3Resource = _s3Resource()
+
+    # check if bucket already exists
+    bucket_exists = True
+    try:
+        s3Resource.meta.client.head_bucket(Bucket=bucket_name)
+    except botocore.exceptions.ClientError as e:
+        # If it was a 404 error, then the bucket does not exist.
+        error_code = e.response['Error']['Code']
+        if error_code == '404':
+            bucket_exists = False
+
+    return bucket_exists
 
 
 def _s3CreateBucket(bucket_name):
-    s3Resource = _s3Resource()
-
-    # check if bucket already exists
-    bucket_exists = True
-    try:
-        s3Resource.meta.client.head_bucket(Bucket=bucket_name)
-    except botocore.exceptions.ClientError as e:
-        # If it was a 404 error, then the bucket does not exist.
-        error_code = e.response['Error']['Code']
-        if error_code == '404':
-            bucket_exists = False
-
-    if not bucket_exists:
+    if not _s3BucketExists(bucket_name):
         # create the bucket
-        s3Resource.create_bucket(Bucket=bucket_name)
+        _s3Resource().create_bucket(Bucket=bucket_name)
 
 
 def _s3DeleteBucket(bucket_name):
-    s3Resource = _s3Resource()
+    if _s3BucketExists(bucket_name):
+        bucket = _s3Resource().Bucket(bucket_name)
 
-    # check if bucket already exists
-    bucket = s3Resource.Bucket(bucket_name)
-    bucket_exists = True
-    try:
-        s3Resource.meta.client.head_bucket(Bucket=bucket_name)
-    except botocore.exceptions.ClientError as e:
-        # If it was a 404 error, then the bucket does not exist.
-        error_code = e.response['Error']['Code']
-        if error_code == '404':
-            bucket_exists = False
-
-    if bucket_exists:
         # delete the bucket
         for key in bucket.objects.all():
             key.delete()
