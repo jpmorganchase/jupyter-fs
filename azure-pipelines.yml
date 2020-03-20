@@ -39,6 +39,9 @@ parameters:
         python --version
         which python$(python.version)
       displayName: "Which python"
+
+    - bash: env
+      displayName: "List all environment variables"
 - name: testSteps
   type: stepList
   default:

@@ -10,6 +10,8 @@ import boto3
 import botocore
 from jupyterfs.pyfilesystem_manager import PyFilesystemContentsManager
 
+test_aws_access_key_id = 's3_local'
+test_aws_secret_access_key = 's3_local'
 test_bucket = 'test'
 test_content = 'foo\nbar\nbaz'
 test_endpoint_url = 'http://127.0.0.1:9000'
@@ -32,9 +34,7 @@ _test_file_model = {
 
 
 def _s3Resource():
-    s3Resource = boto3.resource('s3', **_boto_kw)
-    s3Resource.meta.client.meta.events.register('choose-signer.s3.*', botocore.handlers.disable_signing)
-    return s3Resource
+    return boto3.resource('s3', **_boto_kw)
 
 
 def _s3BucketExists(bucket_name):
@@ -70,7 +70,13 @@ def _s3DeleteBucket(bucket_name):
 
 
 def _s3ContentsManager():
-    s3Uri = 's3://{bucket}?endpoint_url={endpoint_url}'.format(bucket=test_bucket, endpoint_url=test_endpoint_url)
+    s3Uri = 's3://{aws_access_key_id}:{aws_secret_access_key}@{bucket}?endpoint_url={endpoint_url}'.format(
+        aws_access_key_id=test_aws_access_key_id,
+        aws_secret_access_key=test_aws_secret_access_key,
+        bucket=test_bucket,
+        endpoint_url=test_endpoint_url
+    )
+
     return PyFilesystemContentsManager.open_fs(s3Uri)
 
 
