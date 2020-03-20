@@ -42,14 +42,26 @@ class TestPyFilesystemContentsManagerS3:
     def test_write_s3_read_s3(self):
         s3man = PyFilesystemContentsManager.open_fs('s3://{bucket}?endpoint_url={endpoint_url}'.format(bucket=test_bucket, endpoint_url=test_endpoint_url))
 
-        s3man.save(test_contents, test_fname)
+        fpaths = [
+            '' + test_fname,
+            'root0/' + test_fname,
+            'root1/leaf1/' + test_fname
+        ]
+
+        # set up dir structure
         s3man._save_directory('root0', None)
         s3man._save_directory('root1', None)
         s3man._save_directory('root1/leaf1', None)
-        s3man.save(test_contents, 'root0/{fname}'.format(fname=test_fname))
-        s3man.save(test_contents, 'root1/leaf1{fname}'.format(fname=test_fname))
 
+        # save to root and tips
+        s3man.save(test_contents, fpaths[0])
+        s3man.save(test_contents, fpaths[1])
+        s3man.save(test_contents, fpaths[2])
 
+        # read and check
+        assert test_contents == s3man.get(fpath[0])
+        assert test_contents == s3man.get(fpath[1])
+        assert test_contents == s3man.get(fpath[2])
 
     # @classmethod
     # def setup_class(cls):
