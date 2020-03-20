@@ -1,3 +1,7 @@
+# s3proxy artifacts
+/s3proxy*
+/s3_local/
+
 # Logs
 logs
 *.log

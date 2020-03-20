@@ -22,17 +22,14 @@ jobs:
       inputs:
         versionSpec: '12.x'
 
-    - task: DockerInstaller@0
-      displayName: Docker Installer
-      inputs:
-        dockerVersion: 17.09.0-ce
-        releaseType: stable
-
     - bash: npm install -g yarn
       displayName: "Install Yarn"
 
     - bash: yarn
       displayName: "Install Deps"
+
+    - bash: nohup ci/s3_local.sh
+      displayName: "Start up local S3 server"
 
     - script: |
         python -m pip install --upgrade pip
@@ -43,10 +40,10 @@ jobs:
         make lint
       displayName: 'Lint'
 
+    - script: curl http://127.0.0.1:9000/
+      displayName: 'Test local S3 server'
+
     - script: |
-        sudo dockerd
-        sudo docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy &
-        sleep 5
         make tests
       displayName: 'Test'
 
@@ -61,138 +58,129 @@ jobs:
         codeCoverageTool: Cobertura
         summaryFileLocation: '$(System.DefaultWorkingDirectory)/*coverage.xml'
 
-- job: 'Mac'
-  pool:
-    vmImage: 'macos-10.14'
+# - job: 'Mac'
+#   pool:
+#     vmImage: 'macos-10.14'
 
-  strategy:
-    matrix:
-      Python37:
-        python.version: '3.7'
+#   strategy:
+#     matrix:
+#       Python37:
+#         python.version: '3.7'
 
-  steps:
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '$(python.version)'
-      displayName: 'Use Python $(python.version)'
+#   steps:
+#     - task: UsePythonVersion@0
+#       inputs:
+#         versionSpec: '$(python.version)'
+#       displayName: 'Use Python $(python.version)'
 
-    - task: NodeTool@0
-      inputs:
-        versionSpec: '12.x'
+#     - task: NodeTool@0
+#       inputs:
+#         versionSpec: '12.x'
 
-    - task: DockerInstaller@0
-      displayName: Docker Installer
-      inputs:
-        dockerVersion: 17.09.0-ce
-        releaseType: stable
+#     - task: DockerInstaller@0
+#       displayName: Docker Installer
+#       inputs:
+#         dockerVersion: 17.09.0-ce
+#         releaseType: stable
 
-    - script: |
-        sudo dockerd
-        sudo docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy &
-        sleep 5
-      displayName: 'Test docker'
+#     - script: |
+#         sudo dockerd
+#         sudo docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy &
+#         sleep 5
+#       displayName: 'Test docker'
 
-    - bash: npm install -g yarn
-      displayName: "Install Yarn"
+#     - bash: npm install -g yarn
+#       displayName: "Install Yarn"
 
-    - bash: yarn
-      displayName: "Install Deps"
+#     - bash: yarn
+#       displayName: "Install Deps"
 
-    - script: |
-        python -m pip install --upgrade pip
-        pip install -e .[dev]
-      displayName: 'Install dependencies'
+#     - script: |
+#         python -m pip install --upgrade pip
+#         pip install -e .[dev]
+#       displayName: 'Install dependencies'
 
-    - script: |
-        make lint
-      displayName: 'Lint'
+#     - script: |
+#         make lint
+#       displayName: 'Lint'
 
-    - script: |
-        sudo dockerd
-        sudo docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy &
-        sleep 5
-        make tests
-      displayName: 'Test'
+#     - script: |
+#         make tests
+#       displayName: 'Test'
 
-    - task: PublishTestResults@2
-      condition: succeededOrFailed()
-      inputs:
-        testResultsFiles: 'python_junit.xml'
-        testRunTitle: 'Publish test results for Python $(python.version) $(manylinux_flag)'
+#     - task: PublishTestResults@2
+#       condition: succeededOrFailed()
+#       inputs:
+#         testResultsFiles: 'python_junit.xml'
+#         testRunTitle: 'Publish test results for Python $(python.version) $(manylinux_flag)'
 
-    - task: PublishCodeCoverageResults@1
-      inputs:
-        codeCoverageTool: Cobertura
-        summaryFileLocation: '$(System.DefaultWorkingDirectory)/*coverage.xml'
+#     - task: PublishCodeCoverageResults@1
+#       inputs:
+#         codeCoverageTool: Cobertura
+#         summaryFileLocation: '$(System.DefaultWorkingDirectory)/*coverage.xml'
 
-- job: 'Windows'
-  pool:
-    vmImage: 'vs2017-win2016'
+# - job: 'Windows'
+#   pool:
+#     vmImage: 'vs2017-win2016'
 
-  strategy:
-    matrix:
-      Python37:
-        python.version: '3.7'
+#   strategy:
+#     matrix:
+#       Python37:
+#         python.version: '3.7'
 
-  steps:
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '$(python.version)'
-      displayName: 'Use Python $(python.version)'
+#   steps:
+#     - task: UsePythonVersion@0
+#       inputs:
+#         versionSpec: '$(python.version)'
+#       displayName: 'Use Python $(python.version)'
 
-    - task: NodeTool@0
-      inputs:
-        versionSpec: '12.x'
+#     - task: NodeTool@0
+#       inputs:
+#         versionSpec: '12.x'
 
-    - task: DockerInstaller@0
-      displayName: Docker Installer
-      inputs:
-        dockerVersion: 17.09.0-ce
-        releaseType: stable
+#     - bash: |
+#         curl -L https://github.com/gaul/s3proxy/releases/download/s3proxy-1.7.0/s3proxy -o s3proxy
+#         java -jar s3proxy
+#         timeout 5
+#       displayName: 'Test docker'
 
-    - script: |
-        dockerd
-        start /B docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy
-        timeout 5
-      displayName: 'Test docker'
+#     - bash: npm install -g yarn
+#       displayName: "Install Yarn"
 
-    - bash: npm install -g yarn
-      displayName: "Install Yarn"
+#     - bash: yarn
+#       displayName: "Install Deps"
 
-    - bash: yarn
-      displayName: "Install Deps"
+#     - script: |
+#         which python > python.txt
+#         set /p PYTHON=<python.txt
+#         ln -s %PYTHON% %PYTHON%$(python.version)
+#         python --version
+#         which python$(python.version)
+#       displayName: "Which python"
 
-    - script: |
-        which python > python.txt
-        set /p PYTHON=<python.txt
-        ln -s %PYTHON% %PYTHON%$(python.version)
-        python --version
-        which python$(python.version)
-      displayName: "Which python"
+#     - script: |
+#         python -m pip install --upgrade pip
+#         pip install -e .[dev]
+#       displayName: 'Install dependencies'
 
-    - script: |
-        python -m pip install --upgrade pip
-        pip install -e .[dev]
-      displayName: 'Install dependencies'
+#     - script: |
+#         make lint
+#       displayName: 'Lint'
 
-    - script: |
-        make lint
-      displayName: 'Lint'
+#     - script: |
+#         dockerd
+#         start /B docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy
+#         timeout 5
+#         make tests
+#       displayName: 'Test'
 
-    - script: |
-        dockerd
-        start /B docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy
-        timeout 5
-        make tests
-      displayName: 'Test'
+#     - task: PublishTestResults@2
+#       condition: succeededOrFailed()
+#       inputs:
+#         testResultsFiles: 'python_junit.xml'
+#         testRunTitle: 'Publish test results for Python $(python.version) $(manylinux_flag)'
 
-    - task: PublishTestResults@2
-      condition: succeededOrFailed()
-      inputs:
-        testResultsFiles: 'python_junit.xml'
-        testRunTitle: 'Publish test results for Python $(python.version) $(manylinux_flag)'
-
-    - task: PublishCodeCoverageResults@1
-      inputs:
-        codeCoverageTool: Cobertura
-        summaryFileLocation: '$(System.DefaultWorkingDirectory)/*coverage.xml'
+#     - task: PublishCodeCoverageResults@1
+#       inputs:
+#         codeCoverageTool: Cobertura
+#         summaryFileLocation: '$(System.DefaultWorkingDirectory)/*coverage.xml'
