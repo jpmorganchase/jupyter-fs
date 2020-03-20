@@ -6,7 +6,7 @@
 # the Apache License 2.0.  The full license can be found in the LICENSE file.
 #
 
-import boto3
+import boto3, botocore
 from jupyterfs.pyfilesystem_manager import PyFilesystemContentsManager
 
 test_bucket = 'test'
@@ -14,15 +14,54 @@ test_contents = 'foo/nbar/nbaz'
 test_endpoint_url = 'http://127.0.0.1:9000'
 test_fname = 'foo.txt'
 
+_boto_kw = dict(
+    config=botocore.client.Config(signature_version=botocore.UNSIGNED),
+    endpoint_url=test_endpoint_url,
+)
 
-def _s3Client():
-    return boto3.client(
-        's3',
-        endpoint_url=test_endpoint_url,
-        # aws_access_key_id=test_cred,
-        # aws_secret_access_key=test_cred,
-        # region_name=self.region,
-    )
+
+def _s3Resource():
+    return boto3.resource('s3', **_boto_kw)
+
+
+def _s3CreateBucket(bucket_name):
+    s3Resource = _s3Resource()
+
+    # check if bucket already exists
+    bucket = s3Resource.Bucket(bucket_name)
+    bucket_exists = True
+    try:
+        s3Resource.meta.client.head_bucket(Bucket=bucket_name)
+    except botocore.exceptions.ClientError as e:
+        # If it was a 404 error, then the bucket does not exist.
+        error_code = e.response['Error']['Code']
+        if error_code == '404':
+            bucket_exists = False
+
+    if not bucket_exists:
+        # create the bucket
+        s3Resource.create_bucket(Bucket=bucket_name)
+
+
+def _s3DeleteBucket(bucket_name):
+    s3Resource = _s3Resource()
+
+    # check if bucket already exists
+    bucket = s3Resource.Bucket(bucket_name)
+    bucket_exists = True
+    try:
+        s3Resource.meta.client.head_bucket(Bucket=bucket_name)
+    except botocore.exceptions.ClientError as e:
+        # If it was a 404 error, then the bucket does not exist.
+        error_code = e.response['Error']['Code']
+        if error_code == '404':
+            bucket_exists = False
+
+    if bucket_exists:
+        # delete the bucket
+        for key in bucket.objects.all():
+            key.delete()
+        bucket.delete()
 
 
 def _s3ContentsManager():
@@ -31,20 +70,15 @@ def _s3ContentsManager():
 
 
 class TestPyFilesystemContentsManagerS3:
-    def setup_method(self, method):
-        s3client = _s3Client()
+    @classmethod
+    def setup_class(cls):
+        _s3DeleteBucket(test_bucket)
 
-        # create a test bucket
-        s3client.create_bucket(Bucket=test_bucket)
+    def setup_method(self, method):
+        _s3CreateBucket(test_bucket)
 
     def teardown_method(self, method):
-        s3client = _s3Client()
-
-        # delete all buckets
-        for bucket in s3client.list_buckets():
-            for key in bucket.objects.all():
-                key.delete()
-            bucket.delete()
+        _s3DeleteBucket(test_bucket)
 
     def test_write_s3_read_s3(self):
         s3CM = _s3ContentsManager()
@@ -69,10 +103,6 @@ class TestPyFilesystemContentsManagerS3:
         assert test_contents == s3CM.get(fpaths[0])
         assert test_contents == s3CM.get(fpaths[1])
         assert test_contents == s3CM.get(fpaths[2])
-
-    # @classmethod
-    # def setup_class(cls):
-    #     pass
 
     # @classmethod
     # def teardown_class(cls):
