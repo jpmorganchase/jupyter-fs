@@ -21,6 +21,9 @@ jobs:
       inputs:
         versionSpec: '12.x'
 
+    - bash: docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy
+      displayName: "Start s3/minio in docker"
+
     - bash: npm install -g yarn
       displayName: "Install Yarn"
 
@@ -47,7 +50,7 @@ jobs:
         testRunTitle: 'Publish test results for Python $(python.version) $(manylinux_flag)'
 
     - task: PublishCodeCoverageResults@1
-      inputs: 
+      inputs:
         codeCoverageTool: Cobertura
         summaryFileLocation: '$(System.DefaultWorkingDirectory)/*coverage.xml'
 
@@ -69,6 +72,9 @@ jobs:
     - task: NodeTool@0
       inputs:
         versionSpec: '12.x'
+
+    - bash: docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy
+      displayName: "Start s3/minio in docker"
 
     - bash: npm install -g yarn
       displayName: "Install Yarn"
@@ -96,7 +102,7 @@ jobs:
         testRunTitle: 'Publish test results for Python $(python.version) $(manylinux_flag)'
 
     - task: PublishCodeCoverageResults@1
-      inputs: 
+      inputs:
         codeCoverageTool: Cobertura
         summaryFileLocation: '$(System.DefaultWorkingDirectory)/*coverage.xml'
 
@@ -118,6 +124,9 @@ jobs:
     - task: NodeTool@0
       inputs:
         versionSpec: '12.x'
+
+    - bash: docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy
+      displayName: "Start s3/minio in docker"
 
     - bash: npm install -g yarn
       displayName: "Install Yarn"
@@ -153,6 +162,6 @@ jobs:
         testRunTitle: 'Publish test results for Python $(python.version) $(manylinux_flag)'
 
     - task: PublishCodeCoverageResults@1
-      inputs: 
+      inputs:
         codeCoverageTool: Cobertura
         summaryFileLocation: '$(System.DefaultWorkingDirectory)/*coverage.xml'
