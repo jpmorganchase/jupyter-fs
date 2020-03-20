@@ -19,9 +19,13 @@ curl -L https://github.com/gaul/s3proxy/releases/download/s3proxy-${S3PROXY_VERS
 # run s3proxy as a background job
 java -jar s3proxy --properties s3proxy.conf &
 
-# wait for s3proxy to start up
-sleep 3
+# no explicit wait needed, azure already stalls
+# for 10 seconds to wait for open process to stop
 
+# wait for s3proxy to start up
+# sleep 3
+
+# fancy wait-for-startup (from s3proxy repo), doesn't seem to work
 # for i in $(seq 30);
 # do
 #     if exec 3<>"/dev/tcp/localhost/${S3PROXY_PORT}";
