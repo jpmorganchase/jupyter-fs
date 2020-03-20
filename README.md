@@ -2,9 +2,9 @@
 A filesystem-like `ContentsManager` backend for Jupyter. This library allows you to hook up multiple file backends to Jupyter and interact with their contents using [JupyterLab Filetree](https://github.com/youngthejames/jupyterlab_filetree).
 
 
-[![Build Status](https://dev.azure.com/tpaine154/jupyter/_apis/build/status/timkpaine.jupyter-fs?branchName=master)](https://dev.azure.com/tpaine154/jupyter/_build/latest?definitionId=20&branchName=master)
+[![Build Status](https://dev.azure.com/tpaine154/jupyter/_apis/build/status/jpmorganchase.jupyter-fs?branchName=master)](https://dev.azure.com/tpaine154/jupyter/_build/latest?definitionId=23&branchName=master)
 [![GitHub issues](https://img.shields.io/github/issues/timkpaine/jupyter-fs.svg)]()
-[![Coverage](https://img.shields.io/azure-devops/coverage/tpaine154/jupyter/20)](https://dev.azure.com/tpaine154/jupyter/_build?definitionId=20&_a=summary)
+[![Coverage](https://img.shields.io/azure-devops/coverage/tpaine154/jupyter/23)](https://dev.azure.com/tpaine154/jupyter/_build?definitionId=23&_a=summary)
 [![PyPI](https://img.shields.io/pypi/l/jupyter-fs.svg)](https://pypi.python.org/pypi/jupyter-fs)
 [![PyPI](https://img.shields.io/pypi/v/jupyter-fs.svg)](https://pypi.python.org/pypi/jupyter-fs)
 [![npm](https://img.shields.io/npm/v/jupyter-fs.svg)](https://www.npmjs.com/package/jupyter-fs)
