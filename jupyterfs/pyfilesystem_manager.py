@@ -368,9 +368,9 @@ class PyFilesystemContentsManager(FileContentsManager):
             )
 
         if format == 'text':
-            self._pyfilesystem_instance.writetext(path, bcontent)
+            self._pyfilesystem_instance.writebytes(path, bcontent)
         else:
-            self._pyfilesystem_instance.writebytes(bcontent)
+            self._pyfilesystem_instance.writebytes(path, bcontent)
 
     def save(self, model, path=''):
         """Save the file model and return the model with no content."""

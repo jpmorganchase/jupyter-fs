@@ -10,7 +10,7 @@ import boto3, botocore
 from jupyterfs.pyfilesystem_manager import PyFilesystemContentsManager
 
 test_bucket = 'test'
-test_contents = 'foo/nbar/nbaz'
+test_content = 'foo\nbar\nbaz'
 test_endpoint_url = 'http://127.0.0.1:9000'
 test_fname = 'foo.txt'
 
@@ -18,6 +18,16 @@ _boto_kw = dict(
     config=botocore.client.Config(signature_version=botocore.UNSIGNED),
     endpoint_url=test_endpoint_url,
 )
+
+_test_file_model = {
+    'content': test_content,
+    'format': 'text',
+    'mimetype': 'text/plain',
+    'name': test_fname,
+    'path': test_fname,
+    'type': 'file',
+    'writable': True,
+}
 
 
 def _s3Resource():
@@ -95,14 +105,14 @@ class TestPyFilesystemContentsManagerS3:
         s3CM._save_directory('root1/leaf1', None)
 
         # save to root and tips
-        s3CM.save(test_contents, fpaths[0])
-        s3CM.save(test_contents, fpaths[1])
-        s3CM.save(test_contents, fpaths[2])
+        s3CM.save(_test_file_model, fpaths[0])
+        s3CM.save(_test_file_model, fpaths[1])
+        s3CM.save(_test_file_model, fpaths[2])
 
         # read and check
-        assert test_contents == s3CM.get(fpaths[0])
-        assert test_contents == s3CM.get(fpaths[1])
-        assert test_contents == s3CM.get(fpaths[2])
+        assert test_content == s3CM.get(fpaths[0])['content']
+        assert test_content == s3CM.get(fpaths[1])['content']
+        assert test_content == s3CM.get(fpaths[2])['content']
 
     # @classmethod
     # def teardown_class(cls):
