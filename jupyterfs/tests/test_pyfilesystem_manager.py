@@ -10,8 +10,10 @@ import boto3
 import botocore
 from jupyterfs.pyfilesystem_manager import PyFilesystemContentsManager
 
+# these can be anything, but they have to exist
 test_aws_access_key_id = 's3_local'
 test_aws_secret_access_key = 's3_local'
+
 test_bucket = 'test'
 test_content = 'foo\nbar\nbaz'
 test_endpoint_url = 'http://127.0.0.1:9000'
@@ -38,12 +40,10 @@ def _s3Resource():
 
 
 def _s3BucketExists(bucket_name):
-    s3Resource = _s3Resource()
-
     # check if bucket already exists
     bucket_exists = True
     try:
-        s3Resource.meta.client.head_bucket(Bucket=bucket_name)
+        _s3Resource().meta.client.head_bucket(Bucket=bucket_name)
     except botocore.exceptions.ClientError as e:
         # If it was a 404 error, then the bucket does not exist.
         error_code = e.response['Error']['Code']

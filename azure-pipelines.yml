@@ -15,9 +15,6 @@ parameters:
       inputs:
         versionSpec: '12.x'
 
-    - bash: nohup ci/s3_local.sh
-      displayName: "Start up local S3 server"
-
     - bash: npm install -g yarn
       displayName: "Install Yarn"
 
@@ -29,9 +26,6 @@ parameters:
         pip install -e .[dev]
       displayName: 'Install Python dependencies'
 
-    - script: curl http://127.0.0.1:9000/
-      displayName: 'Test local S3 server'
-
     - script: |
         which python > python.txt
         set /p PYTHON=<python.txt
@@ -42,6 +36,29 @@ parameters:
 
     - bash: env
       displayName: "List all environment variables"
+- name: s3proxySteps
+  type: stepList
+  default:
+    - bash: nohup ci/s3_local.sh
+      displayName: "Start up local S3 server"
+
+    - script: curl http://127.0.0.1:9000/
+      displayName: 'Test local S3 server'
+- name: s3proxyDockerSteps
+  type: stepList
+  default:
+    - task: DockerInstaller@0
+      displayName: Docker Installer
+      inputs:
+        dockerVersion: 17.09.0-ce
+        releaseType: stable
+
+    - script: |
+        ci/start_docker.sh
+        nohup sudo docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy &
+      displayName: 'Start s3proxy in a docker'
+    - script: curl http://127.0.0.1:9000/
+      displayName: 'Test local S3 server'
 - name: testSteps
   type: stepList
   default:
@@ -82,6 +99,7 @@ jobs:
 
   steps:
     - ${{ parameters.initializationSteps }}
+    - ${{ parameters.s3proxySteps }}
     - ${{ parameters.testSteps }}
     - ${{ parameters.publishSteps }}
 
@@ -95,6 +113,7 @@ jobs:
         python.version: '3.7'
 
   steps:
+    - ${{ parameters.s3proxyDockerSteps }}
     - ${{ parameters.initializationSteps }}
     - ${{ parameters.testSteps }}
     - ${{ parameters.publishSteps }}
@@ -110,5 +129,6 @@ jobs:
 
   steps:
     - ${{ parameters.initializationSteps }}
+    - ${{ parameters.s3proxySteps }}
     - ${{ parameters.testSteps }}
     - ${{ parameters.publishSteps }}

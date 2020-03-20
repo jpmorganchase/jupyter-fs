@@ -13,6 +13,11 @@ jclouds.provider=filesystem
 jclouds.filesystem.basedir=s3_local
 EOT
 
+# other config we may potentially need
+# s3proxy.authorization=aws-v2-or-v4
+# s3proxy.identity=s3_local
+# s3proxy.credential=s3_local
+
 # get built s3proxy jar
 curl -L https://github.com/gaul/s3proxy/releases/download/s3proxy-${S3PROXY_VERSION}/s3proxy -o s3proxy
 
