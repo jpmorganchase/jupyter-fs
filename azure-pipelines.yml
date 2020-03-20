@@ -2,17 +2,10 @@ trigger:
 - master
 - pyfilesystem-s3fs-support
 
-jobs:
-- job: 'Linux'
-  pool:
-    vmImage: 'ubuntu-latest'
-
-  strategy:
-    matrix:
-      Python37:
-        python.version: '3.7'
-
-  steps:
+parameters:
+- name: initializationSteps
+  type: stepList
+  default:
     - task: UsePythonVersion@0
       inputs:
         versionSpec: '$(python.version)'
@@ -30,6 +23,19 @@ jobs:
 
     - bash: nohup ci/s3_local.sh
       displayName: "Start up local S3 server"
+
+jobs:
+- job: 'Linux'
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  strategy:
+    matrix:
+      Python37:
+        python.version: '3.7'
+
+  steps:
+    - ${{ parameters.initializationSteps }}
 
     - script: |
         python -m pip install --upgrade pip
@@ -68,23 +74,7 @@ jobs:
         python.version: '3.7'
 
   steps:
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '$(python.version)'
-      displayName: 'Use Python $(python.version)'
-
-    - task: NodeTool@0
-      inputs:
-        versionSpec: '12.x'
-
-    - bash: npm install -g yarn
-      displayName: "Install Yarn"
-
-    - bash: yarn
-      displayName: "Install Deps"
-
-    - bash: nohup ci/s3_local.sh
-      displayName: "Start up local S3 server"
+    - ${{ parameters.initializationSteps }}
 
     - script: |
         python -m pip install --upgrade pip
@@ -123,23 +113,7 @@ jobs:
         python.version: '3.7'
 
   steps:
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '$(python.version)'
-      displayName: 'Use Python $(python.version)'
-
-    - task: NodeTool@0
-      inputs:
-        versionSpec: '12.x'
-
-    - bash: npm install -g yarn
-      displayName: "Install Yarn"
-
-    - bash: yarn
-      displayName: "Install Deps"
-
-    - bash: nohup ci/s3_local.sh
-      displayName: "Start up local S3 server"
+    - ${{ parameters.initializationSteps }}
 
     - script: |
         which python > python.txt
