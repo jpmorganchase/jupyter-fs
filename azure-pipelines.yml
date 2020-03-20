@@ -44,8 +44,9 @@ jobs:
       displayName: 'Lint'
 
     - script: |
-        dockerd
-        docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy &
+        sudo dockerd
+        sudo docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy &
+        sleep 5
         make tests
       displayName: 'Test'
 
@@ -85,8 +86,11 @@ jobs:
         dockerVersion: 17.09.0-ce
         releaseType: stable
 
-    - bash: docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy
-      displayName: "Start local S3 server in docker"
+    - script: |
+        sudo dockerd
+        sudo docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy &
+        sleep 5
+      displayName: 'Test docker'
 
     - bash: npm install -g yarn
       displayName: "Install Yarn"
@@ -104,6 +108,9 @@ jobs:
       displayName: 'Lint'
 
     - script: |
+        sudo dockerd
+        sudo docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy &
+        sleep 5
         make tests
       displayName: 'Test'
 
@@ -143,8 +150,11 @@ jobs:
         dockerVersion: 17.09.0-ce
         releaseType: stable
 
-    - bash: docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy
-      displayName: "Start local S3 server in docker"
+    - script: |
+        dockerd
+        start /B docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy
+        timeout 5
+      displayName: 'Test docker'
 
     - bash: npm install -g yarn
       displayName: "Install Yarn"
@@ -170,6 +180,9 @@ jobs:
       displayName: 'Lint'
 
     - script: |
+        dockerd
+        start /B docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy
+        timeout 5
         make tests
       displayName: 'Test'
 
