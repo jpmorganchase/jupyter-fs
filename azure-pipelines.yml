@@ -15,19 +15,22 @@ parameters:
       inputs:
         versionSpec: '12.x'
 
+    - bash: nohup ci/s3_local.sh
+      displayName: "Start up local S3 server"
+
     - bash: npm install -g yarn
       displayName: "Install Yarn"
 
     - bash: yarn
       displayName: "Install npm dependencies"
 
-    - bash: nohup ci/s3_local.sh
-      displayName: "Start up local S3 server"
-
     - script: |
         python -m pip install --upgrade pip
         pip install -e .[dev]
       displayName: 'Install Python dependencies'
+
+    - script: curl http://127.0.0.1:9000/
+      displayName: 'Test local S3 server'
 
     - script: |
         which python > python.txt
@@ -36,19 +39,20 @@ parameters:
         python --version
         which python$(python.version)
       displayName: "Which python"
-
-    - script: curl http://127.0.0.1:9000/
-      displayName: 'Test local S3 server'
 - name: testSteps
   type: stepList
   default:
-    - script: |
-        make lint
-      displayName: 'Lint'
+    - script: make lintpy
+      displayName: 'Lint Python'
 
-    - script:
-        make tests
-      displayName: 'Test'
+    - script: make lintjs
+      displayName: 'Lint JS'
+
+    - script: make testpy
+      displayName: 'Test Python'
+
+    - script: make testjs
+      displayName: 'Test JS'
 - name: publishSteps
   type: stepList
   default:
