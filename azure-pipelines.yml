@@ -52,6 +52,7 @@ parameters:
         ci/start_docker_desktop_mac.sh
         docker pull andrewgaul/s3proxy
         nohup sudo docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy &
+        sleep 5
       displayName: 'Start s3proxy in a docker'
 
     - script: curl http://127.0.0.1:9000/
