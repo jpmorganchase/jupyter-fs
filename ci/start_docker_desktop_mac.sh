@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-# from https://stackoverflow.com/a/35979292/425458
+# refs:
+# https://stackoverflow.com/a/35979292/425458
+
 case $1 in
   -h|--help)
     echo $'usage: docker-start\n\nStarts Docker (Docker.app) on macOS and waits until the Docker environment is initialized.'

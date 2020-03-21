@@ -5,6 +5,13 @@ S3PROXY_PORT=9000
 # make dir for storing s3 files locally
 mkdir -p s3_local
 
+# create and mount hfs+ disk to use as s3 file store
+# S3_LOCAL_DIR=s3_local
+# S3_LOCAL_DISK=${S3_LOCAL_DIR}.dmg
+# hdiutil create -size 100mb -fs HFS+ -volname $S3_LOCAL_DIR $S3_LOCAL_DISK
+# hdiutil attach -noverify -nobrowse -mountpoint $S3_LOCAL_DIR $S3_LOCAL_DISK > /dev/null 2>&1
+#hdiutil detach $S3_LOCAL_DIR > /dev/null 2>&1
+
 # make config file for s3proxy
 cat <<EOT > s3proxy.conf
 s3proxy.authorization=none
