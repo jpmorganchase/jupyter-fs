@@ -47,14 +47,9 @@ parameters:
 - name: s3proxyMacSteps
   type: stepList
   default:
-    - task: DockerInstaller@0
-      displayName: Docker Installer
-      inputs:
-        dockerVersion: 17.09.0-ce
-        releaseType: stable
-
     - script: |
         ci/install_docker_desktop_mac.sh
+        ci/start_docker_desktop_mac.sh
         nohup sudo docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy &
       displayName: 'Start s3proxy in a docker'
 
