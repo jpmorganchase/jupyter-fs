@@ -38,7 +38,6 @@ _test_file_model = {
 def _s3Resource():
     return boto3.resource('s3', **_boto_kw)
 
-
 def _s3BucketExists(bucket_name):
     # check if bucket already exists
     bucket_exists = True
@@ -52,12 +51,10 @@ def _s3BucketExists(bucket_name):
 
     return bucket_exists
 
-
 def _s3CreateBucket(bucket_name):
     if not _s3BucketExists(bucket_name):
         # create the bucket
         _s3Resource().create_bucket(Bucket=bucket_name)
-
 
 def _s3DeleteBucket(bucket_name):
     if _s3BucketExists(bucket_name):
@@ -67,7 +64,6 @@ def _s3DeleteBucket(bucket_name):
         for key in bucket.objects.all():
             key.delete()
         bucket.delete()
-
 
 def _s3ContentsManager():
     s3Uri = 's3://{aws_access_key_id}:{aws_secret_access_key}@{bucket}?endpoint_url={endpoint_url}'.format(

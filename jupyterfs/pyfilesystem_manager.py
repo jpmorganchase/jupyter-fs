@@ -213,9 +213,9 @@ class PyFilesystemContentsManager(FileContentsManager):
             for name in self._pyfilesystem_instance.listdir(path):
                 os_path = os.path.join(path, name)
                 if (
-                    not self._pyfilesystem_instance.islink(os_path)
-                    and not self._pyfilesystem_instance.isfile(os_path)
-                    and not self._pyfilesystem_instance.isdir(os_path)
+                    not self._pyfilesystem_instance.islink(os_path) and
+                    not self._pyfilesystem_instance.isfile(os_path) and
+                    not self._pyfilesystem_instance.isdir(os_path)
                 ):
                     self.log.debug("%s not a regular file", os_path)
                     continue

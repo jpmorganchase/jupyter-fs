@@ -9,7 +9,6 @@ from codecs import open
 from os import path
 from pathlib import Path
 from setuptools import setup, find_packages
-from setuptools.command.develop import develop
 from subprocess import CalledProcessError
 
 from jupyter_packaging import (
