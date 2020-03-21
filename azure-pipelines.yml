@@ -44,7 +44,7 @@ parameters:
 
     - script: curl http://127.0.0.1:9000/
       displayName: 'Test local S3 server'
-- name: s3proxyDockerSteps
+- name: s3proxyMacSteps
   type: stepList
   default:
     - task: DockerInstaller@0
@@ -54,9 +54,10 @@ parameters:
         releaseType: stable
 
     - script: |
-        ci/start_docker.sh
+        ci/install_docker_desktop_mac.sh
         nohup sudo docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy &
       displayName: 'Start s3proxy in a docker'
+
     - script: curl http://127.0.0.1:9000/
       displayName: 'Test local S3 server'
 - name: testSteps
@@ -113,7 +114,7 @@ jobs:
         python.version: '3.7'
 
   steps:
-    - ${{ parameters.s3proxyDockerSteps }}
+    - ${{ parameters.s3proxyMacSteps }}
     - ${{ parameters.initializationSteps }}
     - ${{ parameters.testSteps }}
     - ${{ parameters.publishSteps }}
