@@ -19,11 +19,6 @@ test_content = 'foo\nbar\nbaz'
 test_endpoint_url = 'http://127.0.0.1:9000'
 test_fname = 'foo.txt'
 
-_boto_kw = dict(
-    config=botocore.client.Config(signature_version=botocore.UNSIGNED),
-    endpoint_url=test_endpoint_url,
-)
-
 _test_file_model = {
     'content': test_content,
     'format': 'text',
@@ -34,9 +29,11 @@ _test_file_model = {
     'writable': True,
 }
 
+_boto_kw = dict(
+    config=botocore.client.Config(signature_version=botocore.UNSIGNED),
+    endpoint_url=test_endpoint_url,
+)
 
-def _s3Resource():
-    return boto3.resource('s3', **_boto_kw)
 
 def _s3BucketExists(bucket_name):
     # check if bucket already exists
@@ -50,6 +47,16 @@ def _s3BucketExists(bucket_name):
             bucket_exists = False
 
     return bucket_exists
+
+def _s3ContentsManager():
+    s3Uri = 's3://{aws_access_key_id}:{aws_secret_access_key}@{bucket}?endpoint_url={endpoint_url}'.format(
+        aws_access_key_id=test_aws_access_key_id,
+        aws_secret_access_key=test_aws_secret_access_key,
+        bucket=test_bucket,
+        endpoint_url=test_endpoint_url
+    )
+
+    return PyFilesystemContentsManager.open_fs(s3Uri)
 
 def _s3CreateBucket(bucket_name):
     if not _s3BucketExists(bucket_name):
@@ -65,15 +72,8 @@ def _s3DeleteBucket(bucket_name):
             key.delete()
         bucket.delete()
 
-def _s3ContentsManager():
-    s3Uri = 's3://{aws_access_key_id}:{aws_secret_access_key}@{bucket}?endpoint_url={endpoint_url}'.format(
-        aws_access_key_id=test_aws_access_key_id,
-        aws_secret_access_key=test_aws_secret_access_key,
-        bucket=test_bucket,
-        endpoint_url=test_endpoint_url
-    )
-
-    return PyFilesystemContentsManager.open_fs(s3Uri)
+def _s3Resource():
+    return boto3.resource('s3', **_boto_kw)
 
 
 class TestPyFilesystemContentsManagerS3:

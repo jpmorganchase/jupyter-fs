@@ -1,4 +1,0 @@
-boto3
-fs
-fs-s3fs
-fs-miniofs

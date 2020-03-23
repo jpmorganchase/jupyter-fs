@@ -1,6 +1,7 @@
 trigger:
-- master
-- pyfilesystem-s3fs-support
+  branches:
+    include:
+    - '*'  # must quote since "*" is a YAML reserved character; we want a string
 
 parameters:
 - name: initializationSteps

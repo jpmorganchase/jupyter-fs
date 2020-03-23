@@ -38,6 +38,7 @@ dev_requires = requires + [
     'bump2version',
     'codecov',
     'flake8',
+    'fs-miniofs',
     'mock',
     'pylint',
     'pytest',
@@ -80,7 +81,7 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/jpmorganchase/jupyter-fs',
-    author='Tim Paine<t.paine154@gmail.com>, Max Klein <telamonian@hotmail.com>',
+    author='jupyter-fs authors',
     license='Apache 2.0',
     classifiers=[
         'Development Status :: 3 - Alpha',
