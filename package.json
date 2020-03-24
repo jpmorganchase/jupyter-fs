@@ -11,12 +11,13 @@
   ],
   "scripts": {
     "build": "tsc",
+    "build:integrity": "jlpm install && jlpm build",
     "build:lab": "rimraf lab-dist && mkdirp lab-dist && cd lab-dist && npm pack ..",
-    "build:all": "npm run build && npm run build:lab",
+    "build:all": "jlpm run build:integrity && jlpm run build:lab",
     "clean": "rimraf lib",
     "fix": "./node_modules/.bin/tslint --fix src/* src/*/*",
     "lint": "./node_modules/.bin/tslint './src/*.ts'",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "jlpm run build",
     "test": "jest --coverage --collectCoverageFrom=src/*.{ts}"
   },
   "files": [
@@ -49,15 +50,15 @@
   },
   "devDependencies": {
     "@babel/preset-env": "^7.5.5",
-    "@types/jest": "^24.0.4",
+    "@types/jest": "^24",
     "babel-jest": "^24.8.0",
     "isomorphic-fetch": "^2.2.1",
-    "jest": "^24.1.0",
+    "jest": "^24",
     "jest-transform-css": "^2.0.0",
     "mkdirp": "^0.5.1",
     "rimraf": "^2.6.3",
-    "ts-jest": "^23.10.4",
+    "ts-jest": "^24",
     "tslint": "^5.20.0",
-    "typescript": "^3.5.3"
+    "typescript": "^3.7.0"
   }
 }

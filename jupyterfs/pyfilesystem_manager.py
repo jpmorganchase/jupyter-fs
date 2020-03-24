@@ -10,7 +10,7 @@ import mimetypes
 import nbformat
 from base64 import encodebytes, decodebytes
 from datetime import datetime
-from fs import errors
+from fs import errors, open_fs
 from notebook import _tz as tz
 from notebook.services.contents.filemanager import FileContentsManager
 from notebook.services.contents.filecheckpoints import GenericFileCheckpoints
@@ -18,7 +18,7 @@ from tornado import web
 
 
 class PyFilesystemContentsManager(FileContentsManager):
-    '''This class bridges the gap between Pyfilesystem's filesystem class,
+    """This class bridges the gap between Pyfilesystem's filesystem class,
     and Jupyter Notebook's ContentsManager class. This allows Jupyter to
     leverage all the backends available in Pyfilesystem.
 
@@ -95,11 +95,17 @@ class PyFilesystemContentsManager(FileContentsManager):
         GenericCheckpointsMixin.create_notebook_checkpoint(nb, …):  Create a checkpoint of the current state of a file
         GenericCheckpointsMixin.get_file_checkpoint(…):             Get the content of a checkpoint for a non-notebook file.
         GenericCheckpointsMixin.get_notebook_checkpoint(…):         Get the content of a checkpoint for a notebook.
+    """
+    @classmethod
+    def open_fs(cls, *args, **kwargs):
+        return cls(open_fs(*args, **kwargs))
 
-    '''
+    @classmethod
+    def init_fs(cls, pyfilesystem_class, *args, **kwargs):
+        return cls(pyfilesystem_class(*args, **kwargs))
 
-    def __init__(self, pyfilesystem_class, **kwargs):
-        self._pyfilesystem_instance = pyfilesystem_class(**kwargs)
+    def __init__(self, pyfilesystem_instance):
+        self._pyfilesystem_instance = pyfilesystem_instance
 
     def is_hidden(self, path):
         """Does the API style path correspond to a hidden directory or file?
@@ -175,6 +181,10 @@ class PyFilesystemContentsManager(FileContentsManager):
 
         try:
             model['writable'] = info.permissions.check('u_w')  # TODO check
+        except (errors.MissingInfoNamespace,):
+            # if relevant namespace is missing, assume writable
+            # TODO: decide if this is wise
+            model['writable'] = True
         except OSError:
             self.log.error("Failed to check write permissions on %s", path)
             model['writable'] = False
@@ -202,9 +212,11 @@ class PyFilesystemContentsManager(FileContentsManager):
             model['content'] = contents = []
             for name in self._pyfilesystem_instance.listdir(path):
                 os_path = os.path.join(path, name)
-                if (not self._pyfilesystem_instance.islink(os_path)
-                    and not self._pyfilesystem_instance.isfile(os_path)
-                        and not self._pyfilesystem_instance.isdir(os_path)):
+                if (
+                    not self._pyfilesystem_instance.islink(os_path) and
+                    not self._pyfilesystem_instance.isfile(os_path) and
+                    not self._pyfilesystem_instance.isdir(os_path)
+                ):
                     self.log.debug("%s not a regular file", os_path)
                     continue
 
@@ -245,7 +257,7 @@ class PyFilesystemContentsManager(FileContentsManager):
 
     def _read_notebook(self, path, as_version=4):
         """Read a notebook from a path."""
-        nb = self._read_file(path, 'text')
+        nb, format = self._read_file(path, 'text')
         return nbformat.reads(nb, as_version=as_version)
 
     def _file_model(self, path, content=True, format=None):
@@ -326,7 +338,7 @@ class PyFilesystemContentsManager(FileContentsManager):
         # if is_hidden(path, self.root_dir) and not self.allow_hidden:
         #     raise web.HTTPError(400, u'Cannot create hidden directory %r' % path)
         if not self._pyfilesystem_instance.exists(path):
-            self._pyfilesystem_instance.mkdir(path)
+            self._pyfilesystem_instance.makedir(path)
         elif not self._pyfilesystem_instance.isdir(path):
             raise web.HTTPError(400, u'Not a directory: %s' % (path))
         else:
@@ -356,9 +368,9 @@ class PyFilesystemContentsManager(FileContentsManager):
             )
 
         if format == 'text':
-            self._pyfilesystem_instance.writetext(path, bcontent)
+            self._pyfilesystem_instance.writebytes(path, bcontent)
         else:
-            self._pyfilesystem_instance.writebytes(bcontent)
+            self._pyfilesystem_instance.writebytes(path, bcontent)
 
     def save(self, model, path=''):
         """Save the file model and return the model with no content."""
@@ -377,9 +389,11 @@ class PyFilesystemContentsManager(FileContentsManager):
                 nb = nbformat.from_dict(model['content'])
                 self.check_and_sign(nb, path)
                 self._save_notebook(path, nb)
+                # TODO: decide how to handle checkpoints for non-local fs.
+                # For now, checkpoint pathing seems to be borked.
                 # One checkpoint should always exist for notebooks.
-                if not self.checkpoints.list_checkpoints(path):
-                    self.create_checkpoint(path)
+                # if not self.checkpoints.list_checkpoints(path):
+                #     self.create_checkpoint(path)
             elif model['type'] == 'file':
                 # Missing format will be handled internally by _save_file.
                 self._save_file(path, model['content'], model.get('format'))

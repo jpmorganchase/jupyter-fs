@@ -2,9 +2,43 @@
 
 Thank you for your interest in contributing to jupyter-fs!
 
-We invite you to contribute enhancements. Upon review you will be required to complete the [Contributor License Agreement (CLA)](https://github.com/jpmorganchase/cla) before we are able to merge. 
+We invite you to contribute enhancements. Upon review you will be required to complete the [Contributor License Agreement (CLA)](https://github.com/jpmorganchase/cla) before we are able to merge.
 
 If you have any questions about the contribution process, please feel free to send an email to [open_source@jpmorgan.com](mailto:open_source@jpmorgan.com).
+
+## Install for Development
+
+- To get everything set up initially, you `cd` to your jupyter-fs repo and then just do:
+
+    ```bash
+    make dev_install
+    ```
+
+- If, for whatever reason, you need to reinstall the Python package, do:
+
+    ```bash
+    pip install -e .
+    ```
+
+- When you're actively developing the Typescript sources, you can do a rebuild with:
+
+    ```bash
+    jlpm build
+    ```
+
+    Alternatively, you can do a watch build, which automatically rebuilds your code when you make changes to jupyter-fs:
+
+    ```bash
+    jlpm build:watch
+    ```
+
+    If you then also run JupyterLab in watch mode:
+
+    ```bash
+    jupyter lab --watch
+    ```
+
+    you can make edits to the typescript sources and then see the effect of your changes by refreshing JupyterLab's browser window.
 
 ## Guidelines
 
