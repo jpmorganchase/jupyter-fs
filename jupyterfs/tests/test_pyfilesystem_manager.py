@@ -6,18 +6,15 @@
 # the Apache License 2.0.  The full license can be found in the LICENSE file.
 #
 
-import boto3
-import botocore
 from jupyterfs.pyfilesystem_manager import PyFilesystemContentsManager
 
-# these can be anything, but they have to exist
-test_aws_access_key_id = 's3_local'
-test_aws_secret_access_key = 's3_local'
+from .utils.s3 import aws_access_key_id, aws_secret_access_key, BucketUtil
 
-test_bucket = 'test'
+test_bucket_name = 'test'
 test_content = 'foo\nbar\nbaz'
-test_endpoint_url = 'http://127.0.0.1:9000'
 test_fname = 'foo.txt'
+
+test_endpoint_url_s3 = 'http://127.0.0.1:9000'
 
 _test_file_model = {
     'content': test_content,
@@ -29,66 +26,39 @@ _test_file_model = {
     'writable': True,
 }
 
-_boto_kw = dict(
-    config=botocore.client.Config(signature_version=botocore.UNSIGNED),
-    endpoint_url=test_endpoint_url,
-)
 
+class TestPyFilesystemContentsManager_s3:
+    """Before running this test, first run:
 
-def _s3BucketExists(bucket_name):
-    # check if bucket already exists
-    bucket_exists = True
-    try:
-        _s3Resource().meta.client.head_bucket(Bucket=bucket_name)
-    except botocore.exceptions.ClientError as e:
-        # If it was a 404 error, then the bucket does not exist.
-        error_code = e.response['Error']['Code']
-        if error_code == '404':
-            bucket_exists = False
+        docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy
 
-    return bucket_exists
+    in order to set up the test S3 server
+    """
+    _bucketUtil = BucketUtil(bucket_name=test_bucket_name, endpoint_url=test_endpoint_url_s3)
 
-def _s3ContentsManager():
-    s3Uri = 's3://{aws_access_key_id}:{aws_secret_access_key}@{bucket}?endpoint_url={endpoint_url}'.format(
-        aws_access_key_id=test_aws_access_key_id,
-        aws_secret_access_key=test_aws_secret_access_key,
-        bucket=test_bucket,
-        endpoint_url=test_endpoint_url
-    )
+    @staticmethod
+    def _s3ContentsManager():
+        s3Uri = 's3://{id}:{key}@{bucket}?endpoint_url={endpoint_url}'.format(
+            id=aws_access_key_id,
+            key=aws_secret_access_key,
+            bucket=test_bucket_name,
+            endpoint_url=test_endpoint_url_s3
+        )
 
-    return PyFilesystemContentsManager.open_fs(s3Uri)
+        return PyFilesystemContentsManager.open_fs(s3Uri)
 
-def _s3CreateBucket(bucket_name):
-    if not _s3BucketExists(bucket_name):
-        # create the bucket
-        _s3Resource().create_bucket(Bucket=bucket_name)
-
-def _s3DeleteBucket(bucket_name):
-    if _s3BucketExists(bucket_name):
-        bucket = _s3Resource().Bucket(bucket_name)
-
-        # delete the bucket
-        for key in bucket.objects.all():
-            key.delete()
-        bucket.delete()
-
-def _s3Resource():
-    return boto3.resource('s3', **_boto_kw)
-
-
-class TestPyFilesystemContentsManagerS3:
     @classmethod
     def setup_class(cls):
-        _s3DeleteBucket(test_bucket)
+        cls._bucketUtil.delete()
 
     def setup_method(self, method):
-        _s3CreateBucket(test_bucket)
+        self._bucketUtil.create()
 
     def teardown_method(self, method):
-        _s3DeleteBucket(test_bucket)
+        self._bucketUtil.delete()
 
-    def test_write_s3_read_s3(self):
-        s3CM = _s3ContentsManager()
+    def test_write_read(self):
+        s3CM = self._s3ContentsManager()
 
         fpaths = [
             '' + test_fname,
@@ -110,7 +80,3 @@ class TestPyFilesystemContentsManagerS3:
         assert test_content == s3CM.get(fpaths[0])['content']
         assert test_content == s3CM.get(fpaths[1])['content']
         assert test_content == s3CM.get(fpaths[2])['content']
-
-    # @classmethod
-    # def teardown_class(cls):
-    #     pass
