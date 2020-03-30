@@ -46,10 +46,12 @@ class RootDirUtil:
         if self.exists():
             bucket = self.resource().Bucket(self.dir_name)
 
+            # walk the bucket from leaves to roots and delete as you go.
+            # This avoids deleting non-empty s3 folders (extremely slow)
+            for key in reversed(list(bucket.objects.all())):
+                key.delete()
+
             # delete the bucket
-            # for key in bucket.objects.all():
-            #     key.delete()
-            bucket.objects.all().delete()
             bucket.delete()
 
     def resource(self):
