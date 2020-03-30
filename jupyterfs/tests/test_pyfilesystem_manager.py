@@ -11,13 +11,14 @@ import shutil
 
 from jupyterfs.pyfilesystem_manager import PyFilesystemContentsManager
 
-from .utils import s3
+from .utils import s3, smb
 
 test_dir = 'test'
 test_content = 'foo\nbar\nbaz'
 test_fname = 'foo.txt'
 
 test_endpoint_url_s3 = 'http://127.0.0.1:9000'
+test_endpoint_url_smb = '127.0.0.1'
 test_root_osfs = 'osfs_local'
 
 _test_file_model = {
@@ -91,17 +92,17 @@ class TestPyFilesystemContentsManager_s3(_TestBase):
 
     in order to set up the test S3 server
     """
-    _bucketUtil = s3.BucketUtil(bucket_name=test_dir, endpoint_url=test_endpoint_url_s3)
+    _rootDirUtil = s3.RootDirUtil(dir_name=test_dir, endpoint_url=test_endpoint_url_s3)
 
     @classmethod
     def setup_class(cls):
-        cls._bucketUtil.delete()
+        cls._rootDirUtil.delete()
 
     def setup_method(self, method):
-        self._bucketUtil.create()
+        self._rootDirUtil.create()
 
     def teardown_method(self, method):
-        self._bucketUtil.delete()
+        self._rootDirUtil.delete()
 
     def _createContentsManager(self):
         uri = 's3://{id}:{key}@{bucket}?endpoint_url={endpoint_url}'.format(
@@ -112,3 +113,28 @@ class TestPyFilesystemContentsManager_s3(_TestBase):
         )
 
         return PyFilesystemContentsManager.open_fs(uri)
+
+
+# class TestPyFilesystemContentsManager_smb(_TestBase):
+#     """
+#     """
+#     _rootDirUtil = smb.RootDirUtil(dir_name=test_dir, endpoint_url=test_endpoint_url_smb)
+
+#     @classmethod
+#     def setup_class(cls):
+#         cls._rootDirUtil.delete()
+
+#     def setup_method(self, method):
+#         self._rootDirUtil.create()
+
+#     def teardown_method(self, method):
+#         self._rootDirUtil.delete()
+
+#     def _createContentsManager(self):
+#         uri = 'smb://{id}:{key}@{endpoint_url}'.format(
+#             id=smb.smb_user,
+#             key=smb.smb_pswd,
+#             endpoint_url=test_endpoint_url_smb
+#         )
+
+#         return PyFilesystemContentsManager.open_fs(uri)

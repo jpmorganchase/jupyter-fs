@@ -4,28 +4,29 @@
 #
 # This file is part of the jupyter-fs library, distributed under the terms of
 # the Apache License 2.0.  The full license can be found in the LICENSE file.
-#
 
 import boto3
 import botocore
 
+__all__ = ['aws_access_key_id', 'aws_secret_access_key', 'RootDirUtil']
+
 aws_access_key_id = 's3_local'
 aws_secret_access_key = 's3_local'
 
-class BucketUtil:
+class RootDirUtil:
     def __init__(
         self,
-        bucket_name,
+        dir_name,
         endpoint_url,
     ):
-        self.bucket_name = bucket_name
+        self.dir_name = dir_name
         self.endpoint_url = endpoint_url
 
     def exists(self):
         # check if bucket already exists
         bucket_exists = True
         try:
-            self.resource().meta.client.head_bucket(Bucket=self.bucket_name)
+            self.resource().meta.client.head_bucket(Bucket=self.dir_name)
         except botocore.exceptions.ClientError as e:
             # If it was a 404 error, then the bucket does not exist.
             error_code = e.response['Error']['Code']
@@ -37,11 +38,11 @@ class BucketUtil:
     def create(self):
         if not self.exists():
             # create the bucket
-            self.resource().create_bucket(Bucket=self.bucket_name)
+            self.resource().create_bucket(Bucket=self.dir_name)
 
     def delete(self):
         if self.exists():
-            bucket = self.resource().Bucket(self.bucket_name)
+            bucket = self.resource().Bucket(self.dir_name)
 
             # delete the bucket
             for key in bucket.objects.all():
