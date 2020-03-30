@@ -9,39 +9,62 @@
 import atexit
 import docker
 import os
+import shutil
 import signal
-import time
-
-# get `smb` from pysmb, not from this file
-import sys
-_sys_path_front = sys.path.pop(0)
 from smb.SMBConnection import SMBConnection
-# undo changes to sys.path
-sys.path.insert(0, _sys_path_front)
+import sys
+import time
 
 __all__ = ['smb_user', 'smb_pswd', 'startServer', 'RootDirUtil']
 
 smb_user = 'smb_local'
-smb_pswd = 'smb_local'
+smb_passwd = 'smb_local'
 
-def startServer(ports=(('139/tcp', 139), ('137/udp', 137), ('445/tcp', 445))):
+_dir = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
+
+def startServer():
+    # init docker
     docker_client = docker.from_env(version='auto')
     docker_client.info()
 
+    # set up smb.conf
+    shutil.copy(os.path.join(_dir, 'smb.conf.template'), os.path.join(_dir, 'smb.conf'))
+
+    # run the docker container
     smb_container = docker_client.containers.run(
-        "pwntr/samba-alpine",
+        'dperson/samba', 'samba.sh -n -p -u "{user};{passwd}"'.format(user=smb_user, passwd=smb_passwd),
         detach=True,
-        ports=dict(ports),
+        ports=dict((
+            ('137/udp', 137),
+            ('138/udp', 138),
+            ('139/tcp', 139),
+            ('445/tcp', 445),
+        )),
         remove=True,
         tmpfs={'/shared': 'size=3G,uid=1000'},
         tty=True,
         volumes={
-            os.path.abspath(os.path.realpath(os.path.join(__file__, os.path.pardir, "smb.conf"))): {"bind": "/config/smb.conf", "mode": "ro"}
-        }
+            os.path.join(_dir, "smb.conf"): {"bind": "/etc/samba/smb.conf", "mode": "rw"}
+        },
+        # network_mode='host',
     )
 
     atexit.register(smb_container.kill)
     # atexit.register(smb_container.remove)
+
+    # wait for samba to start up
+    timeout = 0
+    while True:
+        if b"daemon 'smbd' finished starting up" in smb_container.logs():
+            break
+
+        if timeout >= 100:
+            raise RuntimeError('docker dperson/samba timed out while starting up')
+
+        timeout += 1
+        time.sleep(1)
+
+    return smb_container
 
 
 class RootDirUtil:
@@ -50,7 +73,7 @@ class RootDirUtil:
         dir_name,
         endpoint_url,
         my_name='local',
-        remote_name='sambaalpine'
+        remote_name='sambatest'
     ):
         self.dir_name = dir_name
         self.endpoint_url = endpoint_url
@@ -68,22 +91,20 @@ class RootDirUtil:
         pass
 
     def _delete(self, path, conn):
-        for p in conn.listPath(self.dir_name, '.'):
+        for p in conn.listPath(self.dir_name, path):
             if p.filename!='.' and p.filename!='..':
-                parentPath = path
-                if not parentPath.endswith('/'):
-                    parentPath += '/'
+                subpath = os.path.join(path, p.filename)
 
                 if p.isDirectory:
-                    self._delete(parentPath+p.filename, conn)
-                    conn.deleteDirectory(self.dir_name, parentPath+p.filename)
+                    self._delete(subpath, conn)
+                    conn.deleteDirectory(self.dir_name, subpath)
                 else:
-                    conn.deleteFiles(self.dir_name, parentPath+p.filename)
+                    conn.deleteFiles(self.dir_name, subpath)
 
     def delete(self):
         conn = self.resource()
 
-        self._delete('.', conn)
+        self._delete('', conn)
 
     def resource(self):
         kwargs = dict(
@@ -103,11 +124,17 @@ if __name__ == "__main__":
     def sigHandler(signo, frame):
         sys.exit(0)
 
-    # make sure the docker cleanup runs on ctrl-c
+    # make sure the atexit-based docker cleanup runs on ctrl-c
     signal.signal(signal.SIGINT, sigHandler)
     # signal.signal(signal.SIGTERM, sigHandler)
 
-    startServer()
+    container = startServer()
 
+    old_log = ''
     while True:
-        time.sleep(10)
+        new_log = container.logs()
+        if old_log != new_log:
+            print(new_log)
+            old_log = new_log
+
+        time.sleep(1)

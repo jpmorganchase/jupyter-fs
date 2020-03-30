@@ -22,6 +22,8 @@ class RootDirUtil:
         self.dir_name = dir_name
         self.endpoint_url = endpoint_url
 
+        # self._resource = self.resource()
+
     def exists(self):
         # check if bucket already exists
         bucket_exists = True
@@ -45,8 +47,9 @@ class RootDirUtil:
             bucket = self.resource().Bucket(self.dir_name)
 
             # delete the bucket
-            for key in bucket.objects.all():
-                key.delete()
+            # for key in bucket.objects.all():
+            #     key.delete()
+            bucket.objects.all().delete()
             bucket.delete()
 
     def resource(self):

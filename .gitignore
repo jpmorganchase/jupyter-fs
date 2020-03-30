@@ -2,6 +2,7 @@
 /osfs_local/
 /s3proxy*
 /s3_local/
+smb.conf
 
 # Logs
 logs
@@ -166,6 +167,9 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# scratch
+/scratch/
 
 # jetbrains ide stuff
 *.iml

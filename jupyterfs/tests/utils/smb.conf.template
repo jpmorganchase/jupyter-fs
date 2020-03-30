@@ -1,7 +1,7 @@
 [global]
-    netbios name = sambaalpine
-    workgroup = WORKGROUP
-    server string = Samba %v in an Alpine Linux Docker container
+    netbios name = TESTNET
+    workgroup = TESTGROUP
+    server string = Samba test server for CI
     security = user
     guest account = nobody
     map to guest = Bad User
@@ -12,8 +12,8 @@
     printcap name = /dev/null
     disable spoolss = yes
 
-[data]
-    comment = Data
+[test]
+    comment = test
     path = /shared
     read only = yes
     write list = smb_local

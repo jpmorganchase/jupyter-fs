@@ -5,13 +5,14 @@
 # This file is part of the jupyter-fs library, distributed under the terms of
 # the Apache License 2.0.  The full license can be found in the LICENSE file.
 
+from fs.smbfs import SMBFS
 from pathlib import Path
 import os
 import shutil
 
 from jupyterfs.pyfilesystem_manager import PyFilesystemContentsManager
 
-from .utils import s3, smb
+from .utils import s3, samba
 
 test_dir = 'test'
 test_content = 'foo\nbar\nbaz'
@@ -88,7 +89,7 @@ class TestPyFilesystemContentsManager_osfs(_TestBase):
 class TestPyFilesystemContentsManager_s3(_TestBase):
     """Before running this test, first run:
 
-        docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy
+        docker run --rm -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy
 
     in order to set up the test S3 server
     """
@@ -97,6 +98,10 @@ class TestPyFilesystemContentsManager_s3(_TestBase):
     @classmethod
     def setup_class(cls):
         cls._rootDirUtil.delete()
+
+    # @classmethod
+    # def teardown_class(cls):
+    #     print('after')
 
     def setup_method(self, method):
         self._rootDirUtil.create()
@@ -116,13 +121,17 @@ class TestPyFilesystemContentsManager_s3(_TestBase):
 
 
 # class TestPyFilesystemContentsManager_smb(_TestBase):
-#     """
-#     """
-#     _rootDirUtil = smb.RootDirUtil(dir_name=test_dir, endpoint_url=test_endpoint_url_smb)
+#     _rootDirUtil = samba.RootDirUtil(dir_name=test_dir, endpoint_url=test_endpoint_url_smb)
 
 #     @classmethod
 #     def setup_class(cls):
+#         # cls._container = samba.startServer()
+
 #         cls._rootDirUtil.delete()
+
+#     # @classmethod
+#     # def teardown_class(cls):
+#     #     cls._container.kill()
 
 #     def setup_method(self, method):
 #         self._rootDirUtil.create()
@@ -131,10 +140,10 @@ class TestPyFilesystemContentsManager_s3(_TestBase):
 #         self._rootDirUtil.delete()
 
 #     def _createContentsManager(self):
-#         uri = 'smb://{id}:{key}@{endpoint_url}'.format(
-#             id=smb.smb_user,
-#             key=smb.smb_pswd,
-#             endpoint_url=test_endpoint_url_smb
+#         kwargs = dict(
+#             host=test_endpoint_url_smb,
+#             username=samba.smb_user,
+#             passwd=samba.smb_passwd
 #         )
 
-#         return PyFilesystemContentsManager.open_fs(uri)
+#         return PyFilesystemContentsManager.init_fs(SMBFS, **kwargs)

@@ -1,12 +1,12 @@
 testjs: ## Clean and Make js tests
 	yarn test
 
-testpy: ## Clean and Make unit tests
-	python3.7 -m pytest -v jupyterfs/tests --cov=jupyterfs
+testpy: ## Clean and Make py tests
+	python3.7 -m pytest -v jupyterfs/tests --cov=jupyterfs --cov-branch
 
-test: lint ## run the tests
-	python3.7 -m pytest -v jupyterfs/tests --cov=jupyterfs --junitxml=python_junit.xml --cov-report=xml --cov-branch
-	yarn test
+test: ## run all tests
+	testpy
+	testjs
 
 lintjs: ## run linter
 	yarn lint
