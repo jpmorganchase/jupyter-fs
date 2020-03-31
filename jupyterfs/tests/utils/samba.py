@@ -15,14 +15,25 @@ from smb.SMBConnection import SMBConnection
 import sys
 import time
 
-__all__ = ['smb_user', 'smb_pswd', 'startServer', 'RootDirUtil']
+__all__ = ['smb_user', 'smb_passwd', 'startServer', 'RootDirUtil']
 
 smb_user = 'smb_local'
 smb_passwd = 'smb_local'
 
 _dir = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
 
-def startServer():
+def startServer(host=None, name_port=137):
+    ports = dict((
+        ('137/udp', name_port),
+        ('138/udp', 138),
+        ('139/tcp', 139),
+        ('445/tcp', 445),
+    ))
+
+    if host is not None:
+        for key,val in ports.items():
+            ports[key] = (host, val)
+
     # init docker
     docker_client = docker.from_env(version='auto')
     docker_client.info()
@@ -34,12 +45,7 @@ def startServer():
     smb_container = docker_client.containers.run(
         'dperson/samba', 'samba.sh -n -p -u "{user};{passwd}"'.format(user=smb_user, passwd=smb_passwd),
         detach=True,
-        ports=dict((
-            ('137/udp', 137),
-            ('138/udp', 138),
-            ('139/tcp', 139),
-            ('445/tcp', 445),
-        )),
+        ports=ports,
         remove=True,
         tmpfs={'/shared': 'size=3G,uid=1000'},
         tty=True,
@@ -109,7 +115,7 @@ class RootDirUtil:
     def resource(self):
         kwargs = dict(
             username=smb_user,
-            password=smb_user,
+            password=smb_passwd,
             my_name=self.my_name,
             remote_name=self.remote_name
         )
@@ -128,7 +134,7 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, sigHandler)
     # signal.signal(signal.SIGTERM, sigHandler)
 
-    container = startServer()
+    container = startServer(name_port=3669)
 
     old_log = ''
     while True:

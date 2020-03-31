@@ -20,6 +20,7 @@ test_fname = 'foo.txt'
 
 test_endpoint_url_s3 = 'http://127.0.0.1:9000'
 test_endpoint_url_smb = '127.0.0.1'
+test_name_port_smb = 3669
 test_root_osfs = 'osfs_local'
 
 _test_file_model = {
@@ -45,7 +46,7 @@ class _TestBase:
         fpaths = [
                 '' + test_fname,
                 'root0/' + test_fname,
-                'root1/leaf1/' + test_fname
+                'root1/leaf1/' + test_fname,
             ]
 
         # set up dir structure
@@ -114,36 +115,37 @@ class TestPyFilesystemContentsManager_s3(_TestBase):
             id=s3.aws_access_key_id,
             key=s3.aws_secret_access_key,
             bucket=test_dir,
-            endpoint_url=test_endpoint_url_s3
+            endpoint_url=test_endpoint_url_s3,
         )
 
         return PyFilesystemContentsManager.open_fs(uri)
 
 
-# class TestPyFilesystemContentsManager_smb(_TestBase):
-#     _rootDirUtil = samba.RootDirUtil(dir_name=test_dir, endpoint_url=test_endpoint_url_smb)
+class TestPyFilesystemContentsManager_smb(_TestBase):
+    _rootDirUtil = samba.RootDirUtil(dir_name=test_dir, endpoint_url=test_endpoint_url_smb)
 
-#     @classmethod
-#     def setup_class(cls):
-#         # cls._container = samba.startServer()
+    @classmethod
+    def setup_class(cls):
+        # cls._container = samba.startServer()
 
-#         cls._rootDirUtil.delete()
+        cls._rootDirUtil.delete()
 
-#     # @classmethod
-#     # def teardown_class(cls):
-#     #     cls._container.kill()
+    # @classmethod
+    # def teardown_class(cls):
+    #     cls._container.kill()
 
-#     def setup_method(self, method):
-#         self._rootDirUtil.create()
+    def setup_method(self, method):
+        self._rootDirUtil.create()
 
-#     def teardown_method(self, method):
-#         self._rootDirUtil.delete()
+    def teardown_method(self, method):
+        self._rootDirUtil.delete()
 
-#     def _createContentsManager(self):
-#         kwargs = dict(
-#             host=test_endpoint_url_smb,
-#             username=samba.smb_user,
-#             passwd=samba.smb_passwd
-#         )
+    def _createContentsManager(self):
+        kwargs = dict(
+            host=test_endpoint_url_smb,
+            username=samba.smb_user,
+            passwd=samba.smb_passwd,
+            name_port=test_name_port_smb,
+        )
 
-#         return PyFilesystemContentsManager.init_fs(SMBFS, **kwargs)
+        return PyFilesystemContentsManager.init_fs(SMBFS, **kwargs)
