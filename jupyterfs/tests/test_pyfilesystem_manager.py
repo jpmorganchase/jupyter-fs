@@ -122,22 +122,27 @@ class TestPyFilesystemContentsManager_s3(_TestBase):
 
 
 class TestPyFilesystemContentsManager_smb(_TestBase):
-    _rootDirUtil = samba.RootDirUtil(dir_name=test_dir, endpoint_url=test_endpoint_url_smb)
+    _rootDirUtil = samba.RootDirUtil(dir_name=test_dir, endpoint_url=test_endpoint_url_smb, name_port=test_name_port_smb)
 
     @classmethod
     def setup_class(cls):
-        cls._container = samba.startServer(name_port=test_name_port_smb)
+        # start up the server
+        cls._rootDirUtil.start()
 
+        # delete any existing root
         cls._rootDirUtil.delete()
 
     @classmethod
     def teardown_class(cls):
-        cls._container.kill()
+        # stop the server
+        cls._rootDirUtil.stop()
 
     def setup_method(self, method):
+        # create a root
         self._rootDirUtil.create()
 
     def teardown_method(self, method):
+        # delete any existing root
         self._rootDirUtil.delete()
 
     def _createContentsManager(self):

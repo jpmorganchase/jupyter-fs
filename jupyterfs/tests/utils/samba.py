@@ -57,8 +57,17 @@ def startServer(host=None, name_port=137):
         # network_mode='host',
     )
 
-    atexit.register(smb_container.kill)
-    # atexit.register(smb_container.remove)
+    def exitHandler():
+        try:
+            # will raise docker.errors.NotFound if container does not currently exist
+            docker_client.containers.get(smb_container.id)
+
+            smb_container.kill()
+            # smb_container.remove()
+        except docker.errors.NotFound:
+            pass
+
+    atexit.register(exitHandler)
 
     # wait for samba to start up
     timeout = 0
@@ -72,7 +81,7 @@ def startServer(host=None, name_port=137):
         timeout += 1
         time.sleep(1)
 
-    return smb_container
+    return smb_container, exitHandler
 
 
 class RootDirUtil:
@@ -80,13 +89,20 @@ class RootDirUtil:
         self,
         dir_name,
         endpoint_url,
+        host=None,
         my_name='local',
-        remote_name='sambatest'
+        name_port=137,
+        remote_name='TESTNET',
     ):
         self.dir_name = dir_name
         self.endpoint_url = endpoint_url
+        self.host = host
         self.my_name = my_name
+        self.name_port = name_port
         self.remote_name = remote_name
+
+        self._container = None
+        self._container_exit_handler = None
 
     def exists(self):
         conn = self.resource()
@@ -127,20 +143,30 @@ class RootDirUtil:
 
         return conn
 
+    def start(self):
+        self._container,self._container_exit_handler = startServer(host=self.host, name_port=self.name_port)
+
+    def stop(self):
+        if self._container is not None:
+            self._container_exit_handler()
+
+        self._container = None
+        self._container_exit_handler = None
+
 
 if __name__ == "__main__":
+    smb_container,_ = startServer(name_port=3669)
+
     def sigHandler(signo, frame):
         sys.exit(0)
 
     # make sure the atexit-based docker cleanup runs on ctrl-c
     signal.signal(signal.SIGINT, sigHandler)
-    # signal.signal(signal.SIGTERM, sigHandler)
-
-    container = startServer(name_port=3669)
+    signal.signal(signal.SIGTERM, sigHandler)
 
     old_log = ''
     while True:
-        new_log = container.logs()
+        new_log = smb_container.logs()
         if old_log != new_log:
             print(new_log)
             old_log = new_log
