@@ -126,13 +126,13 @@ class TestPyFilesystemContentsManager_smb(_TestBase):
 
     @classmethod
     def setup_class(cls):
-        # cls._container = samba.startServer()
+        cls._container = samba.startServer(name_port=test_name_port_smb)
 
         cls._rootDirUtil.delete()
 
-    # @classmethod
-    # def teardown_class(cls):
-    #     cls._container.kill()
+    @classmethod
+    def teardown_class(cls):
+        cls._container.kill()
 
     def setup_method(self, method):
         self._rootDirUtil.create()
@@ -141,11 +141,14 @@ class TestPyFilesystemContentsManager_smb(_TestBase):
         self._rootDirUtil.delete()
 
     def _createContentsManager(self):
-        kwargs = dict(
-            host=test_endpoint_url_smb,
+        uri = 'smb://{username}:{passwd}@{host}/{share}?name-port={name_port}'.format(
             username=samba.smb_user,
             passwd=samba.smb_passwd,
+            host=test_endpoint_url_smb,
             name_port=test_name_port_smb,
+            share=test_dir,
         )
 
-        return PyFilesystemContentsManager.init_fs(SMBFS, **kwargs)
+        cm = PyFilesystemContentsManager.open_fs(uri)
+        assert cm.dir_exists('.')
+        return cm

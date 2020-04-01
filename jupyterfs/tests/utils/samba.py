@@ -15,10 +15,12 @@ from smb.SMBConnection import SMBConnection
 import sys
 import time
 
+import fs_s3fs
+
 __all__ = ['smb_user', 'smb_passwd', 'startServer', 'RootDirUtil']
 
-smb_user = 'smb_local'
-smb_passwd = 'smb_local'
+smb_user = 'smbuser'
+smb_passwd = 'smbuser'
 
 _dir = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
 

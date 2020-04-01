@@ -15,8 +15,7 @@
 [test]
     comment = test
     path = /shared
-    read only = yes
-    write list = smb_local
+    write list = smbuser
     guest ok = yes
     # getting rid of those annoying .DS_Store files created by Mac users...
     veto files = /._*/.DS_Store/
