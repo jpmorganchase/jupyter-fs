@@ -53,7 +53,6 @@ EOT
 # s3proxy.credential=s3_local
 
 # get built s3proxy jar
-command -v java -jar s3proxy >/dev/null 2>&1 || \
 curl -L https://github.com/gaul/s3proxy/releases/download/s3proxy-${S3PROXY_VERSION}/s3proxy -o s3proxy
 
 # run s3proxy as a background job

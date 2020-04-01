@@ -11,16 +11,16 @@ printf "Starting Docker.app, if necessary"
 # Wait for the server to start up, if applicable.
 retries=0
 while ! docker system info &>/dev/null; do
-    if (( retries % 10 == 0 )); then
+    if (( retries % 30 == 0 )); then
         if pgrep -xq -- "Docker"; then
             printf '\nDocker init still running'
         else
             (( retries != 0 )) && printf '\nDocker not running, restart'
-            /Applications/Docker.app/Contents/MacOS/Docker &
+            open -g -a Docker.app || exit
         fi
 
-        if [[ ${retries} -gt 150 ]]; then
-            >&2 printf '\nFailed to run Docker'
+        if [[ ${retries} -gt 600 ]]; then
+            printf '\nFailed to run Docker'
             exit 1
         fi
     fi
