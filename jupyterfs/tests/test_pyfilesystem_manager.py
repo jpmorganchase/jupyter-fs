@@ -5,7 +5,6 @@
 # This file is part of the jupyter-fs library, distributed under the terms of
 # the Apache License 2.0.  The full license can be found in the LICENSE file.
 
-from fs.smbfs import SMBFS
 from pathlib import Path
 import os
 import shutil
@@ -37,6 +36,7 @@ _test_file_model = {
 class _TestBase:
     """Contains tests universal to all PyFilesystemContentsManager flavors
     """
+
     def _createContentsManager(self):
         raise NotImplementedError
 
@@ -44,10 +44,10 @@ class _TestBase:
         cm = self._createContentsManager()
 
         fpaths = [
-                '' + test_fname,
-                'root0/' + test_fname,
-                'root1/leaf1/' + test_fname,
-            ]
+            '' + test_fname,
+            'root0/' + test_fname,
+            'root1/leaf1/' + test_fname,
+        ]
 
         # set up dir structure
         cm._save_directory('root0', None)
@@ -122,6 +122,9 @@ class TestPyFilesystemContentsManager_s3(_TestBase):
 
 
 class TestPyFilesystemContentsManager_smb(_TestBase):
+    """No extra setup required for this test suite.
+    Runs its own samba server in a docker
+    """
     _rootDirUtil = samba.RootDirUtil(dir_name=test_dir, endpoint_url=test_endpoint_url_smb, name_port=test_name_port_smb)
 
     @classmethod

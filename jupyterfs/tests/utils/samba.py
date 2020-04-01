@@ -15,14 +15,13 @@ from smb.SMBConnection import SMBConnection
 import sys
 import time
 
-import fs_s3fs
-
 __all__ = ['smb_user', 'smb_passwd', 'startServer', 'RootDirUtil']
 
 smb_user = 'smbuser'
 smb_passwd = 'smbuser'
 
 _dir = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
+
 
 def startServer(host=None, name_port=137):
     ports = dict((
@@ -33,7 +32,7 @@ def startServer(host=None, name_port=137):
     ))
 
     if host is not None:
-        for key,val in ports.items():
+        for key, val in ports.items():
             ports[key] = (host, val)
 
     # init docker
@@ -116,7 +115,7 @@ class RootDirUtil:
 
     def _delete(self, path, conn):
         for p in conn.listPath(self.dir_name, path):
-            if p.filename!='.' and p.filename!='..':
+            if p.filename != '.' and p.filename != '..':
                 subpath = os.path.join(path, p.filename)
 
                 if p.isDirectory:
@@ -144,7 +143,7 @@ class RootDirUtil:
         return conn
 
     def start(self):
-        self._container,self._container_exit_handler = startServer(host=self.host, name_port=self.name_port)
+        self._container, self._container_exit_handler = startServer(host=self.host, name_port=self.name_port)
 
     def stop(self):
         if self._container is not None:
@@ -155,7 +154,7 @@ class RootDirUtil:
 
 
 if __name__ == "__main__":
-    smb_container,_ = startServer(name_port=3669)
+    smb_container, _ = startServer(name_port=3669)
 
     def sigHandler(signo, frame):
         sys.exit(0)

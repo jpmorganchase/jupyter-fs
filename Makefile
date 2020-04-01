@@ -15,8 +15,8 @@ lintpy: ## run linter
 	flake8 jupyterfs setup.py
 
 lint: ## run linter
-	flake8 jupyterfs setup.py
-	yarn lint
+	lintpy
+	lintjs
 
 fixjs:  ## run autopep8/tslint fix
 	./node_modules/.bin/tslint --fix src/*
@@ -25,8 +25,8 @@ fixpy:  ## run autopep8/tslint fix
 	autopep8 --in-place -r -a -a jupyterfs/
 
 fix:  ## run autopep8/tslint fix
-	autopep8 --in-place -r -a -a jupyterfs/
-	./node_modules/.bin/tslint --fix src/*
+	fixpy
+	fixjs
 
 annotate: ## MyPy type annotation check
 	mypy -s jupyterfs
