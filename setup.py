@@ -36,6 +36,7 @@ test_requires = [
     'boto3',
     'docker',
     'fs-miniofs',
+    'fs.smbfs',
     'mock',
     'pysmb',
     'pytest',

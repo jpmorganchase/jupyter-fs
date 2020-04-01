@@ -2,27 +2,33 @@
 
 # refs:
 # https://stackoverflow.com/a/35979292/425458
-
-case $1 in
-  -h|--help)
-    echo $'usage: docker-start\n\nStarts Docker (Docker.app) on macOS and waits until the Docker environment is initialized.'
-    exit 0
-    ;;
-esac
-(( $# )) && { echo "ARGUMENT ERROR: Unexpected argument(s) specified. Use -h for help." >&2; exit 2; }
+# https://crossprogramming.com/2019/12/27/use-docker-when-running-integration-tests-with-azure-pipelines.html#self-managed-docker-containers
 
 [[ $(uname) == 'Darwin' ]] || { echo "This function only runs on macOS." >&2; exit 2; }
 
-echo "-- Starting Docker.app, if necessary..."
-
-open -g -a Docker.app || exit
+printf "Starting Docker.app, if necessary"
 
 # Wait for the server to start up, if applicable.
-i=0
+retries=0
 while ! docker system info &>/dev/null; do
-  (( i++ == 0 )) && printf %s '-- Waiting for Docker to finish starting up...' || printf '.'
-  sleep 1
-done
-(( i )) && printf '\n'
+    if (( retries % 10 == 0 )); then
+        if pgrep -xq -- "Docker"; then
+            printf '\nDocker init still running'
+        else
+            (( retries != 0 )) && printf '\nDocker not running, restart'
+            /Applications/Docker.app/Contents/MacOS/Docker &
+        fi
 
-echo "-- Docker is ready."
+        if [[ ${retries} -gt 150 ]]; then
+            >&2 printf '\nFailed to run Docker'
+            exit 1
+        fi
+    fi
+
+    printf '.'
+    (( retries++))
+    sleep 1
+done
+(( retries )) && printf '\n'
+
+echo "Docker is ready"
