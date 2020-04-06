@@ -6,6 +6,7 @@
 # the Apache License 2.0.  The full license can be found in the LICENSE file.
 
 from pathlib import Path
+import pytest
 import os
 import shutil
 
@@ -121,9 +122,12 @@ class TestPyFilesystemContentsManager_s3(_TestBase):
         return PyFilesystemContentsManager.open_fs(uri)
 
 
-class TestPyFilesystemContentsManager_smb(_TestBase):
-    """No extra setup required for this test suite.
-    Runs its own samba server in a docker
+@pytest.mark.darwin
+@pytest.mark.linux
+class TestPyFilesystemContentsManager_samba_docker_share(_TestBase):
+    """(mac/linux only. future: windows) runs its own samba server via
+    py-docker. Automatically creates and exposes a share from a docker
+    container
     """
     _rootDirUtil = samba.RootDirUtil(dir_name=test_dir, endpoint_url=test_endpoint_url_smb, name_port=test_name_port_smb)
 
@@ -160,3 +164,38 @@ class TestPyFilesystemContentsManager_smb(_TestBase):
         cm = PyFilesystemContentsManager.open_fs(uri)
         assert cm.dir_exists('.')
         return cm
+
+
+@pytest.mark.win32
+class TestPyFilesystemContentsManager_samba_os_share(_TestBase):
+    """(windows only. future: also mac) Uses the os's buitlin samba server.
+    Creates and expose a share locally
+    """
+    _rootDirUtil = samba.RootDirUtil(dir_name=test_dir, endpoint_url=test_endpoint_url_smb, name_port=test_name_port_smb)
+
+    @classmethod
+    def setup_class(cls):
+        # delete any existing root
+        cls._rootDirUtil.delete()
+
+    def setup_method(self, method):
+        # create a root
+        self._rootDirUtil.create()
+
+    def teardown_method(self, method):
+        # delete any existing root
+        self._rootDirUtil.delete()
+
+    def _createContentsManager(self):
+        uri = 'smb://{username}:{passwd}@{host}/{share}?name-port={name_port}'.format(
+            username=samba.smb_user,
+            passwd=samba.smb_passwd,
+            host=test_endpoint_url_smb,
+            name_port=test_name_port_smb,
+            share=test_dir,
+        )
+
+        cm = PyFilesystemContentsManager.open_fs(uri)
+        assert cm.dir_exists('.')
+        return cm
+
