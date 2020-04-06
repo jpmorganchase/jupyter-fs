@@ -16,6 +16,7 @@ while ! docker system info &>/dev/null; do
             printf '\nDocker init still running'
         else
             (( retries != 0 )) && printf '\nDocker not running, restart'
+            # /Applications/Docker.app/Contents/MacOS/Docker &
             open -g -a Docker.app || exit
         fi
 
