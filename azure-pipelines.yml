@@ -78,6 +78,17 @@ parameters:
     - script: curl http://127.0.0.1:9000/
       displayName: 'Test local S3 server'
 
+- name: initSmbOsWindows
+  type: stepList
+  default:
+    - task: PowerShell@2
+      inputs:
+        targetType: 'filePath'
+        filePath: 'ci/start_smb_os_windows.ps1'
+        errorActionPreference: 'stop'
+        failOnStderr: True
+      displayName: 'Expose share on os builtin samba server'
+
 - name: testSteps
   type: stepList
   default:
@@ -150,6 +161,7 @@ jobs:
         python.version: '3.7'
 
   steps:
+    - ${{ parameters.initSmbOsWindows }}
     - ${{ parameters.initS3proxySteps }}
     - ${{ parameters.initSteps }}
     - ${{ parameters.testSteps }}

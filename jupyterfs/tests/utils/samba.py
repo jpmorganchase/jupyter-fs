@@ -31,10 +31,6 @@ def startServer(host=None, name_port=137):
         ('445/tcp', 445),
     ))
 
-    if host is not None:
-        for key, val in ports.items():
-            ports[key] = (host, val)
-
     # init docker
     docker_client = docker.from_env(version='auto')
     docker_client.info()
