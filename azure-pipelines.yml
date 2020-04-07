@@ -84,10 +84,17 @@ parameters:
     - task: PowerShell@2
       inputs:
         targetType: 'filePath'
-        filePath: 'ci/start_smb_os_windows.ps1'
+        filePath: 'ci/enable_os_share_windows.ps1'
         errorActionPreference: 'stop'
         failOnStderr: True
-      displayName: 'Expose share on os builtin samba server'
+      displayName: 'Enable os builtin file sharing'
+    - task: PowerShell@2
+      inputs:
+        targetType: 'filePath'
+        filePath: 'ci/create_os_share_windows.ps1'
+        errorActionPreference: 'stop'
+        failOnStderr: True
+      displayName: 'Create share on os builtin samba server'
 
 - name: testSteps
   type: stepList
