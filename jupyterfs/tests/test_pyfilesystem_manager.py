@@ -202,6 +202,9 @@ class TestPyFilesystemContentsManager_smb_os_share(_TestBase):
             share=test_dir,
         )
 
+        if 'COMPUTERNAME' in os.environ:
+            uri += ('?hostname=%s' % os.environ['COMPUTERNAME'])
+
         cm = PyFilesystemContentsManager.open_fs(uri)
         assert cm.dir_exists('.')
         return cm
