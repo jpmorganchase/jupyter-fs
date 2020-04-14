@@ -25,9 +25,9 @@ test_endpoint_url_s3 = 'http://127.0.0.1:9000'
 test_hostname_smb_docker_share = 'TESTNET'
 test_name_port_smb_docker_share = 3669
 
-test_direct_tcp_smb_os_share = True
+test_direct_tcp_smb_os_share = False
 test_host_smb_os_share = socket.gethostbyname_ex(socket.gethostname())[2][-1]
-test_smb_port_smb_os_share = 445
+test_smb_port_smb_os_share = 139
 
 _test_file_model = {
     'content': test_content,

@@ -36,7 +36,7 @@ test_requires = [
     'boto3',
     'docker',
     'fs-miniofs',
-    'fs.smbfs @ git+https://github.com/telamonian/fs.smbfs.git@host-name-arg#egg=fs.smbfs',
+    'fs.smbfs @ git+https://github.com/telamonian/fs.smbfs.git@dont_assume_everyone_ace_exists#egg=fs.smbfs',
     'mock',
     'pysmb',
     'pytest',

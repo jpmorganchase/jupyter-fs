@@ -48,7 +48,7 @@ install:
 
 test_script:
 # uncomment to allow remote login to windows ci vm via rdp
-- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+# - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 # lint the python code
 # - python -m flake8 jupyterfs setup.py
