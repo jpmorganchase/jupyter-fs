@@ -25,7 +25,8 @@ test_endpoint_url_s3 = 'http://127.0.0.1:9000'
 test_hostname_smb_docker_share = 'TESTNET'
 test_name_port_smb_docker_share = 3669
 
-test_smb_port_smb_os_share = 445
+test_host_smb_os_share = socket.gethostbyname_ex(socket.gethostname())[2][-1]
+test_smb_port_smb_os_share = None
 
 _test_file_model = {
     'content': test_content,
@@ -131,7 +132,11 @@ class TestPyFilesystemContentsManager_s3(_TestBase):
 class TestPyFilesystemContentsManager_smb_docker_share(_TestBase):
     """(mac/linux only. future: windows) runs its own samba server via
     py-docker. Automatically creates and exposes a share from a docker
-    container
+    container.
+
+    Manual startup of equivalent docker:
+
+        docker run --rm -it -p 137:137/udp -p 138:138/udp -p 139:139 -p 445:445 dperson/samba -p -n -u "smbuser;smbuser" -w "TESTNET"
     """
     _rootDirUtil = samba.RootDirUtil(
         dir_name=test_dir,
@@ -181,6 +186,7 @@ class TestPyFilesystemContentsManager_smb_os_share(_TestBase):
     """
     _rootDirUtil = samba.RootDirUtil(
         dir_name=test_dir,
+        host=test_host_smb_os_share,
         smb_port=test_smb_port_smb_os_share
     )
 
@@ -199,7 +205,7 @@ class TestPyFilesystemContentsManager_smb_os_share(_TestBase):
 
     def _createContentsManager(self):
         kwargs = dict(
-            host=socket.gethostbyname(socket.gethostname()),
+            host=test_host_smb_os_share,
             hostname=socket.getfqdn(),
             passwd=samba.smb_passwd,
             share=test_dir,

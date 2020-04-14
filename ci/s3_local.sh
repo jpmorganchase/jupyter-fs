@@ -58,7 +58,6 @@ curl -L https://github.com/gaul/s3proxy/releases/download/s3proxy-${S3PROXY_VERS
 # run s3proxy as a background job
 if [ "$detach" = "-d" ]; then
     java -jar s3proxy --properties s3proxy.conf &
-    disown
 else
     java -jar s3proxy --properties s3proxy.conf
 fi
