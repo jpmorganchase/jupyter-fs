@@ -13,3 +13,12 @@ rm -force c:\secpol.cfg -confirm:$false
 
 # turn on file sharing
 netsh advfirewall firewall set rule group="File and Printer Sharing" new enable=Yes
+
+# print out some info about local NETBIOS cache
+nbtstat -c
+
+# print out some info about local NETBIOS names
+nbtstat -n
+
+# print out some info about local NETBIOS resolutions
+nbtstat -r

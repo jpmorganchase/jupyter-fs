@@ -87,7 +87,8 @@ class RootDirUtil:
         host=None,
         hostname=None,
         my_name='local',
-        name_port=137
+        name_port=137,
+        smb_port=None
     ):
         self.host = socket.gethostbyname(socket.gethostname()) if host is None else host
         self.hostname = socket.getfqdn() if hostname is None else hostname
@@ -95,6 +96,7 @@ class RootDirUtil:
         self.dir_name = dir_name
         self.my_name = my_name
         self.name_port = name_port
+        self.smb_port = smb_port
 
         self._container = None
         self._container_exit_handler = None
@@ -134,7 +136,12 @@ class RootDirUtil:
         )
 
         conn = SMBConnection(**kwargs)
-        assert conn.connect(self.host, 139)
+
+        # actually connect
+        if self.smb_port is not None:
+            assert conn.connect(self.host, port=self.smb_port)
+        else:
+            assert conn.connect(self.host)
 
         return conn
 

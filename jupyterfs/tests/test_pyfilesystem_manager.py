@@ -12,7 +12,6 @@ import shutil
 import socket
 
 from jupyterfs.pyfilesystem_manager import PyFilesystemContentsManager
-
 from .utils import s3, samba
 
 test_dir = 'test'
@@ -25,6 +24,8 @@ test_endpoint_url_s3 = 'http://127.0.0.1:9000'
 
 test_hostname_smb_docker_share = 'TESTNET'
 test_name_port_smb_docker_share = 3669
+
+test_smb_port_smb_os_share = 445
 
 _test_file_model = {
     'content': test_content,
@@ -180,6 +181,7 @@ class TestPyFilesystemContentsManager_smb_os_share(_TestBase):
     """
     _rootDirUtil = samba.RootDirUtil(
         dir_name=test_dir,
+        smb_port=test_smb_port_smb_os_share
     )
 
     @classmethod
@@ -196,14 +198,20 @@ class TestPyFilesystemContentsManager_smb_os_share(_TestBase):
         self._rootDirUtil.delete()
 
     def _createContentsManager(self):
-        uri = 'smb://{username}:{passwd}@{host}/{share}?hostname={hostname}'.format(
-            username=samba.smb_user,
-            passwd=samba.smb_passwd,
+        kwargs = dict(
             host=socket.gethostbyname(socket.gethostname()),
+            hostname=socket.getfqdn(),
+            passwd=samba.smb_passwd,
             share=test_dir,
-            hostname=socket.getfqdn()
+            username=samba.smb_user,
         )
 
-        cm = PyFilesystemContentsManager.open_fs(uri)
+        if test_smb_port_smb_os_share is not None:
+            uri = 'smb://{username}:{passwd}@{host}:{port}/{share}?hostname={hostname}'.format(port=test_smb_port_smb_os_share, **kwargs)
+            cm = PyFilesystemContentsManager.open_fs(uri)
+        else:
+            uri = 'smb://{username}:{passwd}@{host}/{share}?hostname={hostname}'.format(**kwargs)
+            cm = PyFilesystemContentsManager.open_fs(uri)
+
         assert cm.dir_exists('.')
         return cm
