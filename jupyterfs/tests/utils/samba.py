@@ -23,7 +23,7 @@ smb_passwd = 'smbuser'
 _dir = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
 
 
-def startServer(host=None, name_port=137):
+def startServer(name_port=137):
     ports = dict((
         ('137/udp', name_port),
         ('138/udp', 138),
@@ -83,18 +83,16 @@ class RootDirUtil:
     def __init__(
         self,
         dir_name,
-        endpoint_url,
-        host=None,
+        host,
+        hostname=None,
         my_name='local',
-        name_port=137,
-        remote_name='TESTNET',
+        name_port=137
     ):
         self.dir_name = dir_name
-        self.endpoint_url = endpoint_url
         self.host = host
+        self.hostname = hostname
         self.my_name = my_name
         self.name_port = name_port
-        self.remote_name = remote_name
 
         self._container = None
         self._container_exit_handler = None
@@ -130,16 +128,16 @@ class RootDirUtil:
             username=smb_user,
             password=smb_passwd,
             my_name=self.my_name,
-            remote_name=self.remote_name
+            remote_name=self.hostname,
         )
 
         conn = SMBConnection(**kwargs)
-        assert conn.connect(self.endpoint_url, 139)
+        assert conn.connect(self.host, 139)
 
         return conn
 
     def start(self):
-        self._container, self._container_exit_handler = startServer(host=self.host, name_port=self.name_port)
+        self._container, self._container_exit_handler = startServer(name_port=self.name_port)
 
     def stop(self):
         if self._container is not None:

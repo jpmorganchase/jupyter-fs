@@ -22,10 +22,11 @@ test_root_osfs = 'osfs_local'
 
 test_endpoint_url_s3 = 'http://127.0.0.1:9000'
 
-test_endpoint_url_smb_docker_share = '127.0.0.1'
+test_host_smb_docker_share = '127.0.0.1'
+test_hostname_smb_docker_share = 'TESTNET'
 test_name_port_smb_docker_share = 3669
 
-test_endpoint_url_smb_os_share = '127.0.0.1'
+test_host_smb_os_share = '127.0.0.1'
 
 _test_file_model = {
     'content': test_content,
@@ -135,7 +136,8 @@ class TestPyFilesystemContentsManager_smb_docker_share(_TestBase):
     """
     _rootDirUtil = samba.RootDirUtil(
         dir_name=test_dir,
-        endpoint_url=test_endpoint_url_smb_docker_share,
+        host=test_host_smb_docker_share,
+        hostname=test_hostname_smb_docker_share,
         name_port=test_name_port_smb_docker_share,
     )
 
@@ -164,7 +166,7 @@ class TestPyFilesystemContentsManager_smb_docker_share(_TestBase):
         uri = 'smb://{username}:{passwd}@{host}/{share}?name-port={name_port}'.format(
             username=samba.smb_user,
             passwd=samba.smb_passwd,
-            host=test_endpoint_url_smb_docker_share,
+            host=test_host_smb_docker_share,
             name_port=test_name_port_smb_docker_share,
             share=test_dir,
         )
@@ -179,7 +181,11 @@ class TestPyFilesystemContentsManager_smb_os_share(_TestBase):
     """(windows only. future: also mac) Uses the os's buitlin samba server.
     Creates and expose a share locally
     """
-    _rootDirUtil = samba.RootDirUtil(dir_name=test_dir, endpoint_url=test_endpoint_url_smb_os_share)
+    _rootDirUtil = samba.RootDirUtil(
+        dir_name=test_dir,
+        host=test_host_smb_os_share,
+        hostname=os.environ.get('COMPUTERNAME', None),
+    )
 
     @classmethod
     def setup_class(cls):
@@ -198,7 +204,7 @@ class TestPyFilesystemContentsManager_smb_os_share(_TestBase):
         uri = 'smb://{username}:{passwd}@{host}/{share}'.format(
             username=samba.smb_user,
             passwd=samba.smb_passwd,
-            host=test_endpoint_url_smb_os_share,
+            host=test_host_smb_os_share,
             share=test_dir,
         )
 
