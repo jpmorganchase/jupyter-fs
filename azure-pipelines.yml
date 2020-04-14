@@ -59,7 +59,7 @@ parameters:
   type: stepList
   default:
     - bash: |
-        nohup ci/s3_local.sh -d
+        nohup ci/s3_local.sh -d -r
         sleep 5
       displayName: "Start up local S3 server"
 

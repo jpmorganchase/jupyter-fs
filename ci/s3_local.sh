@@ -14,6 +14,7 @@ EOF
 
 # parse opts
 detach=
+run=
 OPTIND=1
 while getopts hdtr opt; do
     case $opt in
@@ -21,6 +22,8 @@ while getopts hdtr opt; do
             exit 0
             ;;
         d)  detach=-d
+            ;;
+        r)  run=-r
             ;;
         *)  show_help >&2
             exit 1
@@ -56,10 +59,12 @@ EOT
 curl -L https://github.com/gaul/s3proxy/releases/download/s3proxy-${S3PROXY_VERSION}/s3proxy -o s3proxy
 
 # run s3proxy as a background job
-if [ "$detach" = "-d" ]; then
-    java -jar s3proxy --properties s3proxy.conf &
-else
-    java -jar s3proxy --properties s3proxy.conf
+if [ "$run" = "-r" ]; then
+    if [ "$detach" = "-d" ]; then
+        java -jar s3proxy --properties s3proxy.conf &
+    else
+        java -jar s3proxy --properties s3proxy.conf
+    fi
 fi
 
 # no explicit wait needed, azure already stalls

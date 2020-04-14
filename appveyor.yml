@@ -30,8 +30,9 @@ install:
 - ps: ci/create_os_share_windows.ps1
 
 # set up a local s3_proxy server
-- ps: Start-Job { bash -c "ci/s3_local.sh -d" }
-- ps: bash -c "sleep 15"
+- bash -c "ci/s3_local.sh"
+- ps: Start-Process -FilePath "java" -ArgumentList "-jar","s3proxy","--properties","s3proxy.conf"
+- bash -c "sleep 5"
 - curl http://127.0.0.1:9000/
 
 # install python deps
@@ -45,7 +46,7 @@ install:
 
 test_script:
 # uncomment to allow remote login to windows ci vm via rdp
-- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+# - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 # lint the python code
 # - python -m flake8 jupyterfs setup.py
