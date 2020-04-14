@@ -8,6 +8,7 @@ build: off
 services:
 - docker
 
+# mentioned in appveyor docs, doesn't seem to work
 # stack: docker, jdk 1.8, node 12, python 3.7
 
 # runs before repo checkout
@@ -21,10 +22,10 @@ init:
 - python -m pip install --upgrade pip
 
 # set the node version
-# - ps: Install-Product node 12
+- ps: Install-Product node 12
 
 # install yarn globally
-# - npm install -g yarn
+- npm install -g yarn
 
 install:
 # set up a windows file share named "test"
@@ -41,23 +42,24 @@ install:
 - pip install --upgrade --upgrade-strategy=eager -e .[dev]
 
 # install js deps
-# - yarn
+- yarn
 
 # print all env vars
 - ps: gci env:* | sort-object name
 
 test_script:
-# uncomment to allow remote login to windows ci vm via rdp
-# - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-
 # lint the python code
-# - python -m flake8 jupyterfs setup.py
+- python -m flake8 jupyterfs setup.py
 
 # lint the js code
-# - yarn lint
+- yarn lint
 
 # test the python code
 - python -m pytest -v jupyterfs/tests --cov=jupyterfs --cov-branch
 
 # test the js code
-# - yarn test
+- yarn test
+
+on_failure:
+# enable remote login (via rdp) to windows ci vm on test failure
+- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))

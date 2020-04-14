@@ -158,18 +158,18 @@ jobs:
     - ${{ parameters.testSteps }}
     - ${{ parameters.publishSteps }}
 
-- job: 'Windows'
-  pool:
-    vmImage: 'windows-2019'
+# - job: 'Windows'
+#   pool:
+#     vmImage: 'windows-2019'
 
-  strategy:
-    matrix:
-      Python37:
-        python.version: '3.7'
+#   strategy:
+#     matrix:
+#       Python37:
+#         python.version: '3.7'
 
-  steps:
-    - ${{ parameters.initSmbOsWindows }}
-    - ${{ parameters.initS3proxySteps }}
-    - ${{ parameters.initSteps }}
-    - ${{ parameters.testSteps }}
-    - ${{ parameters.publishSteps }}
+#   steps:
+#     - ${{ parameters.initSmbOsWindows }}
+#     - ${{ parameters.initS3proxySteps }}
+#     - ${{ parameters.initSteps }}
+#     - ${{ parameters.testSteps }}
+#     - ${{ parameters.publishSteps }}
