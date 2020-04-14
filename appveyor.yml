@@ -1,0 +1,56 @@
+image: Visual Studio 2019
+
+environment:
+  PYTHON: "C:\\Python37"
+
+build: off
+
+services:
+- docker
+
+# runs before repo checkout
+init:
+# set the python version
+- cmd: set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%
+
+# install latest pip
+- python -m pip install --upgrade pip
+
+# set the node version
+- ps: Install-Product node 12
+
+# install yarn globally
+- npm install -g yarn
+
+install:
+# set up a windows file share named "test"
+- ps: ci/enable_os_share_windows.ps1
+- ps: ci/create_os_share_windows.ps1
+
+# set up a local s3_proxy server
+- bash -c "ci/s3_local.sh -d; sleep 5"
+
+# install python deps
+- pip install -e .[dev]
+
+# install js deps
+- yarn
+
+# print all env vars
+- ps: gci env:* | sort-object name
+
+test_script:
+# uncomment to allow remote login to windows ci vm via rdp
+# - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+
+# lint the python code
+- python -m flake8 jupyterfs setup.py
+
+# lint the js code
+- yarn lint
+
+# test the python code
+- python -m pytest -v jupyterfs/tests --cov=jupyterfs --cov-branch
+
+# test the js code
+- yarn test
