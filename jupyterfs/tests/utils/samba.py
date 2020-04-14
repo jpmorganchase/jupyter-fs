@@ -84,6 +84,7 @@ class RootDirUtil:
     def __init__(
         self,
         dir_name,
+        direct_tcp=False,
         host=None,
         hostname=None,
         my_name='local',
@@ -94,6 +95,7 @@ class RootDirUtil:
         self.hostname = socket.getfqdn() if hostname is None else hostname
 
         self.dir_name = dir_name
+        self.direct_tcp = direct_tcp
         self.my_name = my_name
         self.name_port = name_port
         self.smb_port = smb_port
@@ -133,6 +135,7 @@ class RootDirUtil:
             password=smb_passwd,
             my_name=self.my_name,
             remote_name=self.hostname,
+            is_direct_tcp=self.direct_tcp,
         )
 
         conn = SMBConnection(**kwargs)

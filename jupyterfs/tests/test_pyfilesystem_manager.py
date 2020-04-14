@@ -25,8 +25,9 @@ test_endpoint_url_s3 = 'http://127.0.0.1:9000'
 test_hostname_smb_docker_share = 'TESTNET'
 test_name_port_smb_docker_share = 3669
 
+test_direct_tcp_smb_os_share = True
 test_host_smb_os_share = socket.gethostbyname_ex(socket.gethostname())[2][-1]
-test_smb_port_smb_os_share = None
+test_smb_port_smb_os_share = 445
 
 _test_file_model = {
     'content': test_content,
@@ -137,6 +138,10 @@ class TestPyFilesystemContentsManager_smb_docker_share(_TestBase):
     Manual startup of equivalent docker:
 
         docker run --rm -it -p 137:137/udp -p 138:138/udp -p 139:139 -p 445:445 dperson/samba -p -n -u "smbuser;smbuser" -w "TESTNET"
+
+    Docker with a windows guest:
+
+        docker run --rm -it -p 137:137/udp -p 138:138/udp -p 139:139 -p 445:445 mcr.microsoft.com/windows/nanoserver:1809
     """
     _rootDirUtil = samba.RootDirUtil(
         dir_name=test_dir,
@@ -205,6 +210,7 @@ class TestPyFilesystemContentsManager_smb_os_share(_TestBase):
 
     def _createContentsManager(self):
         kwargs = dict(
+            direct_tcp=test_direct_tcp_smb_os_share,
             host=test_host_smb_os_share,
             hostname=socket.getfqdn(),
             passwd=samba.smb_passwd,
@@ -213,11 +219,11 @@ class TestPyFilesystemContentsManager_smb_os_share(_TestBase):
         )
 
         if test_smb_port_smb_os_share is not None:
-            uri = 'smb://{username}:{passwd}@{host}:{port}/{share}?hostname={hostname}'.format(port=test_smb_port_smb_os_share, **kwargs)
-            cm = PyFilesystemContentsManager.open_fs(uri)
+            uri = 'smb://{username}:{passwd}@{host}:{port}/{share}?hostname={hostname}&direct-tcp={direct_tcp}'.format(port=test_smb_port_smb_os_share, **kwargs)
         else:
-            uri = 'smb://{username}:{passwd}@{host}/{share}?hostname={hostname}'.format(**kwargs)
-            cm = PyFilesystemContentsManager.open_fs(uri)
+            uri = 'smb://{username}:{passwd}@{host}/{share}?hostname={hostname}&direct-tcp={direct_tcp}'.format(**kwargs)
+
+        cm = PyFilesystemContentsManager.open_fs(uri)
 
         assert cm.dir_exists('.')
         return cm

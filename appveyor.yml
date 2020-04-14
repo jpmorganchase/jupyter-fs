@@ -12,7 +12,9 @@ services:
 
 # runs before repo checkout
 init:
-# set the python version
+# set the python version permanently (for debugging)...
+- ps: "[Environment]::SetEnvironmentVariable(\"Path\", \"$env:PYTHON;$env:PYTHON\\Scripts;$env:Path\", \"Machine\")"
+# ...and for this session
 - cmd: set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%
 
 # install latest pip
@@ -36,7 +38,7 @@ install:
 - curl http://127.0.0.1:9000/
 
 # install python deps
-- pip install -e .[dev]
+- pip install --upgrade --upgrade-strategy=eager -e .[dev]
 
 # install js deps
 # - yarn
@@ -46,7 +48,7 @@ install:
 
 test_script:
 # uncomment to allow remote login to windows ci vm via rdp
-# - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 # lint the python code
 # - python -m flake8 jupyterfs setup.py
