@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 import os
 import shutil
+import socket
 
 from jupyterfs.pyfilesystem_manager import PyFilesystemContentsManager
 
@@ -22,11 +23,8 @@ test_root_osfs = 'osfs_local'
 
 test_endpoint_url_s3 = 'http://127.0.0.1:9000'
 
-test_host_smb_docker_share = '127.0.0.1'
 test_hostname_smb_docker_share = 'TESTNET'
 test_name_port_smb_docker_share = 3669
-
-test_host_smb_os_share = '127.0.0.1'
 
 _test_file_model = {
     'content': test_content,
@@ -136,7 +134,6 @@ class TestPyFilesystemContentsManager_smb_docker_share(_TestBase):
     """
     _rootDirUtil = samba.RootDirUtil(
         dir_name=test_dir,
-        host=test_host_smb_docker_share,
         hostname=test_hostname_smb_docker_share,
         name_port=test_name_port_smb_docker_share,
     )
@@ -166,7 +163,7 @@ class TestPyFilesystemContentsManager_smb_docker_share(_TestBase):
         uri = 'smb://{username}:{passwd}@{host}/{share}?name-port={name_port}'.format(
             username=samba.smb_user,
             passwd=samba.smb_passwd,
-            host=test_host_smb_docker_share,
+            host=socket.gethostbyname(socket.gethostname()),
             name_port=test_name_port_smb_docker_share,
             share=test_dir,
         )
@@ -179,12 +176,10 @@ class TestPyFilesystemContentsManager_smb_docker_share(_TestBase):
 @pytest.mark.win32
 class TestPyFilesystemContentsManager_smb_os_share(_TestBase):
     """(windows only. future: also mac) Uses the os's buitlin samba server.
-    Creates and expose a share locally
+    Expects a local user "smbuser" with access to a share named "test"
     """
     _rootDirUtil = samba.RootDirUtil(
         dir_name=test_dir,
-        host=test_host_smb_os_share,
-        hostname=os.environ.get('COMPUTERNAME', None),
     )
 
     @classmethod
@@ -201,15 +196,13 @@ class TestPyFilesystemContentsManager_smb_os_share(_TestBase):
         self._rootDirUtil.delete()
 
     def _createContentsManager(self):
-        uri = 'smb://{username}:{passwd}@{host}/{share}'.format(
+        uri = 'smb://{username}:{passwd}@{host}/{share}?hostname={hostname}'.format(
             username=samba.smb_user,
             passwd=samba.smb_passwd,
-            host=test_host_smb_os_share,
+            host=socket.gethostbyname(socket.gethostname()),
             share=test_dir,
+            hostname=socket.getfqdn()
         )
-
-        if 'COMPUTERNAME' in os.environ:
-            uri += ('?hostname=%s' % os.environ['COMPUTERNAME'])
 
         cm = PyFilesystemContentsManager.open_fs(uri)
         assert cm.dir_exists('.')

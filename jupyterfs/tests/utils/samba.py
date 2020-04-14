@@ -12,6 +12,7 @@ import os
 import shutil
 import signal
 from smb.SMBConnection import SMBConnection
+import socket
 import sys
 import time
 
@@ -83,14 +84,15 @@ class RootDirUtil:
     def __init__(
         self,
         dir_name,
-        host,
+        host=None,
         hostname=None,
         my_name='local',
         name_port=137
     ):
+        self.host = socket.gethostbyname(socket.gethostname()) if host is None else host
+        self.hostname = socket.getfqdn() if hostname is None else hostname
+
         self.dir_name = dir_name
-        self.host = host
-        self.hostname = hostname
         self.my_name = my_name
         self.name_port = name_port
 
