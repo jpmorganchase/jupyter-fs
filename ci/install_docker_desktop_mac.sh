@@ -5,8 +5,7 @@
 # https://forums.docker.com/t/docker-for-mac-unattended-installation/27112
 
 brew cask install docker
-set -x
-echo "Running xattr"
+# allow the app to run without confirmation
 xattr -d -r com.apple.quarantine /Applications/Docker.app
 
 # preemptively do docker.app's setup to avoid any gui prompts

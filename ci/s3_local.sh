@@ -2,6 +2,36 @@
 S3PROXY_VERSION=1.7.0
 S3PROXY_PORT=9000
 
+# Usage info
+show_help() {
+cat << EOF
+Usage: ${0##*/} [-d]
+Run a local instance of s3_proxy
+
+    -d    Detach; run s3_proxy as a background job
+EOF
+}
+
+# parse opts
+detach=
+run=
+OPTIND=1
+while getopts hdtr opt; do
+    case $opt in
+        h)  show_help
+            exit 0
+            ;;
+        d)  detach=-d
+            ;;
+        r)  run=-r
+            ;;
+        *)  show_help >&2
+            exit 1
+            ;;
+    esac
+done
+shift "$((OPTIND-1))"   # Discard the options and sentinel --
+
 # make dir for storing s3 files locally
 mkdir -p s3_local
 
@@ -29,7 +59,13 @@ EOT
 curl -L https://github.com/gaul/s3proxy/releases/download/s3proxy-${S3PROXY_VERSION}/s3proxy -o s3proxy
 
 # run s3proxy as a background job
-java -jar s3proxy --properties s3proxy.conf &
+if [ "$run" = "-r" ]; then
+    if [ "$detach" = "-d" ]; then
+        java -jar s3proxy --properties s3proxy.conf &
+    else
+        java -jar s3proxy --properties s3proxy.conf
+    fi
+fi
 
 # no explicit wait needed, azure already stalls
 # for 10 seconds to wait for open process to stop

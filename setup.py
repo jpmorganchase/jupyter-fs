@@ -4,7 +4,7 @@
 #
 # This file is part of the jupyter-fs library, distributed under the terms of
 # the Apache License 2.0.  The full license can be found in the LICENSE file.
-#
+
 from codecs import open
 from os import path
 from pathlib import Path
@@ -32,17 +32,23 @@ requires = [
     'notebook>=5.7.0',
 ]
 
-dev_requires = requires + [
-    'autopep8',
+test_requires = [
     'boto3',
+    'docker',
+    'fs-miniofs',
+    'fs.smbfs @ git+https://github.com/telamonian/fs.smbfs.git@dont_assume_everyone_ace_exists#egg=fs.smbfs',
+    'mock',
+    'pysmb',
+    'pytest',
+    'pytest-cov',
+]
+
+dev_requires = requires + test_requires + [
+    'autopep8',
     'bump2version',
     'codecov',
     'flake8',
-    'fs-miniofs',
-    'mock',
     'pylint',
-    'pytest',
-    'pytest-cov',
 ]
 
 data_files_spec = [

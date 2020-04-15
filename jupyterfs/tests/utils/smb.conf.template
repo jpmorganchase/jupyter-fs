@@ -1,0 +1,22 @@
+[global]
+    netbios name = TESTNET
+    workgroup = TESTGROUP
+    server string = Samba test server for CI
+    security = user
+    guest account = nobody
+    map to guest = Bad User
+
+    # disable printing services
+    load printers = no
+    printing = bsd
+    printcap name = /dev/null
+    disable spoolss = yes
+
+[test]
+    comment = test
+    path = /shared
+    write list = smbuser
+    guest ok = yes
+    # getting rid of those annoying .DS_Store files created by Mac users...
+    veto files = /._*/.DS_Store/
+    delete veto files = yes

@@ -1,0 +1,65 @@
+image: Visual Studio 2019
+
+environment:
+  PYTHON: "C:\\Python37"
+
+build: off
+
+services:
+- docker
+
+# mentioned in appveyor docs, doesn't seem to work
+# stack: docker, jdk 1.8, node 12, python 3.7
+
+# runs before repo checkout
+init:
+# set the python version permanently (for debugging)...
+- ps: "[Environment]::SetEnvironmentVariable(\"Path\", \"$env:PYTHON;$env:PYTHON\\Scripts;$env:Path\", \"Machine\")"
+# ...and for this session
+- cmd: set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%
+
+# install latest pip
+- python -m pip install --upgrade pip
+
+# set the node version
+- ps: Install-Product node 12
+
+# install yarn globally
+- npm install -g yarn
+
+install:
+# set up a windows file share named "test"
+- ps: ci/enable_os_share_windows.ps1
+- ps: ci/create_os_share_windows.ps1
+
+# set up a local s3_proxy server
+- bash -c "ci/s3_local.sh"
+- ps: Start-Process -FilePath "java" -ArgumentList "-jar","s3proxy","--properties","s3proxy.conf"
+- bash -c "sleep 5"
+- curl http://127.0.0.1:9000/
+
+# install python deps
+- pip install --upgrade --upgrade-strategy=eager -e .[dev]
+
+# install js deps
+- yarn
+
+# print all env vars
+- ps: gci env:* | sort-object name
+
+test_script:
+# lint the python code
+- python -m flake8 jupyterfs setup.py
+
+# lint the js code
+- yarn lint
+
+# test the python code
+- python -m pytest -v jupyterfs/tests --cov=jupyterfs --cov-branch
+
+# test the js code
+- yarn test
+
+on_failure:
+# enable remote login (via rdp) to windows ci vm on test failure
+- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))

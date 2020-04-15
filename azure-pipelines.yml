@@ -4,7 +4,7 @@ trigger:
     - '*'  # must quote since "*" is a YAML reserved character; we want a string
 
 parameters:
-- name: initializationSteps
+- name: initSteps
   type: stepList
   default:
     - task: UsePythonVersion@0
@@ -37,27 +37,53 @@ parameters:
 
     - bash: env
       displayName: "List all environment variables"
-- name: s3proxySteps
+
+- name: initDockerSteps
   type: stepList
   default:
-    - bash: nohup ci/s3_local.sh
-      displayName: "Start up local S3 server"
+    - task: DockerInstaller@0
+      displayName: Docker Installer
+      inputs:
+        dockerVersion: 19.03.8
+        releaseType: stable
 
-    - script: curl http://127.0.0.1:9000/
-      displayName: 'Test local S3 server'
-- name: s3proxyMacSteps
+- name: initDockerStepsMac
   type: stepList
   default:
     - script: |
         ci/install_docker_desktop_mac.sh
         ci/start_docker_desktop_mac.sh
-        docker pull andrewgaul/s3proxy
-        nohup sudo docker run -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy &
+      displayName: 'Setup Docker Desktop Mac'
+
+- name: initS3proxyStepsLocal
+  type: stepList
+  default:
+    - bash: |
+        nohup ci/s3_local.sh -d -r
         sleep 5
-      displayName: 'Start s3proxy in a docker'
+      displayName: "Start up local S3 server"
 
     - script: curl http://127.0.0.1:9000/
       displayName: 'Test local S3 server'
+
+- name: initSmbOsWindows
+  type: stepList
+  default:
+    - task: PowerShell@2
+      inputs:
+        targetType: 'filePath'
+        filePath: 'ci/enable_os_share_windows.ps1'
+        errorActionPreference: 'stop'
+        failOnStderr: True
+      displayName: 'Enable os builtin file sharing'
+    - task: PowerShell@2
+      inputs:
+        targetType: 'filePath'
+        filePath: 'ci/create_os_share_windows.ps1'
+        errorActionPreference: 'stop'
+        failOnStderr: True
+      displayName: 'Create share on os builtin samba server'
+
 - name: testSteps
   type: stepList
   default:
@@ -72,6 +98,7 @@ parameters:
 
     - script: make testjs
       displayName: 'Test JS'
+
 - name: publishSteps
   type: stepList
   default:
@@ -97,8 +124,8 @@ jobs:
         python.version: '3.7'
 
   steps:
-    - ${{ parameters.initializationSteps }}
-    - ${{ parameters.s3proxySteps }}
+    - ${{ parameters.initDockerSteps }}
+    - ${{ parameters.initSteps }}
     - ${{ parameters.testSteps }}
     - ${{ parameters.publishSteps }}
 
@@ -112,22 +139,23 @@ jobs:
         python.version: '3.7'
 
   steps:
-    - ${{ parameters.s3proxyMacSteps }}
-    - ${{ parameters.initializationSteps }}
+    - ${{ parameters.initDockerStepsMac }}
+    - ${{ parameters.initSteps }}
     - ${{ parameters.testSteps }}
     - ${{ parameters.publishSteps }}
 
-- job: 'Windows'
-  pool:
-    vmImage: 'vs2017-win2016'
+# - job: 'Windows'
+#   pool:
+#     vmImage: 'windows-2019'
 
-  strategy:
-    matrix:
-      Python37:
-        python.version: '3.7'
+#   strategy:
+#     matrix:
+#       Python37:
+#         python.version: '3.7'
 
-  steps:
-    - ${{ parameters.initializationSteps }}
-    - ${{ parameters.s3proxySteps }}
-    - ${{ parameters.testSteps }}
-    - ${{ parameters.publishSteps }}
+#   steps:
+#     - ${{ parameters.initSmbOsWindows }}
+#     - ${{ parameters.initS3proxyStepsLocal }}
+#     - ${{ parameters.initSteps }}
+#     - ${{ parameters.testSteps }}
+#     - ${{ parameters.publishSteps }}
