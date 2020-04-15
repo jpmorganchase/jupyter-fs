@@ -10,6 +10,7 @@ import pytest
 import os
 import shutil
 import socket
+import sys
 
 from jupyterfs.pyfilesystem_manager import PyFilesystemContentsManager
 from .utils import s3, samba
@@ -20,7 +21,8 @@ test_fname = 'foo.txt'
 
 test_root_osfs = 'osfs_local'
 
-test_endpoint_url_s3 = 'http://127.0.0.1:9000'
+test_url_s3 = 'http://127.0.0.1/'
+test_port_s3 = '9000'
 
 test_hostname_smb_docker_share = 'TESTNET'
 test_name_port_smb_docker_share = 3669
@@ -95,21 +97,27 @@ class TestPyFilesystemContentsManager_osfs(_TestBase):
 
 
 class TestPyFilesystemContentsManager_s3(_TestBase):
-    """Before running this test, first run:
+    """Tests on an instance of s3proxy running in a docker
+    Manual startup of equivalent docker:
 
         docker run --rm -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy
-
-    in order to set up the test S3 server
     """
-    _rootDirUtil = s3.RootDirUtil(dir_name=test_dir, endpoint_url=test_endpoint_url_s3)
+    _rootDirUtil = s3.RootDirUtil(dir_name=test_dir, port=test_port_s3, url=test_url_s3)
 
     @classmethod
     def setup_class(cls):
+        if sys.platform != 'win32':
+            # start up the server
+            cls._rootDirUtil.start()
+
+        # delete any existing root
         cls._rootDirUtil.delete()
 
-    # @classmethod
-    # def teardown_class(cls):
-    #     print('after')
+    @classmethod
+    def teardown_class(cls):
+        if sys.platform != 'win32':
+            # stop the server
+            cls._rootDirUtil.stop()
 
     def setup_method(self, method):
         self._rootDirUtil.create()
@@ -118,11 +126,12 @@ class TestPyFilesystemContentsManager_s3(_TestBase):
         self._rootDirUtil.delete()
 
     def _createContentsManager(self):
-        uri = 's3://{id}:{key}@{bucket}?endpoint_url={endpoint_url}'.format(
+        uri = 's3://{id}:{key}@{bucket}?endpoint_url={url}:{port}'.format(
             id=s3.aws_access_key_id,
             key=s3.aws_secret_access_key,
             bucket=test_dir,
-            endpoint_url=test_endpoint_url_s3,
+            url=test_url_s3.strip('/'),
+            port=test_port_s3,
         )
 
         return PyFilesystemContentsManager.open_fs(uri)

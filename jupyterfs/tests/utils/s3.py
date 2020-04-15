@@ -5,24 +5,76 @@
 # This file is part of the jupyter-fs library, distributed under the terms of
 # the Apache License 2.0.  The full license can be found in the LICENSE file.
 
+import atexit
 import boto3
 import botocore
+import docker
+import time
 
 __all__ = ['aws_access_key_id', 'aws_secret_access_key', 'RootDirUtil']
 
 aws_access_key_id = 's3_local'
 aws_secret_access_key = 's3_local'
 
+def startServer(s3_port=9000):
+    ports = {'80/tcp': s3_port}
+
+    # init docker
+    docker_client = docker.from_env(version='auto')
+    docker_client.info()
+
+    # run a docker container running s3proxy
+    container = docker_client.containers.run(
+        'andrewgaul/s3proxy',
+        detach=True,
+        environment={'S3PROXY_AUTHORIZATION': 'none'},
+        ports=ports,
+        remove=True,
+        tty=True,
+        # network_mode='host',
+    )
+
+    def exitHandler():
+        try:
+            # will raise docker.errors.NotFound if container does not currently exist
+            docker_client.containers.get(container.id)
+
+            container.kill()
+            # container.remove()
+        except docker.errors.NotFound:
+            pass
+
+    atexit.register(exitHandler)
+
+    # wait for samba to start up
+    timeout = 0
+    while True:
+        tail = container.logs(tail=1)
+        if b"main o.g.s.o.e.jetty.server.Server" in tail and b"|::] Started @" in tail:
+            break
+
+        if timeout >= 100:
+            raise RuntimeError('docker andrewgaul/s3proxy timed out while starting up')
+
+        timeout += 1
+        time.sleep(1)
+
+    return container, exitHandler
+
 class RootDirUtil:
     def __init__(
         self,
         dir_name,
-        endpoint_url,
+        url,
+        port,
     ):
         self.dir_name = dir_name
-        self.endpoint_url = endpoint_url
+        self.url = url.rstrip('/')
+        self.port = port
 
-        # self._resource = self.resource()
+        self._container = None
+        self._container_exit_handler = None
+        self._endpoint_url = '{}:{}'.format(self.url, self.port)
 
     def exists(self):
         # check if bucket already exists
@@ -59,7 +111,17 @@ class RootDirUtil:
             aws_access_key_id=aws_access_key_id,
             aws_secret_access_key=aws_secret_access_key,
             # config=botocore.client.Config(signature_version=botocore.UNSIGNED),
-            endpoint_url=self.endpoint_url,
+            endpoint_url=self._endpoint_url,
         )
 
         return boto3.resource('s3', **boto_kw)
+
+    def start(self):
+        self._container, self._container_exit_handler = startServer(s3_port=self.port)
+
+    def stop(self):
+        if self._container is not None:
+            self._container_exit_handler()
+
+        self._container = None
+        self._container_exit_handler = None

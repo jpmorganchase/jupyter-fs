@@ -55,25 +55,13 @@ parameters:
         ci/start_docker_desktop_mac.sh
       displayName: 'Setup Docker Desktop Mac'
 
-- name: initS3proxySteps
+- name: initS3proxyStepsLocal
   type: stepList
   default:
     - bash: |
         nohup ci/s3_local.sh -d -r
         sleep 5
       displayName: "Start up local S3 server"
-
-    - script: curl http://127.0.0.1:9000/
-      displayName: 'Test local S3 server'
-
-- name: initS3proxyStepsMac
-  type: stepList
-  default:
-    - script: |
-        docker pull andrewgaul/s3proxy
-        sudo docker run --detach -p 9000:80 --env S3PROXY_AUTHORIZATION=none andrewgaul/s3proxy
-        sleep 15
-      displayName: 'Start s3proxy in a docker'
 
     - script: curl http://127.0.0.1:9000/
       displayName: 'Test local S3 server'
@@ -137,7 +125,6 @@ jobs:
 
   steps:
     - ${{ parameters.initDockerSteps }}
-    - ${{ parameters.initS3proxySteps }}
     - ${{ parameters.initSteps }}
     - ${{ parameters.testSteps }}
     - ${{ parameters.publishSteps }}
@@ -153,7 +140,6 @@ jobs:
 
   steps:
     - ${{ parameters.initDockerStepsMac }}
-    - ${{ parameters.initS3proxyStepsMac }}
     - ${{ parameters.initSteps }}
     - ${{ parameters.testSteps }}
     - ${{ parameters.publishSteps }}
@@ -169,7 +155,7 @@ jobs:
 
 #   steps:
 #     - ${{ parameters.initSmbOsWindows }}
-#     - ${{ parameters.initS3proxySteps }}
+#     - ${{ parameters.initS3proxyStepsLocal }}
 #     - ${{ parameters.initSteps }}
 #     - ${{ parameters.testSteps }}
 #     - ${{ parameters.publishSteps }}
