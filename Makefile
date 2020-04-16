@@ -2,7 +2,7 @@ testjs: ## Clean and Make js tests
 	yarn test
 
 testpy: ## Clean and Make py tests
-	python3.7 -m pytest -v jupyterfs/tests --cov=jupyterfs --cov-branch
+	python3.7 -m pytest -v jupyterfs/tests --cov=jupyterfs --cov-branch --junitxml=python --cov-report=xml
 
 test: ## run all tests
 	testpy
