@@ -12,9 +12,11 @@ import { PathExt, Time, URLExt } from "@jupyterlab/coreutils";
 import { IDocumentManager, isValidFileName, renameFile } from "@jupyterlab/docmanager";
 import { DocumentRegistry } from "@jupyterlab/docregistry";
 import { ContentsManager } from "@jupyterlab/services";
-import { LabIcon, newFolderIcon, refreshIcon } from "@jupyterlab/ui-components";
+import { newFolderIcon, refreshIcon } from "@jupyterlab/ui-components";
 import { PanelLayout, Widget } from "@lumino/widgets";
 import JSZip from "jszip";
+
+import { fileTreeIcon } from "./icons";
 import { Uploader } from "./upload";
 import { CommandIDs, doRename, fileSizeString, OpenDirectWidget, Patterns, switchView, writeZipFile } from "./utils";
 
@@ -41,7 +43,7 @@ export class FileTreeWidget extends Widget {
               id: string = "jupyterlab-filetree") {
     super();
     this.id = id;
-    this.title.iconClass = "filetree-icon";
+    this.title.icon = fileTreeIcon;
     this.title.caption = "File Tree";
     this.title.closable = true;
     this.addClass("jp-filetreeWidget");
