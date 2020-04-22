@@ -9,16 +9,6 @@
 
 :root {
   --indent: 1em;
-  --filetree-icon-light: url('icons/file-tree-light.svg');
-  --filetree-icon-dark: url('icons/file-tree-dark.svg');
-  --filetree-icon: var(--filetree-icon-dark);
-}
-
-[data-jp-theme-light="true"] .filetree-icon {
-  --filetree-icon: var(--filetree-icon-light);
-}
-[data-jp-theme-light="false"] .filetree-icon {
-  --filetree-icon: var(--filetree-icon-dark);
 }
 
 .jp-filetreeWidget {
@@ -53,7 +43,6 @@
 }
 
 .filetree-icon {
-  background-image: var(--filetree-icon);
   min-width: 16px;
   min-height: 16px;
   background-size: 16px;
