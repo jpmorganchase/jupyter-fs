@@ -7,10 +7,10 @@
  *
  */
 
-import { LabIcon } from '@jupyterlab/ui-components';
+import { LabIcon } from "@jupyterlab/ui-components";
 
-import driveSvgstr from '../style/icons/drive.svg';
-import fileTreeSvgstr from '../style/icons/file-tree.svg';
+import driveSvgstr from "../style/icons/drive.svg";
+import fileTreeSvgstr from "../style/icons/file-tree.svg";
 
-export const driveIcon = new LabIcon({ name: 'fs:drive', svgstr: driveSvgstr });
-export const fileTreeIcon = new LabIcon({ name: 'fs:file-tree', svgstr: fileTreeSvgstr });
+export const driveIcon = new LabIcon({ name: "fs:drive", svgstr: driveSvgstr });
+export const fileTreeIcon = new LabIcon({ name: "fs:file-tree", svgstr: fileTreeSvgstr });

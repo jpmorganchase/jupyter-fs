@@ -27,7 +27,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
     IWindowResolver,
     ILayoutRestorer,
     IRouter,
-    ISettingRegistry],
+    ISettingRegistry,
+  ],
 };
 
 async function activate(
@@ -37,7 +38,7 @@ async function activate(
   resolver: IWindowResolver,
   restorer: ILayoutRestorer,
   router: IRouter,
-  settingRegistry: ISettingRegistry
+  settingRegistry: ISettingRegistry,
 ) {
   // Attempt to load application settings
   // let settings: ISettingRegistry.ISettings;
@@ -45,7 +46,8 @@ async function activate(
     // settings = await settingRegistry.load(plugin.id);
     await settingRegistry.load(plugin.id);
   } catch (error) {
-    console.error(`Failed to load settings for the jupyter-fs extension.\n${error}`);
+    // tslint:disable-next-line:no-console
+    console.warn(`Failed to load settings for the jupyter-fs extension.\n${error}`);
   }
 
   // grab templates from serverextension
@@ -55,7 +57,7 @@ async function activate(
       const keys = await value.json() as string[];
 
       // tslint:disable-next-line:no-console
-      console.log("JupyterLab extension jupyterfs is activated!");
+      console.log("JupyterLab extension jupyter-fs is activated!");
       for ( const s of keys) {
         constructFileTreeWidget(app, s, s, "left", paths, resolver, restorer, manager, router);
         // tslint:disable-next-line:no-console
@@ -63,7 +65,7 @@ async function activate(
       }
     } else {
       // tslint:disable-next-line:no-console
-      console.warn("Jupyter-fs failed to activate");
+      console.warn("jupyter-fs failed to activate");
     }
   });
 }

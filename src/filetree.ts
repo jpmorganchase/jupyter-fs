@@ -231,7 +231,7 @@ export class FileTreeWidget extends Widget {
       tr.className += " filetree-folder";
 
       icon = this.dr.getFileType("directory").icon.element({
-        className: "jp-DirListing-itemIcon"
+        className: "jp-DirListing-itemIcon",
       });
     } else {
       tr.className += " filetree-file";
@@ -239,11 +239,11 @@ export class FileTreeWidget extends Widget {
       const fileTypes = this.dr.getFileTypesForPath(object.path);
       if (fileTypes.length === 0) {
         icon = this.dr.getFileType("text").icon.element({
-          className: "jp-DirListing-itemIcon"
+          className: "jp-DirListing-itemIcon",
         });
       } else {
         icon = fileTypes[0].icon.element({
-          className: "jp-DirListing-itemIcon"
+          className: "jp-DirListing-itemIcon",
         });
       }
     }

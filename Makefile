@@ -9,7 +9,7 @@ test: ## run all tests
 	make testjs
 
 lintjs: ## run linter
-	yarn lint
+	./node_modules/.bin/tslint src/* src/*/*
 
 lintpy: ## run linter
 	python3.7 -m flake8 jupyterfs setup.py
@@ -19,7 +19,7 @@ lint: ## run linter
 	make lintjs
 
 fixjs:  ## run autopep8/tslint fix
-	./node_modules/.bin/tslint --fix src/*
+	./node_modules/.bin/tslint --fix src/* src/*/*
 
 fixpy:  ## run autopep8/tslint fix
 	python3.7 -m autopep8 --in-place -r -a -a jupyterfs/
