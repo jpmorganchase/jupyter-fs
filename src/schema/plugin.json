@@ -6,7 +6,7 @@
   "type": "object",
   "additionalProperties": false,
   "definitions": {
-    "fsSpec": {
+    "resource": {
       "description": "Specification for an fs resource",
       "type": "object",
       "additionalProperties": false,
@@ -30,7 +30,7 @@
   "properties": {
     "resources": {
       "description": "The list of fs resources",
-      "items": { "$ref": "#/definitions/fsSpec" },
+      "items": { "$ref": "#/definitions/resource" },
       "type": "array",
       "default": []
     }

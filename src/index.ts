@@ -19,7 +19,7 @@ import "../style/index.css";
 const extension: JupyterFrontEndPlugin<void> = {
   activate,
   autoStart: true,
-  id: "jupyterfs",
+  id: "jupyter-fs:plugin",
   requires: [JupyterFrontEnd.IPaths, IWindowResolver, ILayoutRestorer, IDocumentManager, IRouter],
 };
 
