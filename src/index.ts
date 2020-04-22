@@ -10,25 +10,43 @@ import {ILayoutRestorer, IRouter, JupyterFrontEnd, JupyterFrontEndPlugin} from "
 import {IWindowResolver} from "@jupyterlab/apputils";
 import {PageConfig} from "@jupyterlab/coreutils";
 import {IDocumentManager} from "@jupyterlab/docmanager";
+import {ISettingRegistry} from "@jupyterlab/settingregistry";
 import {constructFileTreeWidget} from "./filetree";
 
 import "../style/index.css";
 
 // tslint:disable: variable-name
 
-const extension: JupyterFrontEndPlugin<void> = {
+const plugin: JupyterFrontEndPlugin<void> = {
   activate,
   autoStart: true,
   id: "jupyter-fs:plugin",
-  requires: [JupyterFrontEnd.IPaths, IWindowResolver, ILayoutRestorer, IDocumentManager, IRouter],
+  requires: [
+    IDocumentManager,
+    JupyterFrontEnd.IPaths,
+    IWindowResolver,
+    ILayoutRestorer,
+    IRouter,
+    ISettingRegistry],
 };
 
-function activate(app: JupyterFrontEnd,
-                  paths: JupyterFrontEnd.IPaths,
-                  resolver: IWindowResolver,
-                  restorer: ILayoutRestorer,
-                  manager: IDocumentManager,
-                  router: IRouter) {
+async function activate(
+  app: JupyterFrontEnd,
+  manager: IDocumentManager,
+  paths: JupyterFrontEnd.IPaths,
+  resolver: IWindowResolver,
+  restorer: ILayoutRestorer,
+  router: IRouter,
+  settingRegistry: ISettingRegistry
+) {
+  // Attempt to load application settings
+  // let settings: ISettingRegistry.ISettings;
+  try {
+    // settings = await settingRegistry.load(plugin.id);
+    await settingRegistry.load(plugin.id);
+  } catch (error) {
+    console.error(`Failed to load settings for the jupyter-fs extension.\n${error}`);
+  }
 
   // grab templates from serverextension
   fetch(new Request(PageConfig.getBaseUrl() + "multicontents/get",
@@ -50,5 +68,5 @@ function activate(app: JupyterFrontEnd,
   });
 }
 
-export default extension;
+export default plugin;
 export {activate as _activate};

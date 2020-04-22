@@ -36,7 +36,8 @@
         ]
       }
     },
-    "extension": true
+    "extension": true,
+    "schemaDir": "schema"
   },
   "dependencies": {
     "@jupyterlab/application": "^2.0.0",
