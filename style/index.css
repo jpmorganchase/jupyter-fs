@@ -9,8 +9,8 @@
 
 :root {
   --indent: 1em;
-  --filetree-icon-light: url('file-tree-light.svg');
-  --filetree-icon-dark: url('file-tree-dark.svg');
+  --filetree-icon-light: url('icons/file-tree-light.svg');
+  --filetree-icon-dark: url('icons/file-tree-dark.svg');
   --filetree-icon: var(--filetree-icon-dark);
 }
 
