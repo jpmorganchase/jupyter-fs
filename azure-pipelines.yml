@@ -42,10 +42,10 @@ parameters:
   type: stepList
   default:
     - task: DockerInstaller@0
-      displayName: Docker Installer
       inputs:
         dockerVersion: 19.03.8
         releaseType: stable
+      displayName: 'Setup docker'
 
 - name: initDockerStepsMac
   type: stepList
@@ -53,7 +53,15 @@ parameters:
     - script: |
         ci/install_docker_desktop_mac.sh
         ci/start_docker_desktop_mac.sh
-      displayName: 'Setup Docker Desktop Mac'
+      displayName: 'Setup docker desktop for mac'
+
+- name: pullContainersSteps
+  type: stepList
+  default:
+    - script: |
+        docker pull andrewgaul/s3proxy
+        docker pull dperson/samba
+      displayName: 'Pull containers used by tests'
 
 - name: initS3proxyStepsLocal
   type: stepList
@@ -125,6 +133,7 @@ jobs:
 
   steps:
     - ${{ parameters.initDockerSteps }}
+    - ${{ parameters.pullContainersSteps }}
     - ${{ parameters.initSteps }}
     - ${{ parameters.testSteps }}
     - ${{ parameters.publishSteps }}
@@ -140,6 +149,7 @@ jobs:
 
   steps:
     - ${{ parameters.initDockerStepsMac }}
+    - ${{ parameters.pullContainersSteps }}
     - ${{ parameters.initSteps }}
     - ${{ parameters.testSteps }}
     - ${{ parameters.publishSteps }}
