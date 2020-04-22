@@ -26,7 +26,6 @@
     "style/**/*.{css,svg}"
   ],
   "jupyterlab": {
-    "extension": true,
     "discovery": {
       "server": {
         "base": {
@@ -36,13 +35,19 @@
           "pip"
         ]
       }
-    }
+    },
+    "extension": true
   },
   "dependencies": {
     "@jupyterlab/application": "^2.0.0",
+    "@jupyterlab/apputils": "^2.0.0",
+    "@jupyterlab/coreutils": "^4.0.0",
     "@jupyterlab/docmanager": "^2.0.0",
+    "@jupyterlab/docregistry": "^2.0.0",
     "@jupyterlab/filebrowser": "^2.0.0",
     "@jupyterlab/services": "^5.0.0",
+    "@jupyterlab/settingregistry": "^2.0.0",
+    "@jupyterlab/ui-components": "^2.0.0",
     "@lumino/algorithm": "^1.2.3",
     "@types/file-saver": "^2.0.1",
     "@types/jszip": "^3.1.6",
