@@ -226,13 +226,15 @@ export class FileTreeWidget extends Widget {
 
     let icon = null;
     if (object.type === "directory") {
+      tr.className += " filetree-folder";
+
       icon = this.dr.getFileType("directory").icon.element({
         className: "jp-DirListing-itemIcon"
       });
-      tr.className += " filetree-folder";
     } else {
-      const fileTypes = this.dr.getFileTypesForPath(object.path);
       tr.className += " filetree-file";
+
+      const fileTypes = this.dr.getFileTypesForPath(object.path);
       if (fileTypes.length === 0) {
         icon = this.dr.getFileType("text").icon.element({
           className: "jp-DirListing-itemIcon"
