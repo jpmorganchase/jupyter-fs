@@ -2,37 +2,37 @@ testjs: ## Clean and Make js tests
 	yarn test
 
 testpy: ## Clean and Make py tests
-	python3.7 -m pytest -v jupyterfs/tests --cov=jupyterfs --cov-branch --junitxml=python --cov-report=xml
+	python3.7 -m pytest -v jupyterfs/tests --cov=jupyterfs --cov-branch --junitxml=python_junit.xml --cov-report=xml
 
 test: ## run all tests
-	testpy
-	testjs
+	make testpy
+	make testjs
 
 lintjs: ## run linter
 	yarn lint
 
 lintpy: ## run linter
-	flake8 jupyterfs setup.py
+	python3.7 -m flake8 jupyterfs setup.py
 
 lint: ## run linter
-	lintpy
-	lintjs
+	make lintpy
+	make lintjs
 
 fixjs:  ## run autopep8/tslint fix
 	./node_modules/.bin/tslint --fix src/*
 
 fixpy:  ## run autopep8/tslint fix
-	autopep8 --in-place -r -a -a jupyterfs/
+	python3.7 -m autopep8 --in-place -r -a -a jupyterfs/
 
 fix:  ## run autopep8/tslint fix
-	fixpy
-	fixjs
+	make fixpy
+	make fixjs
 
 annotate: ## MyPy type annotation check
-	mypy -s jupyterfs
+	python3.7 -m mypy -s jupyterfs
 
 annotate_l: ## MyPy type annotation check - count only
-	mypy -s jupyterfs | wc -l
+	python3.7 -m mypy -s jupyterfs | wc -l
 
 clean: ## clean the repository
 	find . -name "__pycache__" | xargs  rm -rf
@@ -42,30 +42,30 @@ clean: ## clean the repository
 	# make -C ./docs clean
 
 dev_install: ## set up the repo for active development
-	pip install -e .[dev]
-	jupyter serverextension enable --py jupyterfs
+	python3.7 -m pip install -e .[dev]
+	python3.7 -m jupyter serverextension enable --py jupyterfs
 	jlpm build:integrity
-	jupyter labextension link .
+	python3.7 -m jupyter labextension link .
 	# verify
-	jupyter serverextension list
-	jupyter labextension list
+	python3.7 -m jupyter serverextension list
+	python3.7 -m jupyter labextension list
 
 docs:  ## make documentation
 	make -C ./docs html
 	open ./docs/_build/html/index.html
 
 install:  ## install to site-packages
-	pip3 install .
+	python3.7 -m pip install .
 
 serverextension: install ## enable serverextension
-	jupyter serverextension enable --py jupyterfs
+	python3.7 -m jupyter serverextension enable --py jupyterfs
 
 js:  ## build javascript
 	yarn
 	yarn build
 
 labextension: js ## enable labextension
-	jupyter labextension install .
+	python3.7 -m jupyter labextension install .
 
 dist: js  ## create dists
 	rm -rf dist build
