@@ -226,18 +226,21 @@ export class FileTreeWidget extends Widget {
 
     let icon = null;
     if (object.type === "directory") {
-      icon = LabIcon.resolveElement({icon: this.dr.getFileType("directory").icon});
-      icon.className = "jp-DirListing-itemIcon";
+      icon = this.dr.getFileType("directory").icon.element({
+        className: "jp-DirListing-itemIcon"
+      });
       tr.className += " filetree-folder";
     } else {
-      const iconClass = this.dr.getFileTypesForPath(object.path);
+      const fileTypes = this.dr.getFileTypesForPath(object.path);
       tr.className += " filetree-file";
-      if (iconClass.length === 0) {
-        icon = LabIcon.resolveElement({icon: this.dr.getFileType("text").icon});
-        icon.className = "jp-DirListing-itemIcon";
+      if (fileTypes.length === 0) {
+        icon = this.dr.getFileType("text").icon.element({
+          className: "jp-DirListing-itemIcon"
+        });
       } else {
-        icon = LabIcon.resolveElement({icon: this.dr.getFileTypesForPath(object.path)[0].icon});
-        icon.className = "jp-DirListing-itemIcon";
+        icon = fileTypes[0].icon.element({
+          className: "jp-DirListing-itemIcon"
+        });
       }
     }
 
