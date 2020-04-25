@@ -2,7 +2,7 @@
   "name": "jupyter-fs",
   "version": "0.0.1",
   "description": "A JupyterLab extension.",
-  "author": "Tim Paine",
+  "author": "The jupyter-fs authors",
   "main": "lib/index.js",
   "keywords": [
     "jupyter",
