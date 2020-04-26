@@ -13,6 +13,7 @@ import { IDocumentManager, isValidFileName, renameFile } from "@jupyterlab/docma
 import { DocumentRegistry } from "@jupyterlab/docregistry";
 import { ContentsManager } from "@jupyterlab/services";
 import { newFolderIcon, refreshIcon } from "@jupyterlab/ui-components";
+import { DisposableSet, IDisposable } from "@lumino/disposable";
 import { PanelLayout, Widget } from "@lumino/widgets";
 import JSZip from "jszip";
 
@@ -338,15 +339,43 @@ function constructFileTreeWidget(app: JupyterFrontEnd,
                                  resolver: IWindowResolver,
                                  restorer: ILayoutRestorer,
                                  manager: IDocumentManager,
-                                 router: IRouter) {
+                                 router: IRouter): IDisposable {
 
   const widget = new FileTreeWidget(app, basepath, id || "jupyterlab-filetree");
   restorer.add(widget, widget.id);
   app.shell.add(widget, side);
 
-  const uploader = new Uploader({manager, widget});
+  const uploader_button = new Uploader({manager, widget});
+  const new_file_button = new ToolbarButton({
+    icon: newFolderIcon,
+    onClick: () => {
+      app.commands.execute((CommandIDs.create_folder + ":" + widget.id), {path: ""});
+    },
+    tooltip: "New Folder",
+  });
+  const refresh_button = new ToolbarButton({
+    icon: refreshIcon,
+    onClick: () => {
+      app.commands.execute((CommandIDs.refresh + ":" + widget.id));
+    },
+    tooltip: "Refresh",
+  });
 
-  app.commands.addCommand((CommandIDs.toggle + ":" + widget.id), {
+  widget.toolbar.addItem("upload", uploader_button);
+  widget.toolbar.addItem("new file", new_file_button);
+  widget.toolbar.addItem("refresh", refresh_button);
+
+  // remove context highlight on context menu exit
+  document.ondblclick = () => { app.commands.execute((CommandIDs.set_context + ":" + widget.id), {path: ""}); };
+  widget.node.onclick = (event) => { app.commands.execute((CommandIDs.select + ":" + widget.id), {path: ""}); };
+
+  // setInterval(() => {
+  //   app.commands.execute(CommandIDs.refresh);
+  // }, 10000);
+
+  // return a disposable containing all disposables associated
+  // with this widget, ending with the widget itself
+  return [app.commands.addCommand((CommandIDs.toggle + ":" + widget.id), {
     execute: (args) => {
       const row = args.row as string;
       const level = args.level as number;
@@ -373,7 +402,7 @@ function constructFileTreeWidget(app: JupyterFrontEnd,
         });
       }
     },
-  });
+  }),
 
   app.commands.addCommand((CommandIDs.navigate + ":" + widget.id), {
     execute: async (args) => {
@@ -415,7 +444,7 @@ function constructFileTreeWidget(app: JupyterFrontEnd,
         console.warn("Tree routing failed.", error);
       }
     },
-  });
+  }),
 
   app.commands.addCommand((CommandIDs.refresh + ":" + widget.id), {
     execute: () => {
@@ -434,7 +463,7 @@ function constructFileTreeWidget(app: JupyterFrontEnd,
       });
       widget.refresh();
     },
-  });
+  }),
 
   app.commands.addCommand((CommandIDs.set_context + ":" + widget.id), {
     execute: (args) => {
@@ -453,7 +482,7 @@ function constructFileTreeWidget(app: JupyterFrontEnd,
       }
     },
     label: "Need some Context",
-  });
+  }),
 
   app.commands.addCommand((CommandIDs.select + ":" + widget.id), {
     execute: (args) => {
@@ -472,7 +501,7 @@ function constructFileTreeWidget(app: JupyterFrontEnd,
       }
     },
     label: "Select",
-  });
+  }),
 
   app.commands.addCommand((CommandIDs.rename + ":" + widget.id), {
     execute: () => {
@@ -511,7 +540,7 @@ function constructFileTreeWidget(app: JupyterFrontEnd,
     },
     iconClass: "p-Menu-itemIcon jp-MaterialIcon jp-EditIcon",
     label: "Rename",
-  });
+  }),
 
   app.commands.addCommand((CommandIDs.create_folder + ":" + widget.id), {
     execute: async (args) => {
@@ -523,7 +552,7 @@ function constructFileTreeWidget(app: JupyterFrontEnd,
     },
     iconClass: "p-Menu-itemIcon jp-MaterialIcon jp-NewFolderIcon",
     label: "New Folder",
-  });
+  }),
 
   app.commands.addCommand((CommandIDs.create_file + ":" + widget.id), {
     execute: () => {
@@ -546,7 +575,7 @@ function constructFileTreeWidget(app: JupyterFrontEnd,
     },
     iconClass: "p-Menu-itemIcon jp-MaterialIcon jp-AddIcon",
     label: "New File",
-  });
+  }),
 
   app.commands.addCommand((CommandIDs.delete_op + ":" + widget.id), {
     execute: () => {
@@ -566,7 +595,7 @@ function constructFileTreeWidget(app: JupyterFrontEnd,
     },
     iconClass: "p-Menu-itemIcon jp-MaterialIcon jp-CloseIcon",
     label: "Delete",
-  });
+  }),
 
   app.commands.addCommand((CommandIDs.download + ":" + widget.id), {
     execute: (args) => {
@@ -574,15 +603,15 @@ function constructFileTreeWidget(app: JupyterFrontEnd,
     },
     iconClass: "p-Menu-itemIcon jp-MaterialIcon jp-DownloadIcon",
     label: "Download",
-  });
+  }),
 
   app.commands.addCommand((CommandIDs.upload + ":" + widget.id), {
     execute: () => {
-      uploader.contextClick(widget.selected);
+      uploader_button.contextClick(widget.selected);
     },
     iconClass: "p-Menu-itemIcon jp-MaterialIcon jp-FileUploadIcon",
     label: "Upload",
-  });
+  }),
 
   app.commands.addCommand((CommandIDs.move + ":" + widget.id), {
     execute: (args) => {
@@ -604,7 +633,7 @@ function constructFileTreeWidget(app: JupyterFrontEnd,
       });
     },
     label: "Move",
-  });
+  }),
 
   app.commands.addCommand((CommandIDs.copy_path + ":" + widget.id), {
     execute: () => {
@@ -612,85 +641,59 @@ function constructFileTreeWidget(app: JupyterFrontEnd,
     },
     iconClass: widget.dr.getFileType("text").iconClass,
     label: "Copy Path",
-  });
+  }),
 
   app.contextMenu.addItem({
     command: (CommandIDs.rename + ":" + widget.id),
     rank: 3,
     selector: "div." + widget.id + " > table > *> .filetree-item",
-  });
+  }),
 
   app.contextMenu.addItem({
     command: (CommandIDs.delete_op + ":" + widget.id),
     rank: 4,
     selector: "div." + widget.id + " > table > *> .filetree-item",
-  });
+  }),
 
   app.contextMenu.addItem({
     command: (CommandIDs.copy_path + ":" + widget.id),
     rank: 5,
     selector: "div." + widget.id + " > table > *> .filetree-item",
-  });
+  }),
 
   app.contextMenu.addItem({
     command: (CommandIDs.download + ":" + widget.id),
     rank: 1,
     selector: "div." + widget.id + " > table > *> .filetree-file",
-  });
+  }),
 
   app.contextMenu.addItem({
     command: (CommandIDs.create_folder + ":" + widget.id),
     rank: 2,
     selector: "div." + widget.id + " > table > * > .filetree-folder",
-  });
+  }),
 
   app.contextMenu.addItem({
     command: (CommandIDs.create_file + ":" + widget.id),
     rank: 1,
     selector: "div." + widget.id + " > table > * > .filetree-folder",
-  });
+  }),
 
   app.contextMenu.addItem({
     command: (CommandIDs.upload + ":" + widget.id),
     rank: 3,
     selector: "div." + widget.id + " > table > * > .filetree-folder",
-  });
+  }),
 
   app.contextMenu.addItem({
     args: {folder: true},
     command: (CommandIDs.download + ":" + widget.id),
     rank: 1,
     selector: "div." + widget.id + " > table > *> .filetree-folder",
-  });
+  }),
 
-  const new_file = new ToolbarButton({
-    icon: newFolderIcon,
-    onClick: () => {
-      app.commands.execute((CommandIDs.create_folder + ":" + widget.id), {path: ""});
-    },
-    tooltip: "New Folder",
-  });
-  widget.toolbar.addItem("new file", new_file);
+  router.register({ command: (CommandIDs.navigate + ":" + widget.id), pattern: Patterns.tree }),
+  router.register({ command: (CommandIDs.navigate + ":" + widget.id), pattern: Patterns.workspace }),
 
-  widget.toolbar.addItem("upload", uploader);
-
-  const refresh = new ToolbarButton({
-    icon: refreshIcon,
-    onClick: () => {
-      app.commands.execute((CommandIDs.refresh + ":" + widget.id));
-    },
-    tooltip: "Refresh",
-  });
-  widget.toolbar.addItem("refresh", refresh);
-
-  router.register({ command: (CommandIDs.navigate + ":" + widget.id), pattern: Patterns.tree });
-  router.register({ command: (CommandIDs.navigate + ":" + widget.id), pattern: Patterns.workspace });
-
-  // remove context highlight on context menu exit
-  document.ondblclick = () => { app.commands.execute((CommandIDs.set_context + ":" + widget.id), {path: ""}); };
-  widget.node.onclick = (event) => { app.commands.execute((CommandIDs.select + ":" + widget.id), {path: ""}); };
-
-  // setInterval(() => {
-  //   app.commands.execute(CommandIDs.refresh);
-  // }, 10000);
+  widget].reduce((set: DisposableSet, d) => {set.add(d); return set;}, new DisposableSet());
 }
