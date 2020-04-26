@@ -6,14 +6,13 @@
  * the Apache License 2.0.  The full license can be found in the LICENSE file.
  *
  */
-import {ILayoutRestorer, IRouter, JupyterFrontEnd, JupyterFrontEndPlugin} from "@jupyterlab/application";
-import {IWindowResolver} from "@jupyterlab/apputils";
-import {PageConfig} from "@jupyterlab/coreutils";
-import {IDocumentManager} from "@jupyterlab/docmanager";
-import {ISettingRegistry} from "@jupyterlab/settingregistry";
-import {constructFileTreeWidget} from "./filetree";
+import { ILayoutRestorer, IRouter, JupyterFrontEnd, JupyterFrontEndPlugin } from "@jupyterlab/application";
+import { IWindowResolver } from "@jupyterlab/apputils";
+import { PageConfig } from "@jupyterlab/coreutils";
+import { IDocumentManager } from "@jupyterlab/docmanager";
+import { ISettingRegistry } from "@jupyterlab/settingregistry";
 
-import "../style/index.css";
+import {constructFileTreeWidget} from "./filetree";
 
 // tslint:disable: variable-name
 

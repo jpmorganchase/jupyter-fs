@@ -7,25 +7,14 @@
  *
  */
 import { Dialog, showDialog, showErrorMessage, ToolbarButton } from "@jupyterlab/apputils";
-
-import { Contents } from "@jupyterlab/services";
-
 import { IChangedArgs, PageConfig } from "@jupyterlab/coreutils";
-
+import { IDocumentManager, shouldOverwrite } from "@jupyterlab/docmanager";
+import { Contents } from "@jupyterlab/services";
 import { fileUploadIcon } from "@jupyterlab/ui-components";
-
 import { ArrayExt } from "@lumino/algorithm";
-
 import { Signal } from "@lumino/signaling";
 
-import {
-  IDocumentManager,
-  shouldOverwrite,
-} from "@jupyterlab/docmanager";
-
-import {
-  FileTreeWidget,
-} from "./filetree";
+import { FileTreeWidget } from "./filetree";
 
 /**
  * The maximum upload size (in bytes) for notebook version < 5.1.0

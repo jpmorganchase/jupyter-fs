@@ -20,8 +20,6 @@ import { fileTreeIcon } from "./icons";
 import { Uploader } from "./upload";
 import { CommandIDs, doRename, fileSizeString, OpenDirectWidget, Patterns, switchView, writeZipFile } from "./utils";
 
-import "../style/index.css";
-
 // tslint:disable: no-namespace
 // tslint:disable: variable-name
 // tslint:disable: max-line-length
@@ -438,9 +436,6 @@ function constructFileTreeWidget(app: JupyterFrontEnd,
     },
   });
 
-  router.register({ command: (CommandIDs.navigate + ":" + widget.id), pattern: Patterns.tree });
-  router.register({ command: (CommandIDs.navigate + ":" + widget.id), pattern: Patterns.workspace });
-
   app.commands.addCommand((CommandIDs.set_context + ":" + widget.id), {
     execute: (args) => {
       if (widget.selected !== "") {
@@ -478,10 +473,6 @@ function constructFileTreeWidget(app: JupyterFrontEnd,
     },
     label: "Select",
   });
-
-  // remove context highlight on context menu exit
-  document.ondblclick = () => { app.commands.execute((CommandIDs.set_context + ":" + widget.id), {path: ""}); };
-  widget.node.onclick = (event) => { app.commands.execute((CommandIDs.select + ":" + widget.id), {path: ""}); };
 
   app.commands.addCommand((CommandIDs.rename + ":" + widget.id), {
     execute: () => {
@@ -691,6 +682,13 @@ function constructFileTreeWidget(app: JupyterFrontEnd,
     tooltip: "Refresh",
   });
   widget.toolbar.addItem("refresh", refresh);
+
+  router.register({ command: (CommandIDs.navigate + ":" + widget.id), pattern: Patterns.tree });
+  router.register({ command: (CommandIDs.navigate + ":" + widget.id), pattern: Patterns.workspace });
+
+  // remove context highlight on context menu exit
+  document.ondblclick = () => { app.commands.execute((CommandIDs.set_context + ":" + widget.id), {path: ""}); };
+  widget.node.onclick = (event) => { app.commands.execute((CommandIDs.select + ":" + widget.id), {path: ""}); };
 
   // setInterval(() => {
   //   app.commands.execute(CommandIDs.refresh);
