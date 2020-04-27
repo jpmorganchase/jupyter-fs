@@ -15,7 +15,7 @@
           "description": "Display name of resource",
           "type": "string"
         },
-        "tooltip": {
+        "desc": {
           "description": "Optional longer description of resource",
           "type": "string",
           "default": ""
