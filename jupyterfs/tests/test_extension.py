@@ -7,9 +7,11 @@
 #
 
 # for Coverage
-import tornado.web
 from mock import MagicMock
-from jupyterfs.extension import load_jupyter_server_extension, GetHandler
+import tornado.web
+
+from jupyterfs.extension import load_jupyter_server_extension
+from jupyterfs.meta_contents_manager import MetaContentsHandler
 
 
 class TestExtension:
@@ -24,6 +26,6 @@ class TestExtension:
     def test_get_handler(self):
         app = tornado.web.Application()
         m = MagicMock()
-        h = GetHandler(app, m)
+        h = MetaContentsHandler(app, m)
         h._transforms = []
         h.get()

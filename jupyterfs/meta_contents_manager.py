@@ -13,7 +13,7 @@ from notebook.base.handlers import IPythonHandler
 from notebook.services.contents.largefilemanager import LargeFileManager
 from notebook.services.contents.manager import ContentsManager
 
-from .meta_contents_manager import PyFilesystemContentsManager
+from .pyfilesystem_manager import PyFilesystemContentsManager
 from .pathutils import path_first_arg, path_second_arg, path_kwarg, path_old_new
 
 __all__ = ["MetaContentsHandler", "MetaContentsManager"]

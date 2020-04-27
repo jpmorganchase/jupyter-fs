@@ -6,21 +6,21 @@
  * the Apache License 2.0.  The full license can be found in the LICENSE file.
  *
  */
-import { URLExt } from '@jupyterlab/coreutils';
-import { ServerConnection } from '@jupyterlab/services';
+import { URLExt } from "@jupyterlab/coreutils";
+import { ServerConnection } from "@jupyterlab/services";
 
 // tslint:disable: no-namespace
 // tslint:disable: variable-name
 // tslint:disable: max-line-length
 // tslint:disable: max-classes-per-file
 
-export interface IFSResource {
+export interface IFSResourceSpec {
   name: string;
   desc: string;
   fsurl: string;
 }
 
-export interface IFSResourceInited extends IFSResource {
+export interface IFSResource extends IFSResourceSpec {
   drive: string;
 }
 
@@ -29,13 +29,13 @@ export interface IFSComm {
    * Send a parameterized GET request to the `/jupyterfs/resources` api, and
    * return the result.
    */
-  getResourcesRequest: () => Promise<IFSResourceInited[]>;
+  getResourcesRequest: () => Promise<IFSResource[]>;
 
   /**
    * Send a parameterized POST request to the `/jupyterfs/resources` api, and
    * return the result.
    */
-  setResourcesRequest: (param: IFSResource) => Promise<IFSResourceInited[]>;
+  initResourceRequest: (...spec: IFSResourceSpec[]) => Promise<IFSResource[]>;
 
   /**
    * The base url to prefix onto the uri of this Comm's requests
@@ -52,8 +52,8 @@ abstract class FSCommBase implements IFSComm {
     }
   }
 
-  abstract async getResourcesRequest(): Promise<IFSResourceInited[]>;
-  abstract async setResourcesRequest(...resource: IFSResource[]): Promise<IFSResourceInited[]>;
+  abstract async getResourcesRequest(): Promise<IFSResource[]>;
+  abstract async initResourceRequest(...spec: IFSResourceSpec[]): Promise<IFSResource[]>;
 
   get baseUrl(): string {
     return this.settings.baseUrl;
@@ -65,7 +65,7 @@ abstract class FSCommBase implements IFSComm {
   }
 
   get resourcesUrl(): string {
-    return URLExt.join(this.baseUrl, 'resources');
+    return URLExt.join(this.baseUrl, "resources");
   }
 
   get settings(): ServerConnection.ISettings {
@@ -80,13 +80,13 @@ abstract class FSCommBase implements IFSComm {
 }
 
 export class FSComm extends FSCommBase {
-  async getResourcesRequest(): Promise<IFSResourceInited[]> {
+  async getResourcesRequest(): Promise<IFSResource[]> {
     const settings = this.settings;
     const fullUrl = this.resourcesUrl;
 
     return ServerConnection.makeRequest(
       fullUrl,
-      { method: 'GET' },
+      { method: "GET" },
       settings
     ).then(response => {
       if (response.status !== 200) {
@@ -99,18 +99,18 @@ export class FSComm extends FSCommBase {
     });
   }
 
-  async setResourcesRequest(...resource: IFSResource[]): Promise<IFSResourceInited[]> {
+  async initResourceRequest(...spec: IFSResourceSpec[]): Promise<IFSResource[]> {
     const settings = this.settings;
     const fullUrl = this.resourcesUrl;
 
     return ServerConnection.makeRequest(
       fullUrl,
       {
+        body: JSON.stringify(spec),
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json"
         },
-        body: JSON.stringify(resource),
-        method: 'POST'
+        method: "POST"
       },
       settings
     ).then(response => {

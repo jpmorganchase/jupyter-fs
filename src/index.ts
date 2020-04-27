@@ -8,12 +8,12 @@
  */
 import { ILayoutRestorer, IRouter, JupyterFrontEnd, JupyterFrontEndPlugin } from "@jupyterlab/application";
 import { IWindowResolver } from "@jupyterlab/apputils";
-import { PageConfig } from "@jupyterlab/coreutils";
 import { IDocumentManager } from "@jupyterlab/docmanager";
 import { ISettingRegistry } from "@jupyterlab/settingregistry";
 import { DisposableSet } from "@lumino/disposable";
 
-import { constructFileTreeWidget } from "./filetree";
+import { FSComm, IFSResourceSpec } from "./filesystem";
+import { FileTree } from "./filetree";
 
 // tslint:disable: variable-name
 
@@ -40,6 +40,17 @@ async function activate(
   router: IRouter,
   settingRegistry: ISettingRegistry,
 ) {
+  const comm = new FSComm();
+  const disposable = new DisposableSet();
+  const sidebarProps: FileTree.ISidebarProps = {
+    app,
+    manager,
+    paths,
+    resolver,
+    restorer,
+    router
+  };
+
   // Attempt to load application settings
   let settings: ISettingRegistry.ISettings;
   try {
@@ -49,35 +60,23 @@ async function activate(
     console.warn(`Failed to load settings for the jupyter-fs extension.\n${error}`);
   }
 
-  // grab templates from serverextension
-  function ftFromServerextension(disposable: DisposableSet) {
-    fetch(new Request(PageConfig.getBaseUrl() + "multicontents/get", {method: "get"})).then(async (val) => {
-      if (val.ok) {
-        const keys = await val.json() as string[];
+  async function refresh() {
+    disposable.dispose();
 
-        // tslint:disable-next-line:no-console
-        console.log("JupyterLab extension jupyter-fs is activated!");
-        for ( const s of keys) {
-          disposable.add(constructFileTreeWidget(app, s, s, "left", paths, resolver, restorer, manager, router));
-          // tslint:disable-next-line:no-console
-          console.log("Adding contents manager for " + s);
-        }
-      } else {
-        // tslint:disable-next-line:no-console
-        console.warn("jupyter-fs failed to activate");
-      }
-    });
+    const specs: IFSResourceSpec[] = settings.composite["resources"] as any;
+    const resources = await comm.initResourceRequest(...specs);
+
+    for (const r of resources) {
+      disposable.add(FileTree.sidebarFromResource(r, sidebarProps));
+    }
   }
 
-  const _d = new DisposableSet();
   if (settings) {
-    function onSettingsChange(settings: ISettingRegistry.ISettings) {
-      _d.dispose();
+    // initial setup
+    refresh();
 
-      ftFromServerextension(_d);
-    }
-
-    settings.changed.connect(onSettingsChange, this);
+    // rerun setup whenever relevant settings change
+    settings.changed.connect(refresh);
   }
 }
 
