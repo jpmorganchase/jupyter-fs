@@ -63,13 +63,17 @@ typings/
 # dotenv environment variables file
 .env
 
-package-lock.json
+# javascript/typescript build files
+*.tsbuildinfo
 lib
+package-lock.json
+yarn.lock
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+.pytest_cache
 
 # C extensions
 *.so
@@ -183,7 +187,6 @@ ENV/
 .DS_Store
 
 .autoversion
-yarn.lock
 docs/api
 docs/index.md
 python_junit.xml

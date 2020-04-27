@@ -1,15 +1,25 @@
+var tsConfig = require ('./tsconfig.json');
+
+var tsOptions = tsConfig["compilerOptions"];
+// Need as the test folder is not visible from the src folder
+tsOptions["rootDir"] = null;
+
 module.exports = {
+  preset: "ts-jest/presets/js-with-babel",
   transform: {
-      "^.+\\.ts?$": "ts-jest",
-      "^.+\\.js$": "babel-jest",
-      ".+\\.(css|styl|less|sass|scss)$": "jest-transform-css"
+    "\\.svg$": "jest-raw-loader"
   },
-  "moduleNameMapper":{
-       "\\.(css|less|sass|scss)$": "<rootDir>/jupyterfs/tests/js/styleMock.js",
-       "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/jupyterfs/tests/js/fileMock.js"
+  moduleNameMapper:{
+    "\\.(css|less|sass|scss)$": "<rootDir>/testutils/styleMock.js",
+    "\\.(jpg|jpeg|png|gif|eot)$": "<rootDir>/testutils/fileMock.js"
   },
-  preset: 'ts-jest',
-  "transformIgnorePatterns": [
-    "/node_modules/(?!@jupyterlab)"
-  ]
+  moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
+  testPathIgnorePatterns: ["/lib/", "/node_modules/"],
+  testRegex: "test\/.*\.test\.ts[x]?$",
+  transformIgnorePatterns: ['/node_modules/(?!(@jupyterlab/.*)/)'],
+  globals: {
+    "ts-jest": {
+      tsConfig: tsOptions
+    }
+  }
 };
