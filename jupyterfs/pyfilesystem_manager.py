@@ -5,16 +5,19 @@
 # This file is part of the jupyter-fs library, distributed under the terms of
 # the Apache License 2.0.  The full license can be found in the LICENSE file.
 #
-import os.path
-import mimetypes
-import nbformat
 from base64 import encodebytes, decodebytes
 from datetime import datetime
 from fs import errors, open_fs
-from notebook import _tz as tz
-from notebook.services.contents.filemanager import FileContentsManager
-from notebook.services.contents.filecheckpoints import GenericFileCheckpoints
+import mimetypes
+import os.path
 from tornado import web
+
+import nbformat
+from notebook import _tz as tz
+from notebook.services.contents.filecheckpoints import GenericFileCheckpoints
+from notebook.services.contents.filemanager import FileContentsManager
+
+__all__ = ["PyFilesystemContentsManager"]
 
 
 class PyFilesystemContentsManager(FileContentsManager):
