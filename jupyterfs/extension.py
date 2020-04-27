@@ -39,7 +39,7 @@ def load_jupyter_server_extension(nb_server_app):
     nb_server_app.contents_manager.initResource(
         *nb_server_app.config.get('jupyterfs', {}).get('resources', [])
     )
-    print('Jupyter-fs active with {} managers'.format(len(nb_server_app.contents_manager._contents_managers)))
 
-    print('Installing jupyter-fs handler on path %s' % url_path_join(base_url, 'multicontents'))
-    web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'multicontents/get'), MetaContentsHandler)])
+    resources_url = 'jupyterfs/resources'
+    print('Installing jupyter-fs resources handler on path %s' % url_path_join(base_url, resources_url))
+    web_app.add_handlers(host_pattern, [(url_path_join(base_url, resources_url), MetaContentsHandler)])

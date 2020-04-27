@@ -34,7 +34,7 @@ class MetaContentsManager(ContentsManager):
     #     if managers:
     #         self._contents_managers.update({k: man(**self._kwargs) if isinstance(man, type) else man for k,man in managers.items()})
 
-    def initResource(self, *resource):
+    def initResource(self, *resource, verbose=True):
         """initialize one or more triples representing a PyFilesystem resource
         """
         self.info = []
@@ -61,6 +61,9 @@ class MetaContentsManager(ContentsManager):
 
         # replace existing contents managers with new
         self._contents_managers = managers
+
+        if verbose:
+            print('jupyter-fs initialized: #{} file system resources, #{} managers'.format(len(self.info), len(self._contents_managers)))
 
         return self.info
 
