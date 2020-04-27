@@ -14,3 +14,5 @@ sudo /bin/cp /Applications/Docker.app/Contents/Resources/com.docker.vmnetd.plist
 sudo /bin/chmod 544 /Library/PrivilegedHelperTools/com.docker.vmnetd
 sudo /bin/chmod 644 /Library/LaunchDaemons/com.docker.vmnetd.plist
 sudo /bin/launchctl load /Library/LaunchDaemons/com.docker.vmnetd.plist
+
+sleep 5
