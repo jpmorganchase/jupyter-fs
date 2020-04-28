@@ -6,9 +6,12 @@
 
 [[ $(uname) == 'Darwin' ]] || { echo "This function only runs on macOS." >&2; exit 2; }
 
-printf "Starting Docker.app, if necessary"
-printf "\n/Applications: "
-printf $(ls /Applications)
+# show if Docker.app is present
+set -x
+ls /Applications
+set +x
+
+printf "\nStarting Docker.app, if necessary"
 
 # Wait for the server to start up, if applicable.
 retries=0

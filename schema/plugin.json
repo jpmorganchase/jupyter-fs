@@ -1,12 +1,12 @@
 {
-  "title": "Jupyter FS",
-  "description": "jupyter-fs settings.",
+  "title": "jupyter-fs",
+  "description": "Settings for the jupyter-fs extension.",
   "jupyter.lab.setting-icon": "fs:drive",
   "jupyter.lab.setting-icon-label": "fs",
   "type": "object",
   "additionalProperties": false,
   "definitions": {
-    "resource": {
+    "spec": {
       "description": "Specification for an fs resource",
       "type": "object",
       "additionalProperties": false,
@@ -28,9 +28,9 @@
     }
   },
   "properties": {
-    "resources": {
-      "description": "The list of fs resources",
-      "items": { "$ref": "#/definitions/resource" },
+    "specs": {
+      "description": "The list of fs resource specifications",
+      "items": { "$ref": "#/definitions/spec" },
       "type": "array",
       "default": []
     }

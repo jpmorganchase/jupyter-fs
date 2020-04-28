@@ -65,7 +65,7 @@ abstract class FSCommBase implements IFSComm {
   }
 
   get resourcesUrl(): string {
-    return URLExt.join(this.baseUrl, "resources");
+    return URLExt.join(this.baseUrl, "jupyterfs/resources");
   }
 
   get settings(): ServerConnection.ISettings {

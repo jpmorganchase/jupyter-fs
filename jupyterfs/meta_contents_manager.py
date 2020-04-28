@@ -9,7 +9,7 @@ from hashlib import md5
 import json
 from tornado import web
 
-from notebook.base.handlers import IPythonHandler
+from notebook.base.handlers import APIHandler
 from notebook.services.contents.largefilemanager import LargeFileManager
 from notebook.services.contents.manager import ContentsManager
 
@@ -21,28 +21,22 @@ __all__ = ["MetaContentsHandler", "MetaContentsManager"]
 
 class MetaContentsManager(ContentsManager):
     def __init__(self, **kwargs):
-        self.info = []
+        self.resources = []
 
         self._default_cm = ('', LargeFileManager(**kwargs))
 
         self._contents_managers = dict([self._default_cm])
         self._kwargs = kwargs
 
-    # def init(self, managers=None):
-    #     """initialize dict of (key, manager OR manager class)
-    #     """
-    #     if managers:
-    #         self._contents_managers.update({k: man(**self._kwargs) if isinstance(man, type) else man for k,man in managers.items()})
-
-    def initResource(self, *resource, verbose=True):
-        """initialize one or more triples representing a PyFilesystem resource
+    def initResource(self, *spec, verbose=True):
+        """initialize one or more triples representing a PyFilesystem resource specification
         """
-        self.info = []
+        self.resources = []
         managers = dict([self._default_cm])
 
-        for r in resource:
+        for s in spec:
             # get deterministic hash of PyFilesystem url
-            _hash = md5(r['fsurl'].encode('utf-8')).hexdigest()
+            _hash = md5(s['fsurl'].encode('utf-8')).hexdigest()
 
             if _hash in self._contents_managers:
                 # reuse existing cm
@@ -52,20 +46,20 @@ class MetaContentsManager(ContentsManager):
                 pass
             else:
                 # create new cm
-                managers[_hash] = PyFilesystemContentsManager.open_fs(r['fsurl'])
+                managers[_hash] = PyFilesystemContentsManager.open_fs(s['fsurl'], **self._kwargs)
 
-            # add resource to info
-            i = {'drive': _hash}
-            i.update(r)
-            self.info.append(i)
+            # assemble resource from spec + hash
+            r = {'drive': _hash}
+            r.update(s)
+            self.resources.append(r)
 
         # replace existing contents managers with new
         self._contents_managers = managers
 
         if verbose:
-            print('jupyter-fs initialized: #{} file system resources, #{} managers'.format(len(self.info), len(self._contents_managers)))
+            print('jupyter-fs initialized: {} file system resources, {} managers'.format(len(self.resources), len(self._contents_managers)))
 
-        return self.info
+        return self.resources
 
     @property
     def root_manager(self):
@@ -95,10 +89,10 @@ class MetaContentsManager(ContentsManager):
         False,
     )
 
-class MetaContentsHandler(IPythonHandler):
+class MetaContentsHandler(APIHandler):
     @property
-    def config_resources(self):
-        return self.config.get('jupyterfs', {}).get('resources', [])
+    def config_specs(self):
+        return self.config.get('jupyterfs', {}).get('specs', [])
 
     @web.authenticated
     async def get(self):
@@ -117,12 +111,13 @@ class MetaContentsHandler(IPythonHandler):
         which will allow the frontent to instantiate 3 new filetrees, one
         for each of the available contents managers.
         """
-        self.finish(json.dumps(self.contents_manager.info))
+        self.finish(json.dumps(self.contents_manager.resources))
 
     @web.authenticated
     async def post(self):
-        data = self.get_json_body()
+        # will be a list of resource dicts
+        specs = self.get_json_body()
 
-        self.finish(json.dumps({
-            "info": self.contents_manager.initResource(*self.config_resources, *data["resources"])
-        }))
+        self.finish(json.dumps(
+            self.contents_manager.initResource(*self.config_specs, *specs)
+        ))

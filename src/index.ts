@@ -63,7 +63,7 @@ async function activate(
   async function refresh() {
     disposable.dispose();
 
-    const specs: IFSResourceSpec[] = settings.composite["resources"] as any;
+    const specs: IFSResourceSpec[] = settings.composite["specs"] as any;
     const resources = await comm.initResourceRequest(...specs);
 
     for (const r of resources) {
