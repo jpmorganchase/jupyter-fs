@@ -44,32 +44,25 @@ export const Patterns = {
   workspace: new RegExp(`^${PageConfig.getOption("workspacesUrl")}[^?\/]+/tree/([^?]+)`),
 };
 
-export function switchView(mode: any) {
-  if (mode === "none") { return ""; } else { return "none"; }
+/**
+ * Version of btoa that omits any "=" padding chars at the end
+ */
+export function btoaNopad(s: string): string {
+  return btoa(s).replace(/\=+$/, '');
 }
 
-export function fileSizeString(fileBytes: number) {
-    if (fileBytes == null) {
-      return "";
-    }
-    if (fileBytes < 1024) {
-      return fileBytes + " B";
-    }
+export function createOpenNode(): HTMLElement {
+  const body = document.createElement("div");
+  const existingLabel = document.createElement("label");
+  existingLabel.textContent = "File Path:";
 
-    let i = -1;
-    const byteUnits = [" KB", " MB", " GB", " TB"];
-    do {
-        fileBytes = fileBytes / 1024;
-        i++;
-    } while (fileBytes > 1024);
+  const input = document.createElement("input");
+  input.value = "";
+  input.placeholder = "/path/to/file";
 
-    return Math.max(fileBytes, 0.1).toFixed(1) + byteUnits[i];
-}
-
-export function writeZipFile(zip: JSZip, path: string) {
-  zip.generateAsync({type: "blob"}).then((content) => {
-    saveAs(content, PathExt.basename(path));
-  });
+  body.appendChild(existingLabel);
+  body.appendChild(input);
+  return body;
 }
 
 export function doRename(text: HTMLElement, edit: HTMLInputElement) {
@@ -121,19 +114,34 @@ export function doRename(text: HTMLElement, edit: HTMLInputElement) {
   });
 }
 
-export function createOpenNode(): HTMLElement {
-  const body = document.createElement("div");
-  const existingLabel = document.createElement("label");
-  existingLabel.textContent = "File Path:";
+export function fileSizeString(fileBytes: number) {
+    if (fileBytes == null) {
+      return "";
+    }
+    if (fileBytes < 1024) {
+      return fileBytes + " B";
+    }
 
-  const input = document.createElement("input");
-  input.value = "";
-  input.placeholder = "/path/to/file";
+    let i = -1;
+    const byteUnits = [" KB", " MB", " GB", " TB"];
+    do {
+        fileBytes = fileBytes / 1024;
+        i++;
+    } while (fileBytes > 1024);
 
-  body.appendChild(existingLabel);
-  body.appendChild(input);
-  return body;
+    return Math.max(fileBytes, 0.1).toFixed(1) + byteUnits[i];
 }
+
+export function switchView(mode: any) {
+  if (mode === "none") { return ""; } else { return "none"; }
+}
+
+export function writeZipFile(zip: JSZip, path: string) {
+  zip.generateAsync({type: "blob"}).then((content) => {
+    saveAs(content, PathExt.basename(path));
+  });
+}
+
 
 export class OpenDirectWidget extends Widget {
 

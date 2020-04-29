@@ -40,7 +40,7 @@ class MetaContentsManager(ContentsManager):
 
         for s in spec:
             # get deterministic hash of PyFilesystem url
-            _hash = md5(s['fsurl'].encode('utf-8')).hexdigest()
+            _hash = md5(s['fsurl'].encode('utf-8')).hexdigest()[:8]
 
             if _hash in self._contents_managers:
                 # reuse existing cm
