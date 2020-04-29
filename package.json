@@ -4,6 +4,8 @@
   "description": "A JupyterLab extension.",
   "author": "The jupyter-fs authors",
   "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "style": "style/index.css",
   "keywords": [
     "jupyter",
     "jupyterlab",
