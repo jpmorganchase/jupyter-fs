@@ -40,7 +40,6 @@ export class FileTree extends Widget {
 
   constructor({
     app,
-
     basepath = "",
     id = "jupyterlab-filetree"
   }: FileTree.IOptions) {
@@ -359,7 +358,7 @@ export namespace FileTree {
     return sidebar({
       ...props,
       basepath: resource.drive,
-      id: [resource.name, resource.drive].join(":")
+      id: [resource.name, resource.drive].join("_")
     });
   }
 
