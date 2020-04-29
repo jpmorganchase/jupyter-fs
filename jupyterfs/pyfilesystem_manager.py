@@ -8,6 +8,7 @@
 from base64 import encodebytes, decodebytes
 from datetime import datetime
 from fs import errors, open_fs
+from fs.base import FS
 import mimetypes
 import os.path
 from tornado import web
@@ -104,11 +105,21 @@ class PyFilesystemContentsManager(FileContentsManager):
         return cls(open_fs(*args, **kwargs))
 
     @classmethod
-    def init_fs(cls, pyfilesystem_class, *args, **kwargs):
-        return cls(pyfilesystem_class(*args, **kwargs))
+    def init_fs(cls, pyfs_class, *args, **kwargs):
+        return cls(pyfs_class(*args, **kwargs))
 
-    def __init__(self, pyfilesystem_instance):
-        self._pyfilesystem_instance = pyfilesystem_instance
+    def __init__(self, pyfs, *args, **kwargs):
+        if isinstance(pyfs, str):
+            # pyfs is an opener url
+            self._pyfilesystem_instance = open_fs(pyfs, *args, **kwargs)
+        elif isinstance(pyfs, type) and issubclass(pyfs, FS):
+            # pyfs is an FS subclass
+            self._pyfilesystem_instance = pyfs(*args, **kwargs)
+        elif isinstance(pyfs, FS):
+            # pyfs is a FS instance
+            self._pyfilesystem_instance = pyfs
+        else:
+            raise TypeError("pyfs must be a url, an FS subclass, or an FS instance")
 
     def is_hidden(self, path):
         """Does the API style path correspond to a hidden directory or file?

@@ -26,6 +26,10 @@ class MetaContentsManager(ContentsManager):
         self._default_cm = ('', LargeFileManager(**kwargs))
 
         self._contents_managers = dict([self._default_cm])
+
+        # remove kwargs not relevant to pyfs
+        kwargs.pop('parent')
+        kwargs.pop('log')
         self._kwargs = kwargs
 
     def initResource(self, *spec, verbose=True):
@@ -46,7 +50,7 @@ class MetaContentsManager(ContentsManager):
                 pass
             else:
                 # create new cm
-                managers[_hash] = PyFilesystemContentsManager.open_fs(s['fsurl'], **self._kwargs)
+                managers[_hash] = PyFilesystemContentsManager(s['fsurl'], **self._kwargs)
 
             # assemble resource from spec + hash
             r = {'drive': _hash}
