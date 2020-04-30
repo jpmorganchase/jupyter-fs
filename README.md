@@ -14,6 +14,7 @@ A filesystem-like `ContentsManager` backend for Jupyter. This library allows you
 
 ```bash
 pip install jupyter-fs
+jupyter labextension install jupyter-fs
 ```
 
 
