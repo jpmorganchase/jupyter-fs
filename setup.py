@@ -28,6 +28,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 requires = [
     'fs>=2.4.11',
     'fs-s3fs>=1.1.1',
+    'fs.smbfs @ git+https://github.com/telamonian/fs.smbfs.git@dont_assume_everyone_ace_exists#egg=fs.smbfs',
     'jupyterlab>=2.0.0',
     'notebook>=5.7.0',
 ]
@@ -36,7 +37,6 @@ test_requires = [
     'boto3',
     'docker',
     'fs-miniofs',
-    'fs.smbfs @ git+https://github.com/telamonian/fs.smbfs.git@dont_assume_everyone_ace_exists#egg=fs.smbfs',
     'mock',
     'pysmb',
     'pytest',

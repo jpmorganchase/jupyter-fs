@@ -1,5 +1,5 @@
 {
   "NotebookApp": {
-    "contents_manager_class": "jupyterfs.meta_contents_manager.MetaContentsManager"
+    "contents_manager_class": "jupyterfs.metamanager.MetaManager"
   }
 }

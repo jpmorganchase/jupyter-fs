@@ -32,7 +32,7 @@ class MetaManager(ContentsManager):
         kwargs.pop('log')
         self._kwargs = kwargs
 
-    def initResource(self, *spec, verbose=True):
+    def initResource(self, *spec, verbose=False):
         """initialize one or more triples representing a PyFilesystem resource specification
         """
         self.resources = []
@@ -123,5 +123,5 @@ class MetaManagerHandler(APIHandler):
         specs = self.get_json_body()
 
         self.finish(json.dumps(
-            self.contents_manager.initResource(*self.config_specs, *specs)
+            self.contents_manager.initResource(*self.config_specs, *specs, verbose=True)
         ))

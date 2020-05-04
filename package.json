@@ -16,7 +16,7 @@
     "build:integrity": "jlpm install && jlpm build",
     "build:lab": "rimraf lab-dist && mkdirp lab-dist && cd lab-dist && npm pack ..",
     "build:all": "jlpm run build:integrity && jlpm run build:lab",
-    "clean": "rimraf lib",
+    "clean": "rimraf lib tsconfig.tsbuildinfo",
     "fix": "./node_modules/.bin/tslint --fix src/* src/*/*",
     "lint": "./node_modules/.bin/tslint src/* src/*/*",
     "prepublishOnly": "jlpm run build",
