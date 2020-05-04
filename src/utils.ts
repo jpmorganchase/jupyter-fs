@@ -48,7 +48,7 @@ export const Patterns = {
  * Version of btoa that omits any "=" padding chars at the end
  */
 export function btoaNopad(s: string): string {
-  return btoa(s).replace(/\=+$/, '');
+  return btoa(s).replace(/\=+$/, "");
 }
 
 export function createOpenNode(): HTMLElement {
@@ -141,7 +141,6 @@ export function writeZipFile(zip: JSZip, path: string) {
     saveAs(content, PathExt.basename(path));
   });
 }
-
 
 export class OpenDirectWidget extends Widget {
 

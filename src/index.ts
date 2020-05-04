@@ -41,7 +41,7 @@ async function activate(
   settingRegistry: ISettingRegistry,
 ) {
   const comm = new FSComm();
-  const disposable = new DisposableSet();
+  let disposable = new DisposableSet();
   const sidebarProps: FileTree.ISidebarProps = {
     app,
     manager,
@@ -61,12 +61,20 @@ async function activate(
   }
 
   async function refresh() {
+    // each disposable can only be disposed once
     disposable.dispose();
+    disposable = new DisposableSet();
 
+    // get user settings from json file
     const specs: IFSResourceSpec[] = settings.composite["specs"] as any;
+
+    // send user specs to backend; await return containing resources
+    // defined by user settings + resources defined by server config
     const resources = await comm.initResourceRequest(...specs);
 
+    // create the fs resource frontends (ie FileTree instances)
     for (const r of resources) {
+      // make one composite disposable for all fs resource frontends
       disposable.add(FileTree.sidebarFromResource(r, sidebarProps));
     }
   }
