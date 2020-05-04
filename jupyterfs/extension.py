@@ -6,35 +6,19 @@
 # the Apache License 2.0.  The full license can be found in the LICENSE file.
 #
 from __future__ import print_function
-import json
+import warnings
+
 from notebook.utils import url_path_join
-from notebook.base.handlers import IPythonHandler
-from .meta_contents_manager import MetaContentsManager
 
+from .metamanager import MetaManagerHandler, MetaManager
 
-class GetHandler(IPythonHandler):
-    def initialize(self, keys=None):
-        # dont append colon for default
-        self.keys = keys or []
+_mc_config_warning_msg = """Misconfiguration of MetaManager. Please add:
 
-    def get(self):
-        '''Returns all the available contents manager prefixes
+"NotebookApp": {
+  "contents_manager_class": "jupyterfs.metamanager.MetaManager"
+}
 
-        e.g. if the contents manager configuration is something like:
-        {
-            "file": LargeFileContentsManager,
-            "s3": S3ContentsManager,
-            "samba": SambaContentsManager
-        }
-
-        the result here will be:
-        ["file", "s3", "samba"]
-
-        which will allow the frontent to instantiate 3 new filetrees, one
-        for each of the available contents managers.
-        '''
-        self.finish(json.dumps(self.keys))
-
+to your Notebook Server config."""
 
 def load_jupyter_server_extension(nb_server_app):
     """
@@ -47,14 +31,15 @@ def load_jupyter_server_extension(nb_server_app):
     base_url = web_app.settings['base_url']
     host_pattern = '.*$'
 
-    managers = nb_server_app.config.get('JupyterFS', {}).get('contents_managers', {})
+    if not isinstance(nb_server_app.contents_manager, MetaManager):
+        warnings.warn(_mc_config_warning_msg)
+        return
 
-    if isinstance(nb_server_app.contents_manager, MetaContentsManager):
-        nb_server_app.contents_manager.init(managers)
-        print('Jupyter-fs active with {} managers'.format(len(nb_server_app.contents_manager._contents_managers)))
+    # init managers from resources described in notebook server config
+    nb_server_app.contents_manager.initResource(
+        *nb_server_app.config.get('jupyterfs', {}).get('specs', [])
+    )
 
-        print('Installing jupyter-fs handler on path %s' % url_path_join(base_url, 'multicontents'))
-        web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'multicontents/get'), GetHandler, {'keys': list(nb_server_app.contents_manager._contents_managers.keys())})])
-
-    else:
-        print('Not using jupyter-fs')
+    resources_url = 'jupyterfs/resources'
+    print('Installing jupyter-fs resources handler on path %s' % url_path_join(base_url, resources_url))
+    web_app.add_handlers(host_pattern, [(url_path_join(base_url, resources_url), MetaManagerHandler)])

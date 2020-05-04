@@ -1,5 +1,7 @@
-# Jupyter-FS
-A filesystem-like `ContentsManager` backend for Jupyter. This library allows you to hook up multiple file backends to Jupyter and interact with their contents using [JupyterLab Filetree](https://github.com/youngthejames/jupyterlab_filetree).
+# jupyter-fs
+A plugin for JupyterLab that lets you set up and use as many filebrowsers as you like, connected to whatever local and/or remote filesystem-like resources you want.
+
+The backend is built on top of [PyFilesystem](https://github.com/PyFilesystem/pyfilesystem2), while the frontend is built on top of [JupyterLab Filetree](https://github.com/youngthejames/jupyterlab_filetree).
 
 
 [![Build Status](https://dev.azure.com/tpaine154/jupyter/_apis/build/status/jpmorganchase.jupyter-fs?branchName=master)](https://dev.azure.com/tpaine154/jupyter/_build/latest?definitionId=23&branchName=master)
@@ -25,7 +27,7 @@ Add the following to your `jupyter_notebook_config.json`:
 ```
 {
   "NotebookApp": {
-    "contents_manager_class": "jupyterfs.meta_contents_manager.MetaContentsManager",
+    "contents_manager_class": "jupyterfs.metamanager.MetaManager",
     "nbserver_extensions": {
       "jupyterfs": true
     }
@@ -33,54 +35,78 @@ Add the following to your `jupyter_notebook_config.json`:
 }
 ```
 
+## Use
 
-Register additional contents managers in your `jupyter_notebook_config.py`. As an example, an [S3Contents](https://github.com/danielfrg/s3contents) manager is added as follows:
+Add specifications for additional contents managers in your user settings (in the **Settings** menu under **Advanced Settings Editor** -> **jupyter-fs**). Here's an example of how to set up two new views of the local filesystem:
 
-```
-from s3contents import S3ContentsManager
-c.JupyterFS.contents_managers = \
+```json
 {
-    's3': S3ContentsManager
-}
-
-
-c.S3ContentsManager.bucket = '<your bucket>'
-
-## SECRET
-c.S3ContentsManager.access_key_id = '<your access key>'
-c.S3ContentsManager.secret_access_key = '<your secret key>'
-
-
-```
-
-
-During application startup, you should see something like this in the logs:
-```
-JupyterFS active with 2 managers
-Installing JupyterFS handler on path /multicontents
-```
-
-
-And in the UI, you will see your contents managers available:
-![](https://raw.githubusercontent.com/timkpaine/jupyter-fs/master/docs/example.gif)
-
-
-We can add additional contents managers:
-
-```
-c.JupyterFS.contents_managers = \
-{
-    's3': S3ContentsManager,
-    'file2': AbsolutePathFileManager(root_dir=os.path.expanduser("~/Downloads"))
+  "specs": [
+    {
+      "name": "local_test",
+      "url": "osfs:///Users/foo/test"
+    },
+    {
+      "name": "local_jupyter-fs_repo",
+      "url": "osfs:///Users/foo/git/jupyter-fs"
+    }
+  ]
 }
 ```
 
-Here I utilize an `AbsolutePathFileManager` to grab another folder on my system for use. Remember, remote filesystems are still remote, and locally you may need to move around the filesystem with a `os.chdir` command (or equivalent in other languages).
+where **osfs** stands for **os** **f**ile**s**ystem. You should see your new filebrowser pop up in the left-hand sidebar instantly when you save your settings:
 
-Here, I have the above `s3` and `AbsolutePathFileManager`, along with the original contents manager, for a total of 3 seperate spaces.
+![](./docs/osfs_example.png)
 
-![](https://raw.githubusercontent.com/timkpaine/jupyter-fs/master/docs/example2.gif)
+## PyFilesystem urls
 
+`"url"` is a [PyFilesystem opener url](https://docs.pyfilesystem.org/en/latest/openers.html). For more info on how to write these urls, see the documentation of the relevant PyFilesystem plugin:
+- S3: [S3FS docs](https://fs-s3fs.readthedocs.io/en/latest/)
+- smb: [fs.smbfs docs](https://github.com/althonos/fs.smbfs#usage)
+
+## (EXPERIMENTAL) Adding remote filesystems
+
+**Not recommended for production use: currently requires saving your credentials in plaintext**
+
+jupyter-fs also supports a wide variety of remote filesystem-like resources. Currently, only S3 and smb/samba are confirmed to work/part of the test suite. In theory, any resource supported by PyFilesystem should be supported by jupyter-fs as well.
+
+You can set up all of these different resources side-by-side:
+
+```json
+{
+  "specs": [
+    {
+      "name": "osfs_jupyter-fs_repo",
+      "url": "osfs:///Users/foo/git/jupyter-fs"
+    },
+    {
+      "name": "s3_foo",
+      "url": "s3://username:passwd@foo?endpoint_url=http://127.0.0.1:9000"
+    },
+    {
+      "name": "smb_test",
+      "url": "smb://username:passwd@127.0.0.1/test?name-port=3669"
+    }
+  ]
+}
+```
+
+![](./docs/remote_example.png)
+
+## Server-side settings
+
+If you prefer to set up your filesystem resources in the server-side config, you can do so. For example, you can set up a local filesystem by adding the following to your `jupyter_notebook_config.py`:
+
+```python
+c.jupyterfs.specs = [
+    {
+        "name": "local_test",
+        "url": "osfs:///Users/foo/test"
+    },
+]
+```
+
+Any filesystem specs given in the server-side config will be merged with the specs given in a user's settings.
 
 ## Development
 

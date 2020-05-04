@@ -1,0 +1,38 @@
+{
+  "title": "jupyter-fs",
+  "description": "Settings for the jupyter-fs extension.",
+  "jupyter.lab.setting-icon": "fs:drive",
+  "jupyter.lab.setting-icon-label": "fs",
+  "type": "object",
+  "additionalProperties": false,
+  "definitions": {
+    "spec": {
+      "description": "Specification for an fs resource",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "description": "Display name of resource",
+          "type": "string"
+        },
+        "desc": {
+          "description": "Optional longer description of resource",
+          "type": "string",
+          "default": ""
+        },
+        "url": {
+          "description": "A url pointing to an fs resource, as per PyFilesystem",
+          "type": "string"
+        }
+      }
+    }
+  },
+  "properties": {
+    "specs": {
+      "description": "The list of fs resource specifications",
+      "items": { "$ref": "#/definitions/spec" },
+      "type": "array",
+      "default": []
+    }
+  }
+}

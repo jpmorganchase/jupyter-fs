@@ -5,19 +5,27 @@
 # This file is part of the jupyter-fs library, distributed under the terms of
 # the Apache License 2.0.  The full license can be found in the LICENSE file.
 #
-import os.path
-import mimetypes
-import nbformat
 from base64 import encodebytes, decodebytes
 from datetime import datetime
 from fs import errors, open_fs
-from notebook import _tz as tz
-from notebook.services.contents.filemanager import FileContentsManager
-from notebook.services.contents.filecheckpoints import GenericFileCheckpoints
+from fs.base import FS
+import mimetypes
+import os.path
 from tornado import web
 
+import nbformat
+from notebook import _tz as tz
+from notebook.services.contents.checkpoints import Checkpoints
+from notebook.services.contents.filecheckpoints import GenericFileCheckpoints
+from notebook.services.contents.filemanager import FileContentsManager
+from traitlets import default
 
-class PyFilesystemContentsManager(FileContentsManager):
+__all__ = ["FSManager"]
+
+
+EPOCH_START = datetime(1970, 1, 1, 0, 0, tzinfo=tz.UTC)
+
+class FSManager(FileContentsManager):
     """This class bridges the gap between Pyfilesystem's filesystem class,
     and Jupyter Notebook's ContentsManager class. This allows Jupyter to
     leverage all the backends available in Pyfilesystem.
@@ -101,11 +109,25 @@ class PyFilesystemContentsManager(FileContentsManager):
         return cls(open_fs(*args, **kwargs))
 
     @classmethod
-    def init_fs(cls, pyfilesystem_class, *args, **kwargs):
-        return cls(pyfilesystem_class(*args, **kwargs))
+    def init_fs(cls, pyfs_class, *args, **kwargs):
+        return cls(pyfs_class(*args, **kwargs))
 
-    def __init__(self, pyfilesystem_instance):
-        self._pyfilesystem_instance = pyfilesystem_instance
+    def __init__(self, pyfs, *args, **kwargs):
+        if isinstance(pyfs, str):
+            # pyfs is an opener url
+            self._pyfilesystem_instance = open_fs(pyfs, *args, **kwargs)
+        elif isinstance(pyfs, type) and issubclass(pyfs, FS):
+            # pyfs is an FS subclass
+            self._pyfilesystem_instance = pyfs(*args, **kwargs)
+        elif isinstance(pyfs, FS):
+            # pyfs is a FS instance
+            self._pyfilesystem_instance = pyfs
+        else:
+            raise TypeError("pyfs must be a url, an FS subclass, or an FS instance")
+
+    @default('checkpoints_class')
+    def _checkpoints_class_default(self):
+        return NullCheckpoints
 
     def is_hidden(self, path):
         """Does the API style path correspond to a hidden directory or file?
@@ -155,18 +177,18 @@ class PyFilesystemContentsManager(FileContentsManager):
             self.log.warning('Unable to get size.')
             size = None
 
+        # Use the Unix epoch as a fallback so we don't crash.
         try:
-            last_modified = info.modified
+            last_modified = info.modified or EPOCH_START
         except (errors.MissingInfoNamespace,):
-            # Use the Unix epoch as a fallback so we don't crash.
             self.log.warning('Invalid `modified` for %s', path)
-            last_modified = datetime(1970, 1, 1, 0, 0, tzinfo=tz.UTC)
+            last_modified = EPOCH_START
 
         try:
-            created = info.created
+            created = info.created or last_modified
         except (errors.MissingInfoNamespace,):
             self.log.warning('Invalid `created` for %s', path)
-            created = datetime(1970, 1, 1, 0, 0, tzinfo=tz.UTC)
+            created = EPOCH_START
 
         # Create the base model.
         model = {}
@@ -431,7 +453,7 @@ class PyFilesystemContentsManager(FileContentsManager):
                 # A directory containing only leftover checkpoints is
                 # considered empty.
                 cp_dir = getattr(self.checkpoints, 'checkpoint_dir', None)
-                if set(self._pyfilesystem_instance.os.listdir(path)) - {cp_dir}:
+                if set(self._pyfilesystem_instance.listdir(path)) - {cp_dir}:
                     return True
             return False
 
@@ -467,3 +489,31 @@ class PyFilesystemContentsManager(FileContentsManager):
 
 class PyFilesystemCheckpoints(GenericFileCheckpoints):
     pass
+
+class NullCheckpoints(Checkpoints):
+    def null_checkpoint(self):
+        """Return a null checkpoint."""
+        return dict(
+            id="checkpoint",
+            last_modified=""
+        )
+
+    def create_checkpoint(self, contents_mgr, path):
+        """Return a null checkpoint."""
+        return self.null_checkpoint()
+
+    def restore_checkpoint(self, contents_mgr, checkpoint_id, path):
+        """No-op."""
+        pass
+
+    def rename_checkpoint(self, checkpoint_id, old_path, new_path):
+        """No-op."""
+        pass
+
+    def delete_checkpoint(self, checkpoint_id, path):
+        """No-op."""
+        pass
+
+    def list_checkpoints(self, path):
+        """Return an empty list."""
+        return [self.null_checkpoint()]

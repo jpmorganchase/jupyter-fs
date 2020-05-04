@@ -6,49 +6,87 @@
  * the Apache License 2.0.  The full license can be found in the LICENSE file.
  *
  */
-import {ILayoutRestorer, IRouter, JupyterFrontEnd, JupyterFrontEndPlugin} from "@jupyterlab/application";
-import {IWindowResolver} from "@jupyterlab/apputils";
-import {PageConfig} from "@jupyterlab/coreutils";
-import {IDocumentManager} from "@jupyterlab/docmanager";
-import {constructFileTreeWidget} from "./filetree";
+import { ILayoutRestorer, IRouter, JupyterFrontEnd, JupyterFrontEndPlugin } from "@jupyterlab/application";
+import { IWindowResolver } from "@jupyterlab/apputils";
+import { IDocumentManager } from "@jupyterlab/docmanager";
+import { ISettingRegistry } from "@jupyterlab/settingregistry";
+import { DisposableSet } from "@lumino/disposable";
 
-import "../style/index.css";
+import { FSComm, IFSResourceSpec } from "./filesystem";
+import { FileTree } from "./filetree";
 
 // tslint:disable: variable-name
 
-const extension: JupyterFrontEndPlugin<void> = {
+const plugin: JupyterFrontEndPlugin<void> = {
   activate,
   autoStart: true,
-  id: "jupyterfs",
-  requires: [JupyterFrontEnd.IPaths, IWindowResolver, ILayoutRestorer, IDocumentManager, IRouter],
+  id: "jupyter-fs:plugin",
+  requires: [
+    IDocumentManager,
+    JupyterFrontEnd.IPaths,
+    IWindowResolver,
+    ILayoutRestorer,
+    IRouter,
+    ISettingRegistry,
+  ],
 };
 
-function activate(app: JupyterFrontEnd,
-                  paths: JupyterFrontEnd.IPaths,
-                  resolver: IWindowResolver,
-                  restorer: ILayoutRestorer,
-                  manager: IDocumentManager,
-                  router: IRouter) {
+async function activate(
+  app: JupyterFrontEnd,
+  manager: IDocumentManager,
+  paths: JupyterFrontEnd.IPaths,
+  resolver: IWindowResolver,
+  restorer: ILayoutRestorer,
+  router: IRouter,
+  settingRegistry: ISettingRegistry,
+) {
+  const comm = new FSComm();
+  let disposable = new DisposableSet();
+  const sidebarProps: FileTree.ISidebarProps = {
+    app,
+    manager,
+    paths,
+    resolver,
+    restorer,
+    router
+  };
 
-  // grab templates from serverextension
-  fetch(new Request(PageConfig.getBaseUrl() + "multicontents/get",
-                    {method: "get"})).then(async (value: Response) => {
-    if (value.ok) {
-      const keys = await value.json() as string[];
+  // Attempt to load application settings
+  let settings: ISettingRegistry.ISettings;
+  try {
+    settings = await settingRegistry.load(plugin.id);
+  } catch (error) {
+    // tslint:disable-next-line:no-console
+    console.warn(`Failed to load settings for the jupyter-fs extension.\n${error}`);
+  }
 
-      // tslint:disable-next-line:no-console
-      console.log("JupyterLab extension jupyterfs is activated!");
-      for ( const s of keys) {
-        constructFileTreeWidget(app, s, s, "left", paths, resolver, restorer, manager, router);
-        // tslint:disable-next-line:no-console
-        console.log("Adding contents manager for " + s);
-      }
-    } else {
-      // tslint:disable-next-line:no-console
-      console.warn("Jupyter-fs failed to activate");
+  async function refresh() {
+    // each disposable can only be disposed once
+    disposable.dispose();
+    disposable = new DisposableSet();
+
+    // get user settings from json file
+    const specs: IFSResourceSpec[] = settings.composite["specs"] as any;
+
+    // send user specs to backend; await return containing resources
+    // defined by user settings + resources defined by server config
+    const resources = await comm.initResourceRequest(...specs);
+
+    // create the fs resource frontends (ie FileTree instances)
+    for (const r of resources) {
+      // make one composite disposable for all fs resource frontends
+      disposable.add(FileTree.sidebarFromResource(r, sidebarProps));
     }
-  });
+  }
+
+  if (settings) {
+    // initial setup
+    refresh();
+
+    // rerun setup whenever relevant settings change
+    settings.changed.connect(refresh);
+  }
 }
 
-export default extension;
+export default plugin;
 export {activate as _activate};

@@ -10,12 +10,12 @@
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: jupyterfs.handlers
+.. automodule:: jupyterfs.fsmanager
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: jupyterfs.metacontentsmanager
+.. automodule:: jupyterfs.metacontents
    :members:
    :undoc-members:
    :show-inheritance:

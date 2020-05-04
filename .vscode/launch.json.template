@@ -1,0 +1,79 @@
+{
+    // to debug jupyterlab running in a venv or conda env:
+    //   - set up Python env in your workspace as per https://code.visualstudio.com/docs/python/environments
+    //   - uncomment the "envFile" line below
+    //   - configure the .vscode/jupyterlab_venv.env file as needed
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "jlab backend",
+            "type": "python",
+            "request": "launch",
+
+            "args": [
+                // "--watch",
+                "--notebook-dir=${env:HOME}",
+                "--no-browser",
+                "--NotebookApp.token=''",
+                "--port=9999"
+            ],
+            "justMyCode": false,
+            "module": "jupyterlab.labapp",
+
+            // set environment variables for jupyter/lab config
+            // "envFile": "${workspaceFolder}/.vscode/jupyterlab_venv.env",
+        },
+        {
+            "name": "jlab frontend",
+            "type": "chrome",
+            "request": "launch",
+
+            "sourceMapPathOverrides": {
+                "webpack:///../*": "${webRoot}/*"
+            },
+            "timeout": 180000,
+            "url": "http://localhost:9999",
+            "webRoot": "${workspaceFolder}",
+
+            // debug using a specific copy of chrome/chromium
+            // "runtimeExecutable": "<path-to-your-chrome-or-chromium>",
+        },
+    ],
+    "compounds": [
+        {
+            "name": "jlab all",
+            "configurations": [
+                "jlab backend",
+                "jlab frontend"
+            ]
+        }
+    ]
+
+    // some extra configurations, useful for troubleshooting
+    // jupyter-related vscode debug configs
+    //
+    // "configurations": [
+    //     {
+    //         "name": "(troubleshoot) jupyter paths",
+    //         "type": "python",
+    //         "request": "launch",
+    //         "args": [
+    //             "--paths",
+    //         ],
+    //         "justMyCode": false,
+    //         "module": "jupyter_core.command",
+    //         "envFile": "${workspaceFolder}/.vscode/jupyterlab_venv.env",
+    //     },
+    //     {
+    //         "name": "(troubleshoot) jupyter serverextensions",
+    //         "type": "python",
+    //         "request": "launch",
+    //         "args": [
+    //             "list",
+    //         ],
+    //         "justMyCode": false,
+    //         "module": "notebook.serverextensions",
+    //         "envFile": "${workspaceFolder}/.vscode/jupyterlab_venv.env",
+    //     }
+    // ]
+}
