@@ -451,7 +451,7 @@ class PyFilesystemContentsManager(FileContentsManager):
                 # A directory containing only leftover checkpoints is
                 # considered empty.
                 cp_dir = getattr(self.checkpoints, 'checkpoint_dir', None)
-                if set(self._pyfilesystem_instance.os.listdir(path)) - {cp_dir}:
+                if set(self._pyfilesystem_instance.listdir(path)) - {cp_dir}:
                     return True
             return False
 
