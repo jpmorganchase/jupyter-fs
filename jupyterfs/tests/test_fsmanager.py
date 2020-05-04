@@ -146,7 +146,7 @@ class Test_FSManager_smb_docker_share(_TestBase):
 
     Manual startup of equivalent docker:
 
-  FSManager   docker run --rm -it -p 137:137/udp -p 138:138/udp -p 139:139 -p 445:445 dperson/samba -p -n -u "smbuser;smbuser" -w "TESTNET"
+        docker run --rm -it -p 137:137/udp -p 138:138/udp -p 139:139 -p 445:445 dperson/samba -p -n -u "smbuser;smbuser" -w "TESTNET"
 
     Docker with a windows guest:
 
