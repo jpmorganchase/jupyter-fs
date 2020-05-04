@@ -2,8 +2,10 @@
   "$schema": "http://json.schemastore.org/tsconfig",
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
+    "composite": true,
     "declaration": true,
     "esModuleInterop": true,
+    "incremental": true,
     "module": "esnext",
     "moduleResolution": "node",
     "noEmitOnError": true,
@@ -11,6 +13,7 @@
     "noUnusedLocals": true,
     "preserveWatchOutput": true,
     "resolveJsonModule": true,
+    "sourceMap": true,
     "target": "es2017",
     "types": ["jest"],
 

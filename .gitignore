@@ -183,7 +183,8 @@ ENV/
 # vscode ide stuff
 *.code-workspace
 .history
-.vscode
+.vscode/*
+!.vscode/*.template
 
 .DS_Store
 
