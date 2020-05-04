@@ -23,6 +23,8 @@ from traitlets import default
 __all__ = ["PyFilesystemContentsManager"]
 
 
+EPOCH_START = datetime(1970, 1, 1, 0, 0, tzinfo=tz.UTC)
+
 class PyFilesystemContentsManager(FileContentsManager):
     """This class bridges the gap between Pyfilesystem's filesystem class,
     and Jupyter Notebook's ContentsManager class. This allows Jupyter to
@@ -175,18 +177,18 @@ class PyFilesystemContentsManager(FileContentsManager):
             self.log.warning('Unable to get size.')
             size = None
 
+        # Use the Unix epoch as a fallback so we don't crash.
         try:
-            last_modified = info.modified
+            last_modified = info.modified or EPOCH_START
         except (errors.MissingInfoNamespace,):
-            # Use the Unix epoch as a fallback so we don't crash.
             self.log.warning('Invalid `modified` for %s', path)
-            last_modified = datetime(1970, 1, 1, 0, 0, tzinfo=tz.UTC)
+            last_modified = EPOCH_START
 
         try:
-            created = info.created
+            created = info.created or last_modified
         except (errors.MissingInfoNamespace,):
             self.log.warning('Invalid `created` for %s', path)
-            created = datetime(1970, 1, 1, 0, 0, tzinfo=tz.UTC)
+            created = EPOCH_START
 
         # Create the base model.
         model = {}
