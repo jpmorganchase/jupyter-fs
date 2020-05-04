@@ -41,12 +41,13 @@ export class FileTree extends Widget {
   constructor({
     app,
     basepath = "",
+    caption = "File Tree",
     id = "jupyterlab-filetree"
   }: FileTree.IOptions) {
     super();
     this.id = id;
     this.title.icon = fileTreeIcon;
-    this.title.caption = "File Tree";
+    this.title.caption = caption;
     this.title.closable = true;
     this.addClass("jp-filetreeWidget");
     this.addClass(id);
@@ -338,6 +339,7 @@ export namespace FileTree {
     app: JupyterFrontEnd;
 
     basepath?: string;
+    caption?: string;
     id?: string;
   }
 
@@ -350,6 +352,7 @@ export namespace FileTree {
     router: IRouter;
 
     basepath?: string;
+    caption?: string;
     id?: string;
     side?: string;
   }
@@ -358,6 +361,7 @@ export namespace FileTree {
     return sidebar({
       ...props,
       basepath: resource.drive,
+      caption: `${resource.name}\nFile Tree`,
       id: [resource.name, resource.drive].join("_")
     });
   }
@@ -371,10 +375,11 @@ export namespace FileTree {
     router,
 
     basepath = "",
+    caption = "File Tree",
     id = "jupyterlab-filetree",
     side = "left"
   }: FileTree.ISidebarProps): IDisposable {
-    const widget = new FileTree({app, basepath, id});
+    const widget = new FileTree({app, basepath, caption, id});
     restorer.add(widget, widget.id);
     app.shell.add(widget, side);
 
