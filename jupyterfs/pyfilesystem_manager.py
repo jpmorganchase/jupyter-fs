@@ -15,8 +15,10 @@ from tornado import web
 
 import nbformat
 from notebook import _tz as tz
+from notebook.services.contents.checkpoints import Checkpoints
 from notebook.services.contents.filecheckpoints import GenericFileCheckpoints
 from notebook.services.contents.filemanager import FileContentsManager
+from traitlets import default
 
 __all__ = ["PyFilesystemContentsManager"]
 
@@ -120,6 +122,10 @@ class PyFilesystemContentsManager(FileContentsManager):
             self._pyfilesystem_instance = pyfs
         else:
             raise TypeError("pyfs must be a url, an FS subclass, or an FS instance")
+
+    @default('checkpoints_class')
+    def _checkpoints_class_default(self):
+        return NullCheckpoints
 
     def is_hidden(self, path):
         """Does the API style path correspond to a hidden directory or file?
@@ -481,3 +487,31 @@ class PyFilesystemContentsManager(FileContentsManager):
 
 class PyFilesystemCheckpoints(GenericFileCheckpoints):
     pass
+
+class NullCheckpoints(Checkpoints):
+    def null_checkpoint(self):
+        """Return a null checkpoint."""
+        return dict(
+            id="checkpoint",
+            last_modified=""
+        )
+
+    def create_checkpoint(self, contents_mgr, path):
+        """Return a null checkpoint."""
+        return self.null_checkpoint()
+
+    def restore_checkpoint(self, contents_mgr, checkpoint_id, path):
+        """No-op."""
+        pass
+
+    def rename_checkpoint(self, checkpoint_id, old_path, new_path):
+        """No-op."""
+        pass
+
+    def delete_checkpoint(self, checkpoint_id, path):
+        """No-op."""
+        pass
+
+    def list_checkpoints(self, path):
+        """Return an empty list."""
+        return [self.null_checkpoint()]
