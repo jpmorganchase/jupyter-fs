@@ -17,7 +17,7 @@ import { ServerConnection } from "@jupyterlab/services";
 export interface IFSResourceSpec {
   name: string;
   desc: string;
-  fsurl: string;
+  url: string;
 }
 
 export interface IFSResource extends IFSResourceSpec {

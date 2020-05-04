@@ -40,7 +40,7 @@ class MetaContentsManager(ContentsManager):
 
         for s in spec:
             # get deterministic hash of PyFilesystem url
-            _hash = md5(s['fsurl'].encode('utf-8')).hexdigest()[:8]
+            _hash = md5(s['url'].encode('utf-8')).hexdigest()[:8]
 
             if _hash in self._contents_managers:
                 # reuse existing cm
@@ -50,7 +50,7 @@ class MetaContentsManager(ContentsManager):
                 pass
             else:
                 # create new cm
-                managers[_hash] = PyFilesystemContentsManager(s['fsurl'], **self._kwargs)
+                managers[_hash] = PyFilesystemContentsManager(s['url'], **self._kwargs)
 
             # assemble resource from spec + hash
             r = {'drive': _hash}

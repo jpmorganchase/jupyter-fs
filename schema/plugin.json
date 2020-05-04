@@ -20,7 +20,7 @@
           "type": "string",
           "default": ""
         },
-        "fsurl": {
+        "url": {
           "description": "A url pointing to an fs resource, as per PyFilesystem",
           "type": "string"
         }
