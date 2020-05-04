@@ -20,12 +20,12 @@ from notebook.services.contents.filecheckpoints import GenericFileCheckpoints
 from notebook.services.contents.filemanager import FileContentsManager
 from traitlets import default
 
-__all__ = ["PyFilesystemContentsManager"]
+__all__ = ["FSManager"]
 
 
 EPOCH_START = datetime(1970, 1, 1, 0, 0, tzinfo=tz.UTC)
 
-class PyFilesystemContentsManager(FileContentsManager):
+class FSManager(FileContentsManager):
     """This class bridges the gap between Pyfilesystem's filesystem class,
     and Jupyter Notebook's ContentsManager class. This allows Jupyter to
     leverage all the backends available in Pyfilesystem.

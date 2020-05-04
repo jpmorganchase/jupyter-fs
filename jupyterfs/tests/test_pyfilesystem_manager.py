@@ -12,7 +12,7 @@ import shutil
 import socket
 import sys
 
-from jupyterfs.pyfilesystem_manager import PyFilesystemContentsManager
+from jupyterfs.fsmanager import FSManager
 from .utils import s3, samba
 
 test_dir = 'test'
@@ -74,7 +74,7 @@ class _TestBase:
         assert test_content == cm.get(fpaths[2])['content']
 
 
-class TestPyFilesystemContentsManager_osfs(_TestBase):
+class Test_FSManager_osfs(_TestBase):
     """No extra setup required for this test suite
     """
     _test_dir = str(Path(test_root_osfs) / Path(test_dir))
@@ -93,10 +93,10 @@ class TestPyFilesystemContentsManager_osfs(_TestBase):
     def _createContentsManager(self):
         uri = 'osfs://{local_dir}'.format(local_dir=self._test_dir)
 
-        return PyFilesystemContentsManager.open_fs(uri)
+        return FSManager.open_fs(uri)
 
 
-class TestPyFilesystemContentsManager_s3(_TestBase):
+class Test_FSManager_s3(_TestBase):
     """Tests on an instance of s3proxy running in a docker
     Manual startup of equivalent docker:
 
@@ -134,19 +134,19 @@ class TestPyFilesystemContentsManager_s3(_TestBase):
             port=test_port_s3,
         )
 
-        return PyFilesystemContentsManager.open_fs(uri)
+        return FSManager.open_fs(uri)
 
 
 @pytest.mark.darwin
 @pytest.mark.linux
-class TestPyFilesystemContentsManager_smb_docker_share(_TestBase):
+class Test_FSManager_smb_docker_share(_TestBase):
     """(mac/linux only. future: windows) runs its own samba server via
     py-docker. Automatically creates and exposes a share from a docker
     container.
 
     Manual startup of equivalent docker:
 
-        docker run --rm -it -p 137:137/udp -p 138:138/udp -p 139:139 -p 445:445 dperson/samba -p -n -u "smbuser;smbuser" -w "TESTNET"
+  FSManager   docker run --rm -it -p 137:137/udp -p 138:138/udp -p 139:139 -p 445:445 dperson/samba -p -n -u "smbuser;smbuser" -w "TESTNET"
 
     Docker with a windows guest:
 
@@ -188,13 +188,13 @@ class TestPyFilesystemContentsManager_smb_docker_share(_TestBase):
             share=test_dir,
         )
 
-        cm = PyFilesystemContentsManager.open_fs(uri)
+        cm = FSManager.open_fs(uri)
         assert cm.dir_exists('.')
         return cm
 
 
 @pytest.mark.win32
-class TestPyFilesystemContentsManager_smb_os_share(_TestBase):
+class Test_FSManager_smb_os_share(_TestBase):
     """(windows only. future: also mac) Uses the os's buitlin samba server.
     Expects a local user "smbuser" with access to a share named "test"
     """
@@ -232,7 +232,7 @@ class TestPyFilesystemContentsManager_smb_os_share(_TestBase):
         else:
             uri = 'smb://{username}:{passwd}@{host}/{share}?hostname={hostname}&direct-tcp={direct_tcp}'.format(**kwargs)
 
-        cm = PyFilesystemContentsManager.open_fs(uri)
+        cm = FSManager.open_fs(uri)
 
         assert cm.dir_exists('.')
         return cm

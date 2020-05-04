@@ -13,19 +13,19 @@ from notebook.base.handlers import APIHandler
 from notebook.services.contents.largefilemanager import LargeFileManager
 from notebook.services.contents.manager import ContentsManager
 
-from .pyfilesystem_manager import PyFilesystemContentsManager
+from .fsmanager import FSManager
 from .pathutils import path_first_arg, path_second_arg, path_kwarg, path_old_new
 
-__all__ = ["MetaContentsHandler", "MetaContentsManager"]
+__all__ = ["MetaManager", "MetaManagerHandler"]
 
 
-class MetaContentsManager(ContentsManager):
+class MetaManager(ContentsManager):
     def __init__(self, **kwargs):
         self.resources = []
 
         self._default_cm = ('', LargeFileManager(**kwargs))
 
-        self._contents_managers = dict([self._default_cm])
+        self._managers = dict([self._default_cm])
 
         # remove kwargs not relevant to pyfs
         kwargs.pop('parent')
@@ -42,15 +42,15 @@ class MetaContentsManager(ContentsManager):
             # get deterministic hash of PyFilesystem url
             _hash = md5(s['url'].encode('utf-8')).hexdigest()[:8]
 
-            if _hash in self._contents_managers:
+            if _hash in self._managers:
                 # reuse existing cm
-                managers[_hash] = self._contents_managers[_hash]
+                managers[_hash] = self._managers[_hash]
             elif _hash in managers:
                 # don't add redundant cm
                 pass
             else:
                 # create new cm
-                managers[_hash] = PyFilesystemContentsManager(s['url'], **self._kwargs)
+                managers[_hash] = FSManager(s['url'], **self._kwargs)
 
             # assemble resource from spec + hash
             r = {'drive': _hash}
@@ -58,16 +58,16 @@ class MetaContentsManager(ContentsManager):
             self.resources.append(r)
 
         # replace existing contents managers with new
-        self._contents_managers = managers
+        self._managers = managers
 
         if verbose:
-            print('jupyter-fs initialized: {} file system resources, {} managers'.format(len(self.resources), len(self._contents_managers)))
+            print('jupyter-fs initialized: {} file system resources, {} managers'.format(len(self.resources), len(self._managers)))
 
         return self.resources
 
     @property
     def root_manager(self):
-        return self._contents_managers.get('')
+        return self._managers.get('')
 
     is_hidden = path_first_arg('is_hidden', False)
     dir_exists = path_first_arg('dir_exists', False)
@@ -93,7 +93,7 @@ class MetaContentsManager(ContentsManager):
         False,
     )
 
-class MetaContentsHandler(APIHandler):
+class MetaManagerHandler(APIHandler):
     @property
     def config_specs(self):
         return self.config.get('jupyterfs', {}).get('specs', [])
