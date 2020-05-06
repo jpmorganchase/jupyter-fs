@@ -30,7 +30,7 @@ class MetaManager(ContentsManager):
         # remove kwargs not relevant to pyfs
         kwargs.pop('parent')
         kwargs.pop('log')
-        self._kwargs = kwargs
+        self._pyfs_kw = kwargs
 
     def initResource(self, *spec, verbose=False):
         """initialize one or more triples representing a PyFilesystem resource specification
@@ -50,7 +50,7 @@ class MetaManager(ContentsManager):
                 pass
             else:
                 # create new cm
-                managers[_hash] = FSManager(s['url'], **self._kwargs)
+                managers[_hash] = FSManager(s['url'], **self._pyfs_kw)
 
             # assemble resource from spec + hash
             r = {'drive': _hash}
@@ -79,6 +79,8 @@ class MetaManager(ContentsManager):
 
     get = path_first_arg('get', True)
     delete = path_first_arg('delete', False)
+
+    get_kernel_path = path_first_arg('get_kernel_path', False)
 
     create_checkpoint = path_first_arg('create_checkpoint', False)
     list_checkpoints = path_first_arg('list_checkpoints', False)

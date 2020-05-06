@@ -30,23 +30,26 @@ def _resolve_path(path, manager_dict):
     """
     parts = path.strip('/').split(":")
     if len(parts) == 1:
-        parts.append("")
+        # Try to find use the root manager, if one was supplied.
+        mgr = manager_dict.get('')
+        if mgr is not None:
+            return '', mgr, path
 
-    # Try to find a sub-manager for the first subdirectory.
-    mgr = manager_dict.get(parts[0])
-    if mgr is not None:
-        return parts[0], mgr, '/'.join(parts[1:])
+        raise HTTPError(
+            404,
+            "Couldn't resolve path [{path}] and "
+            "no root manager supplied!".format(path=path)
+        )
+    else:
+        # Try to find a sub-manager for the first subdirectory.
+        mgr = manager_dict.get(parts[0])
+        if mgr is not None:
+            return parts[0], mgr, '/'.join(parts[1:])
 
-    # Try to find use the root manager, if one was supplied.
-    mgr = manager_dict.get('')
-    if mgr is not None:
-        return '', mgr, path
-
-    raise HTTPError(
-        404,
-        "Couldn't resolve path [{path}] and "
-        "no root manager supplied!".format(path=path)
-    )
+        raise HTTPError(
+            404,
+            "Couldn't resolve path [{path}]".format(path=path)
+        )
 
 
 def _get_arg(argname, args, kwargs):
