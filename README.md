@@ -6,7 +6,7 @@ The backend is built on top of [PyFilesystem](https://github.com/PyFilesystem/py
 
 [![Build Status](https://dev.azure.com/tpaine154/jupyter/_apis/build/status/jpmorganchase.jupyter-fs?branchName=master)](https://dev.azure.com/tpaine154/jupyter/_build/latest?definitionId=23&branchName=master)
 [![GitHub issues](https://img.shields.io/github/issues/timkpaine/jupyter-fs.svg)]()
-[![Coverage](https://img.shields.io/azure-devops/coverage/tpaine154/jupyter/23)](https://dev.azure.com/tpaine154/jupyter/_build?definitionId=23&_a=summary)
+[![Coverage](https://img.shields.io/azure-devops/coverage/tpaine154/jupyter/23/master)](https://dev.azure.com/tpaine154/jupyter/_build?definitionId=23&_a=summary)
 [![PyPI](https://img.shields.io/pypi/l/jupyter-fs.svg)](https://pypi.python.org/pypi/jupyter-fs)
 [![PyPI](https://img.shields.io/pypi/v/jupyter-fs.svg)](https://pypi.python.org/pypi/jupyter-fs)
 [![npm](https://img.shields.io/npm/v/jupyter-fs.svg)](https://www.npmjs.com/package/jupyter-fs)
