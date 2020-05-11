@@ -23,8 +23,8 @@ parameters:
       displayName: "Install npm dependencies"
 
     - script: |
-        python -m pip install --upgrade pip
-        pip install -e .[dev]
+        python -m pip install --upgrade --upgrade-strategy=eager pip
+        pip install --upgrade --upgrade-strategy=eager -e .[dev]
       displayName: 'Install Python dependencies'
 
     - script: |
