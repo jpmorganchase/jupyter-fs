@@ -7,6 +7,7 @@
 
 from codecs import open
 from pathlib import Path
+import pkg_resources
 from setuptools import setup, find_packages
 from subprocess import CalledProcessError
 
@@ -15,11 +16,24 @@ from jupyter_packaging import (
     ensure_targets, get_version, run
 )
 
+
+def read_requirements(fname):
+    with open(fname) as reqTxt:
+        return [str(r) for r in pkg_resources.parse_requirements(reqTxt)]
+
+def run_pack_labextension():
+    if Path('package.json').is_file():
+        try:
+            run(['jlpm', 'build:all'])
+        except CalledProcessError:
+            pass
+
+
 # the name of the project
 name = 'jupyter-fs'
 
 # the Path to the pkg dir
-pkg=Path('jupyterfs')
+pkg = Path('jupyterfs')
 
 ensure_python(('2.7', '>=3.3'))
 
@@ -53,26 +67,17 @@ test_requires = [
     'pytest-cov',
 ]
 
-dev_requires = requires + test_requires + [
-    'autopep8',
+lint_requires = read_requirements('requirements-lint.txt')
+
+dev_requires = test_requires + lint_requires + [
     'bump2version',
     'codecov',
-    'flake8',
-    'pylint',
 ]
-
-
-def runPackLabextension():
-    if Path('package.json').is_file():
-        try:
-            run(['jlpm', 'build:all'])
-        except CalledProcessError:
-            pass
 
 
 cmdclass = create_cmdclass('pack_labext', data_files_spec=data_files_spec)
 cmdclass['pack_labext'] = combine_commands(
-    command_for_func(runPackLabextension),
+    command_for_func(run_pack_labextension),
     ensure_targets([
         'lib/index.js',
         'style/index.css'

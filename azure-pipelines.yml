@@ -19,14 +19,6 @@ parameters:
     - bash: npm install -g yarn
       displayName: "Install Yarn"
 
-    - bash: yarn
-      displayName: "Install npm dependencies"
-
-    - script: |
-        python -m pip install --upgrade --upgrade-strategy=eager pip
-        pip install --upgrade --upgrade-strategy=eager -e .[dev]
-      displayName: 'Install Python dependencies'
-
     - script: |
         which python > python.txt
         set /p PYTHON=<python.txt
@@ -38,6 +30,9 @@ parameters:
     - bash: env
       displayName: "List all environment variables"
 
+    - bash: pip install --upgrade --upgrade-strategy=eager pip
+      displayName: 'Install Python base dependencies'
+
 - name: initDockerSteps
   type: stepList
   default:
@@ -47,7 +42,7 @@ parameters:
         releaseType: stable
       displayName: 'Setup docker'
 
-- name: initDockerStepsMac
+- name: initDockerMacSteps
   type: stepList
   default:
     - script: |
@@ -63,7 +58,7 @@ parameters:
         docker pull dperson/samba
       displayName: 'Pull containers used by tests'
 
-- name: initS3proxyStepsLocal
+- name: initS3proxyLocalSteps
   type: stepList
   default:
     - bash: |
@@ -74,7 +69,7 @@ parameters:
     - script: curl http://127.0.0.1:9000/
       displayName: 'Test local S3 server'
 
-- name: initSmbOsWindows
+- name: initSmbOsWindowsSteps
   type: stepList
   default:
     - task: PowerShell@2
@@ -92,24 +87,30 @@ parameters:
         failOnStderr: True
       displayName: 'Create share on os builtin samba server'
 
-- name: testSteps
+- name: lintSteps
   type: stepList
   default:
-    - script: make lintpy
-      displayName: 'Lint Python'
+    - script: yarn install
+      displayName: 'Install Javascript lint deps'
 
     - script: make lintjs
       displayName: 'Lint JS'
 
-    - script: make testpy
-      displayName: 'Test Python'
+    - bash: pip install -r requirements-lint.txt
+      displayName: 'Install Python lint deps'
 
-    - script: make testjs
-      displayName: 'Test JS'
+    - script: make lintpy
+      displayName: 'Lint Python'
 
-- name: publishSteps
+- name: testPythonSteps
   type: stepList
   default:
+    - bash: pip install --upgrade --upgrade-strategy=eager -e .[dev] -v
+      displayName: 'Dev install of serverextension'
+
+    - script: make testpy
+      displayName: 'Test the Python serverextension backend'
+
     - task: PublishTestResults@2
       condition: succeededOrFailed()
       inputs:
@@ -121,38 +122,97 @@ parameters:
         codeCoverageTool: Cobertura
         summaryFileLocation: '$(System.DefaultWorkingDirectory)/*coverage.xml'
 
+- name: testJavascriptSteps
+  type: stepList
+  default:
+    - script: yarn install && yarn build
+      displayName: 'Build the labextension'
+
+    - script: make testjs
+      displayName: 'Run the Jest tests'
+
+- name: testBrowserSteps
+  type: stepList
+  default:
+    - bash: pip install .
+      displayName: 'Standard jupyter-fs install'
+
+    - bash: jupyter lab build --debug
+      displayName: 'Build jupyterlab + extensions'
+
+    - bash: |
+        jupyter --paths
+        jupyter lab paths
+      displayName: 'List Jupyter paths'
+
+    - bash: jupyter serverextension list
+      displayName: 'List Jupyter serverextensions'
+
+    - bash: jupyter labextension list
+      displayName: 'List Jupyter labextensions'
+
+    - script: make testbrowser
+      displayName: 'Run JupyterLab browser check'
+
+
 jobs:
-- job: 'Linux'
+- job: 'integrity__linux'
   pool:
     vmImage: 'ubuntu-latest'
+  variables:
+    python.version: '3.7'
 
-  strategy:
-    matrix:
-      Python37:
-        python.version: '3.7'
+  steps:
+    - ${{ parameters.initSteps }}
+    - ${{ parameters.lintSteps }}
+
+- job: 'javascript__linux'
+  pool:
+    vmImage: 'ubuntu-latest'
+  variables:
+    python.version: '3.7'
+
+  steps:
+    - ${{ parameters.initSteps }}
+    - ${{ parameters.testJavascriptSteps }}
+
+- job: 'python__linux'
+  pool:
+    vmImage: 'ubuntu-latest'
+  variables:
+    python.version: '3.7'
 
   steps:
     - ${{ parameters.initDockerSteps }}
     - ${{ parameters.pullContainersSteps }}
     - ${{ parameters.initSteps }}
-    - ${{ parameters.testSteps }}
-    - ${{ parameters.publishSteps }}
+    - ${{ parameters.testPythonSteps }}
 
-- job: 'Mac'
+- job: 'browser_check__linux'
   pool:
-    vmImage: 'macos-10.14'
-
-  strategy:
-    matrix:
-      Python37:
-        python.version: '3.7'
+    vmImage: 'ubuntu-latest'
+  variables:
+    python.version: '3.7'
 
   steps:
-    - ${{ parameters.initDockerStepsMac }}
+    - ${{ parameters.initDockerSteps }}
     - ${{ parameters.pullContainersSteps }}
     - ${{ parameters.initSteps }}
-    - ${{ parameters.testSteps }}
-    - ${{ parameters.publishSteps }}
+    - ${{ parameters.testBrowserSteps }}
+
+
+- job: 'python__mac'
+  pool:
+    vmImage: 'macos-10.14'
+  variables:
+    python.version: '3.7'
+
+  steps:
+    - ${{ parameters.initDockerMacSteps }}
+    - ${{ parameters.pullContainersSteps }}
+    - ${{ parameters.initSteps }}
+    - ${{ parameters.testPythonSteps }}
+
 
 # - job: 'Windows'
 #   pool:
@@ -164,8 +224,8 @@ jobs:
 #         python.version: '3.7'
 
 #   steps:
-#     - ${{ parameters.initSmbOsWindows }}
-#     - ${{ parameters.initS3proxyStepsLocal }}
+#     - ${{ parameters.initSmbOsWindowsSteps }}
+#     - ${{ parameters.initS3proxyLocalSteps }}
 #     - ${{ parameters.initSteps }}
 #     - ${{ parameters.testSteps }}
 #     - ${{ parameters.publishSteps }}
