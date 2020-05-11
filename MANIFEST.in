@@ -9,6 +9,7 @@ include .bumpversion.cfg
 include jest.config.js
 include Makefile
 
+include jupyterfs/chrome-test.js
 graft jupyterfs/tests
 
 # Documentation

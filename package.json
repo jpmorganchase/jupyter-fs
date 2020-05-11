@@ -1,6 +1,6 @@
 {
   "name": "jupyter-fs",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A Filesystem-like mult-contents manager backend for Jupyter",
   "author": "The jupyter-fs authors",
   "main": "lib/index.js",
@@ -14,13 +14,17 @@
   "scripts": {
     "build": "tsc",
     "build:integrity": "jlpm install && jlpm build",
-    "build:lab": "rimraf lab-dist && mkdirp lab-dist && cd lab-dist && npm pack ..",
-    "build:all": "jlpm run build:integrity && jlpm run build:lab",
-    "clean": "rimraf lib tsconfig.tsbuildinfo",
+    "build:labdist": "jlpm build && jlpm clean:labdist && mkdirp jupyterfs/labdist && cd jupyterfs/labdist && npm pack ../..",
+    "build:all": "jlpm run build:integrity && jlpm run build:labdist",
+    "clean": "rimraf lib tsconfig.tsbuildinfo *junit.xml coverage* .jupyter",
+    "clean:more": "jlpm clean && rimraf build dist MANIFEST",
+    "clean:labdist": "rimraf jupyterfs/labdist",
+    "clean:slate": "jlpm clean:more && jlpm clean:labdist && rimraf node_modules",
     "fix": "./node_modules/.bin/tslint --fix src/* src/*/*",
     "lint": "./node_modules/.bin/tslint src/* src/*/*",
     "prepublishOnly": "jlpm run build",
     "test": "jest --coverage --collectCoverageFrom=src/*.{ts,tsx}",
+    "test:browsercheck": "ci/browser_check.sh",
     "watch": "tsc -w"
   },
   "files": [

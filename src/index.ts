@@ -67,10 +67,16 @@ async function activate(
 
     // get user settings from json file
     const specs: IFSResourceSpec[] = settings.composite["specs"] as any;
+    const verbose: boolean = settings.composite["verbose"] as any;
 
     // send user specs to backend; await return containing resources
     // defined by user settings + resources defined by server config
     const resources = await comm.initResourceRequest(...specs);
+
+    if (verbose) {
+      // tslint:disable-next-line:no-console
+      console.info(`jupyter-fs frontend received resources:\n${resources}`);
+    }
 
     // create the fs resource frontends (ie FileTree instances)
     for (const r of resources) {

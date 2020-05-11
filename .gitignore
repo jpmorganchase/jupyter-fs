@@ -87,6 +87,7 @@ dist/
 downloads/
 eggs/
 .eggs/
+labdist/
 lib/
 lib64/
 parts/
@@ -191,5 +192,6 @@ ENV/
 .autoversion
 docs/api
 docs/index.md
+.jupyter
 python_junit.xml
 

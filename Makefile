@@ -4,9 +4,13 @@ testjs: ## Clean and Make js tests
 testpy: ## Clean and Make py tests
 	python3.7 -m pytest -v jupyterfs/tests --cov=jupyterfs --cov-branch --junitxml=python_junit.xml --cov-report=xml
 
+testbrowser:
+	yarn test:browsercheck
+
 test: ## run all tests
-	make testpy
 	make testjs
+	make testpy
+	make testbrowser
 
 lintjs: ## run linter
 	./node_modules/.bin/tslint src/* src/*/*
@@ -15,8 +19,8 @@ lintpy: ## run linter
 	python3.7 -m flake8 jupyterfs setup.py
 
 lint: ## run linter
-	make lintpy
 	make lintjs
+	make lintpy
 
 fixjs:  ## run autopep8/tslint fix
 	./node_modules/.bin/tslint --fix src/* src/*/*
@@ -25,8 +29,8 @@ fixpy:  ## run autopep8/tslint fix
 	python3.7 -m autopep8 --in-place -r -a -a jupyterfs/
 
 fix:  ## run autopep8/tslint fix
-	make fixpy
 	make fixjs
+	make fixpy
 
 annotate: ## MyPy type annotation check
 	python3.7 -m mypy -s jupyterfs
