@@ -37,7 +37,7 @@ pkg = Path('jupyterfs')
 
 ensure_python(('2.7', '>=3.3'))
 
-version = get_version(pkg/'_version.py')
+version = get_version(str(pkg/'_version.py'))
 
 with open('README.md', encoding='utf-8') as f:
     long_description = f.read()

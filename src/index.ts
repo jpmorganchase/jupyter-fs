@@ -73,8 +73,9 @@ async function activate(
     // defined by user settings + resources defined by server config
     const resources = await comm.initResourceRequest(...specs);
 
-    if (verbose && resources) {
-      console.debug(`jupyter-fs received ${resources.length} filesystem resources from backend.`);
+    if (verbose) {
+      // tslint:disable-next-line:no-console
+      console.info(`jupyter-fs frontend received resources:\n${resources}`);
     }
 
     // create the fs resource frontends (ie FileTree instances)

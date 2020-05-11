@@ -19,19 +19,18 @@ parameters:
     - bash: npm install -g yarn
       displayName: "Install Yarn"
 
-    - script: |
-        which python > python.txt
-        set /p PYTHON=<python.txt
-        ln -s %PYTHON% %PYTHON%$(python.version)
-        python --version
-        which python$(python.version)
-      displayName: "Which python"
-
     - bash: env
       displayName: "List all environment variables"
 
-    - bash: pip install --upgrade --upgrade-strategy=eager pip
+    - bash: pip install --upgrade --upgrade-strategy=eager pip wheel setuptools
       displayName: 'Install Python base dependencies'
+
+    - bash: |
+        set -ex
+        which python
+        python --version
+        pip list
+      displayName: "Python info"
 
 - name: initDockerSteps
   type: stepList
@@ -134,24 +133,21 @@ parameters:
 - name: testBrowserSteps
   type: stepList
   default:
-    - bash: pip install .
+    - bash: |
+        set -ex
+        pip install .
+        jupyter lab build --debug
       displayName: 'Standard jupyter-fs install'
 
-    - bash: jupyter lab build --debug
-      displayName: 'Build jupyterlab + extensions'
-
     - bash: |
+        set -ex
         jupyter --paths
         jupyter lab paths
-      displayName: 'List Jupyter paths'
+        jupyter serverextension list
+        jupyter labextension list
+      displayName: 'List Jupyter server/labextensions'
 
-    - bash: jupyter serverextension list
-      displayName: 'List Jupyter serverextensions'
-
-    - bash: jupyter labextension list
-      displayName: 'List Jupyter labextensions'
-
-    - script: make testbrowser
+    - script: yarn test:browsercheck
       displayName: 'Run JupyterLab browser check'
 
 

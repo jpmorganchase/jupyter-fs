@@ -16,7 +16,7 @@
     "build:integrity": "jlpm install && jlpm build",
     "build:labdist": "jlpm build && jlpm clean:labdist && mkdirp jupyterfs/labdist && cd jupyterfs/labdist && npm pack ../..",
     "build:all": "jlpm run build:integrity && jlpm run build:labdist",
-    "clean": "rimraf lib tsconfig.tsbuildinfo *junit.xml coverage*",
+    "clean": "rimraf lib tsconfig.tsbuildinfo *junit.xml coverage* .jupyter",
     "clean:more": "jlpm clean && rimraf build dist MANIFEST",
     "clean:labdist": "rimraf jupyterfs/labdist",
     "clean:slate": "jlpm clean:more && jlpm clean:labdist && rimraf node_modules",
@@ -24,6 +24,7 @@
     "lint": "./node_modules/.bin/tslint src/* src/*/*",
     "prepublishOnly": "jlpm run build",
     "test": "jest --coverage --collectCoverageFrom=src/*.{ts,tsx}",
+    "test:browsercheck": "ci/browser_check.sh",
     "watch": "tsc -w"
   },
   "files": [

@@ -20,7 +20,7 @@ init:
 - cmd: set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%
 
 # install latest pip
-- python -m pip install --upgrade --upgrade-strategy=eager pip
+- python -m pip install --upgrade --upgrade-strategy=eager pip wheel setuptools
 
 # set the node version
 - ps: Install-Product node 12

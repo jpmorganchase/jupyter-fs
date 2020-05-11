@@ -5,7 +5,7 @@ testpy: ## Clean and Make py tests
 	python3.7 -m pytest -v jupyterfs/tests --cov=jupyterfs --cov-branch --junitxml=python_junit.xml --cov-report=xml
 
 testbrowser:
-	python3.7 -m jupyterlab.browser_check
+	yarn test:browsercheck
 
 test: ## run all tests
 	make testjs
