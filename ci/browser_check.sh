@@ -57,4 +57,4 @@ export PYTHONUNBUFFERED="true"
 python -m jupyterlab.browser_check --notebook-dir=${WORKSPACE_FOLDER}
 
 # run the jupyterfs-specific browser check
-python tests/browser_check/browser_check.py --notebook-dir=${WORKSPACE_FOLDER}
+python -m jupyterfs.browser_check --notebook-dir=${WORKSPACE_FOLDER}
