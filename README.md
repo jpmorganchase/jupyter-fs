@@ -16,7 +16,6 @@ The backend is built on top of [PyFilesystem](https://github.com/PyFilesystem/py
 
 ```bash
 pip install jupyter-fs
-jupyter labextension install jupyter-fs
 ```
 
 
