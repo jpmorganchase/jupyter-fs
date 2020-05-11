@@ -95,7 +95,7 @@ parameters:
     - script: make lintjs
       displayName: 'Lint JS'
 
-    - bash: pip install -r requirements-lint.txt
+    - bash: pip install flake8
       displayName: 'Install Python lint deps'
 
     - script: make lintpy

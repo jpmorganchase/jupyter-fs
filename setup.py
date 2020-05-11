@@ -7,7 +7,6 @@
 
 from codecs import open
 from pathlib import Path
-import pkg_resources
 from setuptools import setup, find_packages
 from subprocess import CalledProcessError
 
@@ -16,10 +15,6 @@ from jupyter_packaging import (
     ensure_targets, get_version, run
 )
 
-
-def read_requirements(fname):
-    with open(fname) as reqTxt:
-        return [str(r) for r in pkg_resources.parse_requirements(reqTxt)]
 
 def run_pack_labextension():
     if Path('package.json').is_file():
@@ -42,12 +37,24 @@ version = get_version(str(pkg/'_version.py'))
 with open('README.md', encoding='utf-8') as f:
     long_description = f.read()
 
+
 data_files_spec = [
     # lab extension installed by default:
     ('share/jupyter/lab/extensions', str(pkg/'labdist'), '*.tgz'),
     # config to enable server extension by default:
     ('etc/jupyter', 'jupyter-config', '**/*.json'),
 ]
+
+cmdclass = create_cmdclass('pack_labext', data_files_spec=data_files_spec)
+cmdclass['pack_labext'] = combine_commands(
+    command_for_func(run_pack_labextension),
+    ensure_targets([
+        'lib/index.js',
+        'style/index.css'
+    ]),
+)
+cmdclass.pop('develop')
+
 
 requires = [
     'fs>=2.4.11',
@@ -67,23 +74,13 @@ test_requires = [
     'pytest-cov',
 ]
 
-lint_requires = read_requirements('requirements-lint.txt')
-
-dev_requires = test_requires + lint_requires + [
+dev_requires = test_requires + [
+    'autopep8',
     'bump2version',
     'codecov',
+    'flake8',
 ]
 
-
-cmdclass = create_cmdclass('pack_labext', data_files_spec=data_files_spec)
-cmdclass['pack_labext'] = combine_commands(
-    command_for_func(run_pack_labextension),
-    ensure_targets([
-        'lib/index.js',
-        'style/index.css'
-    ]),
-)
-cmdclass.pop('develop')
 
 setup(
     name=name,
