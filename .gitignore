@@ -87,6 +87,7 @@ dist/
 downloads/
 eggs/
 .eggs/
+labdist/
 lib/
 lib64/
 parts/

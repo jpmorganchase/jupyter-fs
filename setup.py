@@ -6,7 +6,6 @@
 # the Apache License 2.0.  The full license can be found in the LICENSE file.
 
 from codecs import open
-from os import path
 from pathlib import Path
 from setuptools import setup, find_packages
 from subprocess import CalledProcessError
@@ -15,15 +14,27 @@ from jupyter_packaging import (
     combine_commands, command_for_func, create_cmdclass, ensure_python,
     ensure_targets, get_version, run
 )
+HERE = Path().absolute()
+
+# The name of the project
+name = 'jupyter-fs'
+
+# The name of the pkg
+pkg='jupyterfs'
 
 ensure_python(('2.7', '>=3.3'))
 
-name = 'jupyter-fs'
-here = path.abspath(path.dirname(__file__))
-version = get_version(path.join(here, "jupyterfs", '_version.py'))
+version = get_version(HERE/pkg/'_version.py')
 
-with open(path.join(here, 'README.md'), encoding='utf-8') as f:
+with open(str(HERE/'README.md'), encoding='utf-8') as f:
     long_description = f.read()
+
+data_files_spec = [
+    # Lab extension installed by default:
+    ('share/jupyter/lab/extensions', str(HERE/pkg/'labdist'), '*.tgz'),
+    # Config to enable server extension by default:
+    ('etc/jupyter', 'jupyter-config', '**/*.json'),
+]
 
 requires = [
     'fs>=2.4.11',
@@ -51,17 +62,6 @@ dev_requires = requires + test_requires + [
     'pylint',
 ]
 
-data_files_spec = [
-    # Lab extension installed by default:
-    ('share/jupyter/lab/extensions',
-     'lab-dist',
-     'jupyter-fs-*.tgz'),
-    # Config to enable server extension by default:
-    ('etc/jupyter',
-     'jupyter-config',
-     '**/*.json'),
-]
-
 
 def runPackLabextension():
     if Path('package.json').is_file():
@@ -74,10 +74,10 @@ def runPackLabextension():
 cmdclass = create_cmdclass('pack_labext', data_files_spec=data_files_spec)
 cmdclass['pack_labext'] = combine_commands(
     command_for_func(runPackLabextension),
-    ensure_targets([
-        path.join(here, 'lib', 'index.js'),
-        path.join(here, 'style', 'index.css')
-    ]),
+    ensure_targets([str(p) for p in (
+        HERE/'lib'/'index.js',
+        HERE/'style'/'index.css'
+    )]),
 )
 cmdclass.pop('develop')
 
