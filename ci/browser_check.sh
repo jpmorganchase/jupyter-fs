@@ -37,7 +37,7 @@ cat <<EOT > "${PLUGIN_SETTINGS}"
 {
   "specs": [
     {
-      "name": "osfs-true-root",
+      "name": "osfs-here",
       "url": "osfs://${WORKSPACE_FOLDER}"
     }
   ],
@@ -50,5 +50,11 @@ echo "WORKSPACE_FOLDER: ${WORKSPACE_FOLDER}"
 echo "SERVER_SETTINGS: ${SERVER_SETTINGS}"
 echo "PLUGIN_SETTINGS: ${PLUGIN_SETTINGS}"
 
-# run the actual browser check
-PYTHONUNBUFFERED="true"; python -m jupyterlab.browser_check --notebook-dir=${WORKSPACE_FOLDER}
+# ensure everything that can goes to stdout
+export PYTHONUNBUFFERED="true"
+
+# run the normal jupyterlab browser check
+python -m jupyterlab.browser_check --notebook-dir=${WORKSPACE_FOLDER}
+
+# run the jupyterfs-specific browser check
+python tests/browser_check/browser_check.py --notebook-dir=${WORKSPACE_FOLDER}
