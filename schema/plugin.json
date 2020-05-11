@@ -33,6 +33,11 @@
       "items": { "$ref": "#/definitions/spec" },
       "type": "array",
       "default": []
+    },
+    "verbose": {
+      "description": "If true, jupyter-fs will output helpful info messages to the console",
+      "type": "boolean",
+      "default": false
     }
   }
 }
