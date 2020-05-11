@@ -14,25 +14,24 @@ from jupyter_packaging import (
     combine_commands, command_for_func, create_cmdclass, ensure_python,
     ensure_targets, get_version, run
 )
-HERE = Path().absolute()
 
-# The name of the project
+# the name of the project
 name = 'jupyter-fs'
 
-# The name of the pkg
-pkg='jupyterfs'
+# the Path to the pkg dir
+pkg=Path('jupyterfs')
 
 ensure_python(('2.7', '>=3.3'))
 
-version = get_version(HERE/pkg/'_version.py')
+version = get_version(pkg/'_version.py')
 
-with open(str(HERE/'README.md'), encoding='utf-8') as f:
+with open('README.md', encoding='utf-8') as f:
     long_description = f.read()
 
 data_files_spec = [
-    # Lab extension installed by default:
-    ('share/jupyter/lab/extensions', str(HERE/pkg/'labdist'), '*.tgz'),
-    # Config to enable server extension by default:
+    # lab extension installed by default:
+    ('share/jupyter/lab/extensions', str(pkg/'labdist'), '*.tgz'),
+    # config to enable server extension by default:
     ('etc/jupyter', 'jupyter-config', '**/*.json'),
 ]
 
@@ -74,10 +73,10 @@ def runPackLabextension():
 cmdclass = create_cmdclass('pack_labext', data_files_spec=data_files_spec)
 cmdclass['pack_labext'] = combine_commands(
     command_for_func(runPackLabextension),
-    ensure_targets([str(p) for p in (
-        HERE/'lib'/'index.js',
-        HERE/'style'/'index.css'
-    )]),
+    ensure_targets([
+        'lib/index.js',
+        'style/index.css'
+    ]),
 )
 cmdclass.pop('develop')
 
