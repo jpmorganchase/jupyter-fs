@@ -5,6 +5,9 @@
 # This file is part of the jupyter-fs library, distributed under the terms of
 # the Apache License 2.0.  The full license can be found in the LICENSE file.
 #
+import smb
+from fs.smbfs import SMBFS
+from fs.permissions import Permissions
 from ._version import __version__  # noqa: F401
 from .extension import load_jupyter_server_extension  # noqa: F401
 
@@ -14,11 +17,9 @@ def _jupyter_server_extension_paths():
         "module": "jupyterfs.extension"
     }]
 
+
 # monkey patch that applies diff from PR:
 # https://github.com/althonos/fs.smbfs/pull/11
-from fs.permissions import Permissions
-from fs.smbfs import SMBFS
-import smb
 
 @classmethod
 def _make_access_from_sd(cls, sd):
@@ -45,18 +46,18 @@ def _make_access_from_sd(cls, sd):
     # * `owner` (used for UNIX `user` mode, falls back to `everyone`)
     # * `group` (used for UNIX `group` mode, falls back to `everyone`)
     other_ace = next((ace for ace in sd.dacl.aces
-        if str(ace.sid).startswith(smb.security_descriptors.SID_EVERYONE)), None)
+                      if str(ace.sid).startswith(smb.security_descriptors.SID_EVERYONE)), None)
     owner_ace = next((ace for ace in sd.dacl.aces
-        if str(ace.sid).startswith(str(sd.owner))), other_ace)
+                      if str(ace.sid).startswith(str(sd.owner))), other_ace)
     group_ace = next((ace for ace in sd.dacl.aces
-        if str(ace.sid).startswith(str(sd.group))), other_ace)
+                      if str(ace.sid).startswith(str(sd.group))), other_ace)
 
     # Defines the masks used to check for the attributes
     attributes = {
-        'r': smb.smb_constants.FILE_READ_DATA \
-            & smb.smb_constants.FILE_READ_ATTRIBUTES,
-        'w': smb.smb_constants.FILE_WRITE_DATA \
-            & smb.smb_constants.FILE_WRITE_ATTRIBUTES,
+        'r': smb.smb_constants.FILE_READ_DATA
+        & smb.smb_constants.FILE_READ_ATTRIBUTES,
+        'w': smb.smb_constants.FILE_WRITE_DATA
+        & smb.smb_constants.FILE_WRITE_ATTRIBUTES,
         'x': smb.smb_constants.FILE_EXECUTE,
     }
 
@@ -71,11 +72,12 @@ def _make_access_from_sd(cls, sd):
     # Create the permissions from a permission list
     access['permissions'] = Permissions([
         '{}_{}'.format(mode_name, attr_name)
-            for mode_name, mode_mask in modes.items()
-                for attr_name, attr_mask in attributes.items()
-                    if attr_mask & mode_mask
+        for mode_name, mode_mask in modes.items()
+        for attr_name, attr_mask in attributes.items()
+        if attr_mask & mode_mask
     ])
 
     return access
+
 
 SMBFS._make_access_from_sd = _make_access_from_sd
