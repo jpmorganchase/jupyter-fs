@@ -59,9 +59,12 @@ cmdclass.pop('develop')
 requires = [
     'fs>=2.4.11',
     'fs-s3fs>=1.1.1',
-    'fs.smbfs @ git+https://github.com/telamonian/fs.smbfs.git@dont_assume_everyone_ace_exists#egg=fs.smbfs',
+    'fs.smbfs>=0.6.1',
     'jupyterlab>=2.0.0',
     'notebook>=5.7.0',
+
+    # remove when fs.smbfs monkey patch is removed
+    'pysmb>=1.1.28',
 ]
 
 test_requires = [
