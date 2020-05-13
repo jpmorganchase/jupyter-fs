@@ -1,11 +1,15 @@
+PIP := pip
+PYTHON := python
+YARN := jlpm
+
 testjs: ## Clean and Make js tests
-	yarn test
+	${YARN} test
 
 testpy: ## Clean and Make py tests
-	python3.7 -m pytest -v jupyterfs/tests --cov=jupyterfs --cov-branch --junitxml=python_junit.xml --cov-report=xml
+	${PYTHON} -m pytest -v jupyterfs/tests --cov=jupyterfs --cov-branch --junitxml=python_junit.xml --cov-report=xml
 
 testbrowser:
-	yarn test:browsercheck
+	${YARN} test:browsercheck
 
 test: ## run all tests
 	make testjs
@@ -16,7 +20,7 @@ lintjs: ## run linter
 	./node_modules/.bin/tslint src/* src/*/*
 
 lintpy: ## run linter
-	python3.7 -m flake8 jupyterfs setup.py
+	${PYTHON} -m flake8 jupyterfs setup.py
 
 lint: ## run linter
 	make lintjs
@@ -26,17 +30,17 @@ fixjs:  ## run autopep8/tslint fix
 	./node_modules/.bin/tslint --fix src/* src/*/*
 
 fixpy:  ## run autopep8/tslint fix
-	python3.7 -m autopep8 --in-place -r -a -a jupyterfs/
+	${PYTHON} -m autopep8 --in-place -r -a -a jupyterfs/
 
 fix:  ## run autopep8/tslint fix
 	make fixjs
 	make fixpy
 
 annotate: ## MyPy type annotation check
-	python3.7 -m mypy -s jupyterfs
+	${PYTHON} -m mypy -s jupyterfs
 
 annotate_l: ## MyPy type annotation check - count only
-	python3.7 -m mypy -s jupyterfs | wc -l
+	${PYTHON} -m mypy -s jupyterfs | wc -l
 
 clean: ## clean the repository
 	find . -name "__pycache__" | xargs  rm -rf
@@ -46,38 +50,47 @@ clean: ## clean the repository
 	# make -C ./docs clean
 
 dev_install: ## set up the repo for active development
-	python3.7 -m pip install -e .[dev]
-	python3.7 -m jupyter serverextension enable --py jupyterfs
-	jlpm build:integrity
-	python3.7 -m jupyter labextension link .
+	${PIP} install -e .[dev]
+	${PYTHON} -m jupyter serverextension enable --py jupyterfs
+	${YARN} build:integrity
+	${PYTHON} -m jupyter labextension link .
 	# verify
-	python3.7 -m jupyter serverextension list
-	python3.7 -m jupyter labextension list
+	${PYTHON} -m jupyter serverextension list
+	${PYTHON} -m jupyter labextension list
 
 docs:  ## make documentation
 	make -C ./docs html
 	open ./docs/_build/html/index.html
 
 install:  ## install to site-packages
-	python3.7 -m pip install .
+	${PIP} install .
 
 serverextension: install ## enable serverextension
-	python3.7 -m jupyter serverextension enable --py jupyterfs
+	${PYTHON} -m jupyter serverextension enable --py jupyterfs
 
 js:  ## build javascript
-	yarn
-	yarn build
+	${YARN} build:integrity
 
 labextension: js ## enable labextension
-	python3.7 -m jupyter labextension install .
+	${PYTHON} -m jupyter labextension install .
 
-dist: js  ## create dists
-	rm -rf dist build
-	python3.7 setup.py sdist bdist_wheel
+dist: ## create dists
+	rm -rf lib tsconfig.tsbuildinfo *junit.xml coverage* .jupyter build dist MANIFEST jupyterfs/labdist node_modules
+	${YARN} build:integrity
+	${PYTHON} setup.py sdist bdist_wheel
 
 publish: dist  ## dist to pypi and npm
 	twine check dist/* && twine upload dist/*
 	npm publish
+
+publishdry: dist  ## dry-run dist to pypi and npm
+	twine check dist/*
+	npm publish --dry-run
+
+publishtest: dist  ## release to test pypi, dry-run npm publish
+	twine check dist/* && twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+	npm publish --dry-run
+
 
 # Thanks to Francoise at marmelab.com for this
 .DEFAULT_GOAL := help

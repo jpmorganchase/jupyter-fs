@@ -92,7 +92,7 @@ parameters:
     - script: yarn install
       displayName: 'Install Javascript lint deps'
 
-    - script: make lintjs
+    - script: make lintjs YARN=yarn
       displayName: 'Lint JS'
 
     - bash: pip install flake8
@@ -127,7 +127,7 @@ parameters:
     - script: yarn install && yarn build
       displayName: 'Build the labextension'
 
-    - script: make testjs
+    - script: make testjs YARN=yarn
       displayName: 'Run the Jest tests'
 
 - name: testBrowserSteps
