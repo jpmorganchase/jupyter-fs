@@ -4,8 +4,8 @@ module.exports = {
     "\\.svg$": "jest-raw-loader"
   },
   moduleNameMapper:{
-    "\\.(css|less|sass|scss)$": "<rootDir>/testutils/styleMock.js",
-    "\\.(jpg|jpeg|png|gif|eot)$": "<rootDir>/testutils/fileMock.js"
+    "\\.(css|less|sass|scss)$": "<rootDir>/tests/styleMock.js",
+    "\\.(jpg|jpeg|png|gif|eot)$": "<rootDir>/tests/fileMock.js"
   },
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
   testPathIgnorePatterns: ["/lib/", "/node_modules/"],

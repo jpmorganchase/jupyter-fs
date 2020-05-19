@@ -6,13 +6,11 @@
  * the Apache License 2.0.  The full license can be found in the LICENSE file.
  *
  */
+/* eslint-disable max-classes-per-file */
+/* eslint-disable @typescript-eslint/interface-name-prefix */
+/* eslint-disable no-underscore-dangle */
 import { URLExt } from "@jupyterlab/coreutils";
 import { ServerConnection } from "@jupyterlab/services";
-
-// tslint:disable: no-namespace
-// tslint:disable: variable-name
-// tslint:disable: max-line-length
-// tslint:disable: max-classes-per-file
 
 export interface IFSResourceSpec {
   name: string;
@@ -44,7 +42,9 @@ export interface IFSComm {
 }
 
 abstract class FSCommBase implements IFSComm {
-  constructor(props: { baseUrl?: string } = {}) {
+  protected _settings: ServerConnection.ISettings | undefined = undefined;
+
+  public constructor(props: { baseUrl?: string } = {}) {
     const { baseUrl } = props;
 
     if (baseUrl) {
@@ -55,32 +55,30 @@ abstract class FSCommBase implements IFSComm {
   abstract async getResourcesRequest(): Promise<IFSResource[]>;
   abstract async initResourceRequest(...spec: IFSResourceSpec[]): Promise<IFSResource[]>;
 
-  get baseUrl(): string {
+  public get baseUrl(): string {
     return this.settings.baseUrl;
   }
-  set baseUrl(baseUrl: string) {
+  public set baseUrl(baseUrl: string) {
     if (baseUrl !== this.baseUrl) {
       this._settings = ServerConnection.makeSettings({ baseUrl });
     }
   }
 
-  get resourcesUrl(): string {
+  public get resourcesUrl(): string {
     return URLExt.join(this.baseUrl, "jupyterfs/resources");
   }
 
-  get settings(): ServerConnection.ISettings {
+  public get settings(): ServerConnection.ISettings {
     if (!this._settings) {
       this._settings = ServerConnection.makeSettings();
     }
 
     return this._settings;
   }
-
-  protected _settings: ServerConnection.ISettings | undefined = undefined;
 }
 
 export class FSComm extends FSCommBase {
-  async getResourcesRequest(): Promise<IFSResource[]> {
+  public async getResourcesRequest(): Promise<IFSResource[]> {
     const settings = this.settings;
     const fullUrl = this.resourcesUrl;
 
@@ -88,9 +86,9 @@ export class FSComm extends FSCommBase {
       fullUrl,
       { method: "GET" },
       settings
-    ).then(response => {
+    ).then((response) => {
       if (response.status !== 200) {
-        return response.text().then(data => {
+        return response.text().then((data) => {
           throw new ServerConnection.ResponseError(response, data);
         });
       }
@@ -99,7 +97,7 @@ export class FSComm extends FSCommBase {
     });
   }
 
-  async initResourceRequest(...spec: IFSResourceSpec[]): Promise<IFSResource[]> {
+  public async initResourceRequest(...spec: IFSResourceSpec[]): Promise<IFSResource[]> {
     const settings = this.settings;
     const fullUrl = this.resourcesUrl;
 
@@ -108,14 +106,14 @@ export class FSComm extends FSCommBase {
       {
         body: JSON.stringify(spec),
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
-        method: "POST"
+        method: "POST",
       },
       settings
-    ).then(response => {
+    ).then((response) => {
       if (response.status !== 200) {
-        return response.text().then(data => {
+        return response.text().then((data) => {
           throw new ServerConnection.ResponseError(response, data);
         });
       }

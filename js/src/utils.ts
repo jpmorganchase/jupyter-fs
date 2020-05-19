@@ -66,7 +66,7 @@ export function createOpenNode(): HTMLElement {
 }
 
 export function doRename(text: HTMLElement, edit: HTMLInputElement) {
-  const parent = text.parentElement as HTMLElement;
+  const parent = text.parentElement;
   parent.replaceChild(edit, text);
   edit.focus();
   const index = edit.value.lastIndexOf(".");
@@ -83,57 +83,61 @@ export function doRename(text: HTMLElement, edit: HTMLInputElement) {
     };
     edit.onkeydown = (event: KeyboardEvent) => {
       switch (event.keyCode) {
-        case 13: // Enter
-          event.stopPropagation();
-          event.preventDefault();
-          edit.blur();
-          break;
-        case 27: // Escape
-          event.stopPropagation();
-          event.preventDefault();
-          edit.blur();
-          break;
-        case 38: // Up arrow
-          event.stopPropagation();
-          event.preventDefault();
-          if (edit.selectionStart !== edit.selectionEnd) {
-            edit.selectionStart = edit.selectionEnd = 0;
-          }
-          break;
-        case 40: // Down arrow
-          event.stopPropagation();
-          event.preventDefault();
-          if (edit.selectionStart !== edit.selectionEnd) {
-            edit.selectionStart = edit.selectionEnd = edit.value.length;
-          }
-          break;
-        default:
-          break;
+      case 13: // Enter
+        event.stopPropagation();
+        event.preventDefault();
+        edit.blur();
+        break;
+      case 27: // Escape
+        event.stopPropagation();
+        event.preventDefault();
+        edit.blur();
+        break;
+      case 38: // Up arrow
+        event.stopPropagation();
+        event.preventDefault();
+        if (edit.selectionStart !== edit.selectionEnd) {
+          edit.selectionStart = edit.selectionEnd = 0;
+        }
+        break;
+      case 40: // Down arrow
+        event.stopPropagation();
+        event.preventDefault();
+        if (edit.selectionStart !== edit.selectionEnd) {
+          edit.selectionStart = edit.selectionEnd = edit.value.length;
+        }
+        break;
+      default:
+        break;
       }
     };
   });
 }
 
 export function fileSizeString(fileBytes: number) {
-    if (fileBytes == null) {
-      return "";
-    }
-    if (fileBytes < 1024) {
-      return fileBytes + " B";
-    }
+  if (fileBytes == null) {
+    return "";
+  }
+  if (fileBytes < 1024) {
+    return fileBytes + " B";
+  }
 
-    let i = -1;
-    const byteUnits = [" KB", " MB", " GB", " TB"];
-    do {
-        fileBytes = fileBytes / 1024;
-        i++;
-    } while (fileBytes > 1024);
+  let i = -1;
+  const byteUnits = [" KB", " MB", " GB", " TB"];
+  do {
+    fileBytes = fileBytes / 1024;
+    i++;
+  } while (fileBytes > 1024);
 
-    return Math.max(fileBytes, 0.1).toFixed(1) + byteUnits[i];
+  return Math.max(fileBytes, 0.1).toFixed(1) + byteUnits[i];
 }
 
 export function switchView(mode: any) {
-  if (mode === "none") { return ""; } else { return "none"; }
+  if (mode === "none") {
+    return "";
+  } else {
+    return "none";
+  }
 }
 
 export function writeZipFile(zip: JSZip, path: string) {
@@ -144,7 +148,7 @@ export function writeZipFile(zip: JSZip, path: string) {
 
 export class OpenDirectWidget extends Widget {
 
-  constructor() {
+  public constructor() {
     super({ node: createOpenNode() });
   }
 
@@ -152,7 +156,7 @@ export class OpenDirectWidget extends Widget {
     return this.inputNode.value;
   }
 
-  get inputNode(): HTMLInputElement {
-    return this.node.getElementsByTagName("input")[0] as HTMLInputElement;
+  public get inputNode(): HTMLInputElement {
+    return this.node.getElementsByTagName("input")[0];
   }
 }

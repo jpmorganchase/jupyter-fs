@@ -6,6 +6,8 @@
  * the Apache License 2.0.  The full license can be found in the LICENSE file.
  *
  */
+/* eslint-disable @typescript-eslint/interface-name-prefix */
+/* eslint-disable no-underscore-dangle */
 import { Dialog, showDialog, showErrorMessage, ToolbarButton } from "@jupyterlab/apputils";
 import { IChangedArgs, PageConfig } from "@jupyterlab/coreutils";
 import { IDocumentManager, shouldOverwrite } from "@jupyterlab/docmanager";
@@ -33,7 +35,6 @@ export interface IUploadModel {
 
 export class Uploader extends ToolbarButton {
 
-  // tslint:disable: variable-name
   private _input = Private.createUploadInput();
   private _uploads: IUploadModel[] = [];
   private _uploadChanged = new Signal<this, IChangedArgs<IUploadModel>>(this);
@@ -43,7 +44,7 @@ export class Uploader extends ToolbarButton {
   private context: string;
   private basepath: string;
 
-  constructor(options: any) {
+  public constructor(options: any) {
     super({
       icon: fileUploadIcon,
       onClick: () => {
@@ -87,7 +88,7 @@ export class Uploader extends ToolbarButton {
       const msg = `Cannot upload file (>${LARGE_FILE_SIZE / (1024 * 1024)} MB). ${
         file.name
       }`;
-      // tslint:disable-next-line: no-console
+      // eslint-disable-next-line no-console
       console.warn(msg);
       throw msg;
     }
@@ -97,7 +98,7 @@ export class Uploader extends ToolbarButton {
       throw new Error("Cancelled large file upload");
     }
     await this._uploadCheckDisposed();
-    await this.widget.refresh();
+    this.widget.refresh();
     await this._uploadCheckDisposed();
 
     const contents = await this.widget.cm.get(this.context);
@@ -119,13 +120,13 @@ export class Uploader extends ToolbarButton {
     Promise.all(pending).catch((error) => {
       showErrorMessage("Upload Error", error);
     });
-  }
+  };
 
   private _onInputClicked = () => {
     // In order to allow repeated uploads of the same file (with delete in between),
     // we need to clear the input value to trigger a change event.
     this._input.value = "";
-  }
+  };
 
   private _uploadCheckDisposed(): Promise<void> {
     if (this.isDisposed) {
@@ -187,9 +188,7 @@ export class Uploader extends ToolbarButton {
       try {
         return await uploadInner(file);
       } catch (err) {
-        ArrayExt.removeFirstWhere(this._uploads, (uploadIndex) => {
-          return file.name === uploadIndex.path;
-        });
+        ArrayExt.removeFirstWhere(this._uploads, (uploadIndex) => file.name === uploadIndex.path);
         throw err;
       }
     }
@@ -222,9 +221,7 @@ export class Uploader extends ToolbarButton {
       try {
         currentModel = await uploadInner(file.slice(start, end), chunk);
       } catch (err) {
-        ArrayExt.removeFirstWhere(this._uploads, (uploadIndex) => {
-          return file.name === uploadIndex.path;
-        });
+        ArrayExt.removeFirstWhere(this._uploads, (uploadIndex) => file.name === uploadIndex.path);
 
         this._uploadChanged.emit({
           name: "failure",
@@ -252,7 +249,7 @@ export class Uploader extends ToolbarButton {
 
 }
 
-// tslint:disable-next-line: no-namespace
+// eslint-disable-next-line @typescript-eslint/no-namespace
 namespace Private {
 
   export function createUploadInput(): HTMLInputElement {
