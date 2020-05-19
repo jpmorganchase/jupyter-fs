@@ -12,16 +12,8 @@ from subprocess import CalledProcessError
 
 from jupyter_packaging import (
     combine_commands, command_for_func, create_cmdclass, ensure_python,
-    ensure_targets, get_version, run
+    ensure_targets, get_version, install_npm
 )
-
-
-def run_pack_labextension():
-    if Path('package.json').is_file():
-        try:
-            run(['jlpm', 'build:all'])
-        except CalledProcessError:
-            pass
 
 
 # the name of the project
@@ -47,12 +39,13 @@ data_files_spec = [
 
 cmdclass = create_cmdclass('pack_labext', data_files_spec=data_files_spec)
 cmdclass['pack_labext'] = combine_commands(
-    command_for_func(run_pack_labextension),
+    install_npm(pkg/'js', build_cmd='build:all'),
     ensure_targets([
-        'lib/index.js',
-        'style/index.css'
+        pkg/'js'/'lib'/'index.js',
+        pkg/'js'/'style'/'index.css'
     ]),
 )
+
 cmdclass.pop('develop')
 
 
