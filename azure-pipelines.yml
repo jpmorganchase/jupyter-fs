@@ -89,7 +89,7 @@ parameters:
 - name: lintSteps
   type: stepList
   default:
-    - script: yarn install
+    - script: cd js; yarn install
       displayName: 'Install Javascript lint deps'
 
     - script: make lintjs YARN=yarn
@@ -124,7 +124,7 @@ parameters:
 - name: testJavascriptSteps
   type: stepList
   default:
-    - script: yarn install && yarn build
+    - script: cd js; yarn install && yarn build
       displayName: 'Build the labextension'
 
     - script: make testjs YARN=yarn
@@ -147,7 +147,7 @@ parameters:
         jupyter labextension list
       displayName: 'List Jupyter server/labextensions'
 
-    - script: yarn test:browsercheck
+    - script: cd js; yarn test:browsercheck
       displayName: 'Run JupyterLab browser check'
 
 
