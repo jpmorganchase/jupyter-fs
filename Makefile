@@ -9,7 +9,7 @@ testpy: ## Clean and Make py tests
 	${PYTHON} -m pytest -v jupyterfs/tests --cov=jupyterfs --cov-branch --junitxml=python_junit.xml --cov-report=xml
 
 testbrowser:
-	cd js; ${YARN} test:browsercheck
+	cd js; ${YARN} test:browser
 
 test: ## run all tests
 	make testjs

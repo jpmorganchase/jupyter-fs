@@ -147,7 +147,7 @@ parameters:
         jupyter labextension list
       displayName: 'List Jupyter server/labextensions'
 
-    - script: cd js; yarn test:browsercheck
+    - script: cd js; yarn test:browser
       displayName: 'Run JupyterLab browser check'
 
 

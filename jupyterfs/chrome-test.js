@@ -3,9 +3,13 @@ const puppeteer = require('puppeteer');
 const inspect = require('util').inspect;
 const URL = process.argv[2];
 
-function testJupyterfsExtension(html) {
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function testJupyterfsExtension(html) {
   // Test FileTree sidebar widgets are present
-  assert(html.includes('title="osfs-here'), 'Could not find osfs-here FileTree in sidebar.');
+  assert(await html.includes('title="osfs-here'), 'Could not find osfs-here FileTree in sidebar.');
   console.info('FileTree found for "osfs-here"')
 }
 
@@ -46,7 +50,10 @@ async function main() {
   }
 
   const loadedHtml = await page.content();
-  testJupyterfsExtension(loadedHtml);
+  await testJupyterfsExtension(loadedHtml);
+
+  // wait to finalize any outstanding GET requests
+  await sleep(1000);
 
   await browser.close();
 

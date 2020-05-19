@@ -18,12 +18,15 @@ from jupyter_packaging import (
 # the name of the project
 name = 'jupyter-fs'
 
-# the Path to the pkg dir
-pkg = Path('jupyterfs')
+# the Path to the python pkg dir
+py_pkg = Path('jupyterfs')
+
+# the Path to the javascript pkg dir
+js_pkg = Path('js')
 
 ensure_python(('2.7', '>=3.3'))
 
-version = get_version(str(pkg/'_version.py'))
+version = get_version(str(py_pkg/'_version.py'))
 
 with open('README.md', encoding='utf-8') as f:
     long_description = f.read()
@@ -31,17 +34,17 @@ with open('README.md', encoding='utf-8') as f:
 
 data_files_spec = [
     # lab extension installed by default:
-    ('share/jupyter/lab/extensions', str(pkg/'labdist'), '*.tgz'),
+    ('share/jupyter/lab/extensions', str(py_pkg/'labdist'), '*.tgz'),
     # config to enable server extension by default:
     ('etc/jupyter', 'jupyter-config', '**/*.json'),
 ]
 
 cmdclass = create_cmdclass('pack_labext', data_files_spec=data_files_spec)
 cmdclass['pack_labext'] = combine_commands(
-    install_npm(Path('js'), build_cmd='build:all'),
+    install_npm(js_pkg, build_cmd='build:labdist', npm=['jlpm']),
     ensure_targets([
-        Path('js')/'lib'/'index.js',
-        Path('js')/'style'/'index.css'
+        js_pkg/'lib'/'index.js',
+        js_pkg/'style'/'index.css'
     ]),
 )
 
