@@ -8,10 +8,9 @@
 from codecs import open
 from pathlib import Path
 from setuptools import setup, find_packages
-from subprocess import CalledProcessError
 
 from jupyter_packaging import (
-    combine_commands, command_for_func, create_cmdclass, ensure_python,
+    combine_commands, create_cmdclass, ensure_python,
     ensure_targets, get_version, install_npm
 )
 
@@ -39,10 +38,10 @@ data_files_spec = [
 
 cmdclass = create_cmdclass('pack_labext', data_files_spec=data_files_spec)
 cmdclass['pack_labext'] = combine_commands(
-    install_npm(pkg/'js', build_cmd='build:all'),
+    install_npm(Path('js'), build_cmd='build:all'),
     ensure_targets([
-        pkg/'js'/'lib'/'index.js',
-        pkg/'js'/'style'/'index.css'
+        Path('js')/'lib'/'index.js',
+        Path('js')/'style'/'index.css'
     ]),
 )
 
