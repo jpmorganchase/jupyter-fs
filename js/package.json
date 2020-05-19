@@ -24,7 +24,7 @@
     "lint": "./node_modules/.bin/eslint -c .eslintrc.js --ext .ts src/ tests/",
     "prepublishOnly": "jlpm run build",
     "test": "jest --coverage --collectCoverageFrom=src/*.{ts,tsx}",
-    "test:browsercheck": "ci/browser_check.sh",
+    "test:browsercheck": "../ci/browser_check.sh",
     "watch": "tsc -w"
   },
   "files": [
