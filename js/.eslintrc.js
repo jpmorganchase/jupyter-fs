@@ -19,134 +19,49 @@ module.exports = {
         "@typescript-eslint/tslint",
     ],
     rules: {
-        "@typescript-eslint/array-type": [
-            "error",
-            {
-                default: "array-simple",
-            },
-        ],
+        "@typescript-eslint/array-type": ["error", {default: "array-simple"}],
         '@typescript-eslint/camelcase': 'off',
         '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
         '@typescript-eslint/explicit-function-return-type': 'off',
-        "@typescript-eslint/explicit-member-accessibility": ["error",
-            {
-                accessibility: "no-public",
-            },
-        ],
+        "@typescript-eslint/explicit-member-accessibility": ["error", {accessibility: "no-public"}],
         "@typescript-eslint/indent": ["error", 2],
         "@typescript-eslint/no-explicit-any": "off",
         '@typescript-eslint/no-namespace': 'off',
         "@typescript-eslint/no-unused-expressions": "error",
         '@typescript-eslint/no-unused-vars': ['warn', { args: 'none' }],
         "@typescript-eslint/no-use-before-define": "off",
-        "@typescript-eslint/quotes": [
-            "error",
-            "double",
-            {
-                avoidEscape: true,
-                allowTemplateLiterals: true
-            },
-        ],
+        "@typescript-eslint/quotes": ["error", "double", {avoidEscape: true, allowTemplateLiterals: true}],
         "@typescript-eslint/semi": ["error"],
         "@typescript-eslint/unified-signatures": "error",
-        "arrow-body-style": "error",
-        "arrow-parens": [
-            "error",
-            "always",
-        ],
-        "brace-style": [
-            "error",
-            "1tbs",
-        ],
-        "comma-dangle": [
-            "error",
-            "always-multiline",
-        ],
+        "arrow-body-style": ["error", "as-needed"],
+        "arrow-parens": ["error", "as-needed"],
+        "brace-style": ["error", "1tbs"],
+        "comma-dangle": ["error", "always-multiline"],
         "complexity": "off",
         "constructor-super": "error",
         "curly": "error",
         "eol-last": "error",
-        "eqeqeq": [
-            "error",
-            "smart",
-        ],
-        "guard-for-in": "error",
-        "id-blacklist": [
-            "error",
-            "any",
-            "Number",
-            "number",
-            "String",
-            "string",
-            "Boolean",
-            "boolean",
-            "Undefined",
-            "undefined",
-        ],
-        "id-match": "error",
-        "max-classes-per-file": [
-            "error",
-            1,
-        ],
-        "max-len": [
-            "error",
-            {
-                code: 200,
-            },
-        ],
+        "eqeqeq": ["error", "smart"],
+        "id-blacklist": ["error", "any", "Number", "number", "String", "string", "Boolean", "boolean", "Undefined", "undefined"],
+        "max-len": ["error", {code: 200}],
         "new-parens": "error",
-        "no-bitwise": "error",
+        "no-bitwise": "warn",
         "no-caller": "error",
-        "no-cond-assign": "error",
-        "no-console": "error",
+        "no-console": ["error", { allow: ["warn", "error"] }],
         "no-debugger": "error",
         "no-empty": "error",
         "no-eval": "error",
-        "no-fallthrough": "off",
-        "no-invalid-this": "off",
         "no-multiple-empty-lines": "error",
         "no-new-wrappers": "error",
-        "no-shadow": [
-            "error",
-            {
-                hoist: "all",
-            },
-        ],
+        "no-shadow": ["error", {hoist: "all"}],
         "no-throw-literal": "error",
         "no-trailing-spaces": "error",
         "no-undef-init": "error",
-        "no-underscore-dangle": "error",
-        "no-unsafe-finally": "error",
-        "no-unused-labels": "error",
         "object-shorthand": "error",
-        "one-var": [
-            "error",
-            "never",
-        ],
-        "prefer-arrow-callback": "error",
-        "quote-props": [
-            "error",
-            "consistent-as-needed",
-        ],
-        "radix": "error",
-        "space-before-function-paren": [
-            "error",
-            {
-                anonymous: "never",
-                asyncArrow: "always",
-                named: "never",
-            },
-        ],
-        "spaced-comment": [
-            "off",
-            "always",
-            {
-                markers: [
-                    "/",
-                ],
-            },
-        ],
-        "use-isnan": "error",
+        "one-var": ["error", "never"],
+        "quote-props": ["error", "consistent-as-needed"],
+        "space-before-function-paren": ["error", {anonymous: "never", asyncArrow: "always", named: "never"}],
+        "spaced-comment": ["off", "always", {markers: ["/"]}],
         "valid-typeof": "off",
         "@typescript-eslint/tslint/config": [
             "error",
@@ -169,6 +84,13 @@ module.exports = {
 
         // disabled to avoid conflict with @typescript-eslint rules
         "quotes": "off",
-        "semi": "off"
+        "semi": "off",
+
+        // candidates for turning on
+        "no-fallthrough": "off",
+        "no-invalid-this": "off",
+
+        // candidates for turning off
+        "no-underscore-dangle": "error",
     },
 };
