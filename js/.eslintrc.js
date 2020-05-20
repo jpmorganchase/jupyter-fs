@@ -1,18 +1,18 @@
-/* eslint-disable @typescript-eslint/indent */
 module.exports = {
+    ignorePatterns: ["lib/**", "node_modules/**"],
     env: {
         browser: true,
         es6: true,
+        commonjs: true
     },
     extends: [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/eslint-recommended",
         "plugin:@typescript-eslint/recommended",
-        "plugin:@typescript-eslint/recommended-requiring-type-checking",
+        "plugin:@typescript-eslint/recommended-requiring-type-checking"
     ],
-    parser: "@typescript-eslint/parser",
     parserOptions: {
-        project: "tsconfig.json",
-        createDefaultProgram: true,
-        sourceType: "module",
+        project: "tsconfig.eslint.json",
     },
     plugins: [
         "@typescript-eslint",
@@ -25,91 +25,29 @@ module.exports = {
                 default: "array-simple",
             },
         ],
-        "@typescript-eslint/ban-types": [
-            "error",
+        '@typescript-eslint/camelcase': 'off',
+        '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
+        '@typescript-eslint/explicit-function-return-type': 'off',
+        "@typescript-eslint/explicit-member-accessibility": ["error",
             {
-                types: {
-                    Object: {
-                        message: "Avoid using the `Object` type. Did you mean `object`?",
-                    },
-                    Function: {
-                        message: "Avoid using the `Function` type. Prefer a specific function type, like `() => void`.",
-                    },
-                    Boolean: {
-                        message: "Avoid using the `Boolean` type. Did you mean `boolean`?",
-                    },
-                    Number: {
-                        message: "Avoid using the `Number` type. Did you mean `number`?",
-                    },
-                    String: {
-                        message: "Avoid using the `String` type. Did you mean `string`?",
-                    },
-                    Symbol: {
-                        message: "Avoid using the `Symbol` type. Did you mean `symbol`?",
-                    },
-                },
+                accessibility: "no-public",
             },
         ],
-        "@typescript-eslint/camelcase": "off",
-        "@typescript-eslint/consistent-type-definitions": "error",
-        "@typescript-eslint/dot-notation": "error",
-        "@typescript-eslint/explicit-member-accessibility": [
-            "error",
-            {
-                accessibility: "explicit",
-            },
-        ],
-        "@typescript-eslint/indent": [
-            "error",
-            2,
-            {
-                FunctionDeclaration: {
-                    parameters: "first",
-                },
-                FunctionExpression: {
-                    parameters: "first",
-                },
-            },
-        ],
-        "@typescript-eslint/member-delimiter-style": [
-            "error",
-            {
-                multiline: {
-                    delimiter: "semi",
-                    requireLast: true,
-                },
-                singleline: {
-                    delimiter: "semi",
-                    requireLast: false,
-                },
-            },
-        ],
-        "@typescript-eslint/member-ordering": "error",
+        "@typescript-eslint/indent": ["error", 2],
         "@typescript-eslint/no-explicit-any": "off",
-        "@typescript-eslint/no-parameter-properties": "off",
+        '@typescript-eslint/no-namespace': 'off',
         "@typescript-eslint/no-unused-expressions": "error",
+        '@typescript-eslint/no-unused-vars': ['warn', { args: 'none' }],
         "@typescript-eslint/no-use-before-define": "off",
-        "@typescript-eslint/prefer-for-of": "error",
-        "@typescript-eslint/prefer-function-type": "error",
         "@typescript-eslint/quotes": [
             "error",
             "double",
             {
                 avoidEscape: true,
+                allowTemplateLiterals: true
             },
         ],
-        "@typescript-eslint/semi": [
-            "error",
-            "always",
-        ],
-        "@typescript-eslint/triple-slash-reference": [
-            "error",
-            {
-                path: "always",
-                types: "prefer-import",
-                lib: "always",
-            },
-        ],
+        "@typescript-eslint/semi": ["error"],
         "@typescript-eslint/unified-signatures": "error",
         "arrow-body-style": "error",
         "arrow-parens": [
@@ -120,7 +58,6 @@ module.exports = {
             "error",
             "1tbs",
         ],
-        "camelcase": "off",
         "comma-dangle": [
             "error",
             "always-multiline",
@@ -229,5 +166,9 @@ module.exports = {
                 },
             },
         ],
+
+        // disabled to avoid conflict with @typescript-eslint rules
+        "quotes": "off",
+        "semi": "off"
     },
 };
