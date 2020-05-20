@@ -11,12 +11,12 @@ module.exports = {
         "plugin:@typescript-eslint/recommended",
         "plugin:@typescript-eslint/recommended-requiring-type-checking"
     ],
+    parser: '@typescript-eslint/parser',
     parserOptions: {
         project: "tsconfig.eslint.json",
     },
     plugins: [
         "@typescript-eslint",
-        "@typescript-eslint/tslint",
     ],
     rules: {
         "@typescript-eslint/array-type": ["error", {default: "array-simple"}],
@@ -37,12 +37,16 @@ module.exports = {
         "arrow-parens": ["error", "as-needed"],
         "brace-style": ["error", "1tbs"],
         "comma-dangle": ["error", "always-multiline"],
+        "comma-spacing": "error",
         "complexity": "off",
         "constructor-super": "error",
         "curly": "error",
         "eol-last": "error",
         "eqeqeq": ["error", "smart"],
+        "func-call-spacing": "error",
         "id-blacklist": ["error", "any", "Number", "number", "String", "string", "Boolean", "boolean", "Undefined", "undefined"],
+        "key-spacing": "error",
+        "keyword-spacing": "error",
         "max-len": ["error", {code: 200}],
         "new-parens": "error",
         "no-bitwise": "warn",
@@ -60,27 +64,14 @@ module.exports = {
         "object-shorthand": "error",
         "one-var": ["error", "never"],
         "quote-props": ["error", "consistent-as-needed"],
+        "space-before-blocks": "error",
         "space-before-function-paren": ["error", {anonymous: "never", asyncArrow: "always", named: "never"}],
+        "space-unary-ops": "error",
         "spaced-comment": ["off", "always", {markers: ["/"]}],
         "valid-typeof": "off",
-        "@typescript-eslint/tslint/config": [
-            "error",
-            {
-                rules: {
-                    "import-spacing": true,
-                    "object-literal-sort-keys": true,
-                    "whitespace": [
-                        true,
-                        "check-branch",
-                        "check-decl",
-                        "check-operator",
-                        "check-separator",
-                        "check-type",
-                        "check-typecast",
-                    ],
-                },
-            },
-        ],
+
+        // imperfect replacement for old tslint import-spacing
+        "object-curly-spacing": ["error", "always"],
 
         // disabled to avoid conflict with @typescript-eslint rules
         "quotes": "off",
@@ -89,6 +80,8 @@ module.exports = {
         // candidates for turning on
         "no-fallthrough": "off",
         "no-invalid-this": "off",
+        "sort-keys": ["off", "asc", {natural: true}],
+        "space-infix-ops": "off",
 
         // candidates for turning off
         "no-underscore-dangle": "error",
