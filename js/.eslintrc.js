@@ -6,12 +6,8 @@ module.exports = {
         commonjs: true
     },
     extends: [
-        "eslint:recommended",
-        "plugin:@typescript-eslint/eslint-recommended",
-        "plugin:@typescript-eslint/recommended",
-        "plugin:@typescript-eslint/recommended-requiring-type-checking"
+        "eslint:recommended"
     ],
-    parser: '@typescript-eslint/parser',
     parserOptions: {
         project: "tsconfig.eslint.json",
     },
@@ -19,20 +15,6 @@ module.exports = {
         "@typescript-eslint",
     ],
     rules: {
-        "@typescript-eslint/array-type": ["error", {default: "array-simple"}],
-        '@typescript-eslint/camelcase': 'off',
-        '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
-        '@typescript-eslint/explicit-function-return-type': 'off',
-        "@typescript-eslint/explicit-member-accessibility": ["error", {accessibility: "no-public"}],
-        "@typescript-eslint/indent": ["error", 2],
-        "@typescript-eslint/no-explicit-any": "off",
-        '@typescript-eslint/no-namespace': 'off',
-        "@typescript-eslint/no-unused-expressions": "error",
-        '@typescript-eslint/no-unused-vars': ['warn', { args: 'none' }],
-        "@typescript-eslint/no-use-before-define": "off",
-        "@typescript-eslint/quotes": ["error", "double", {avoidEscape: true, allowTemplateLiterals: true}],
-        "@typescript-eslint/semi": ["error"],
-        "@typescript-eslint/unified-signatures": "error",
         "arrow-body-style": ["error", "as-needed"],
         "arrow-parens": ["error", "as-needed"],
         "brace-style": ["error", "1tbs"],
@@ -61,9 +43,12 @@ module.exports = {
         "no-throw-literal": "error",
         "no-trailing-spaces": "error",
         "no-undef-init": "error",
+        'no-unused-vars': ['warn', { args: 'none' }],
         "object-shorthand": "error",
         "one-var": ["error", "never"],
         "quote-props": ["error", "consistent-as-needed"],
+        "quotes": ["error", "double", {avoidEscape: true, allowTemplateLiterals: true}],
+        "semi": "error",
         "space-before-blocks": "error",
         "space-before-function-paren": ["error", {anonymous: "never", asyncArrow: "always", named: "never"}],
         "space-unary-ops": "error",
@@ -72,10 +57,6 @@ module.exports = {
 
         // imperfect replacement for old tslint import-spacing
         "object-curly-spacing": ["error", "always"],
-
-        // disabled to avoid conflict with @typescript-eslint rules
-        "quotes": "off",
-        "semi": "off",
 
         // candidates for turning on
         "no-fallthrough": "off",
@@ -86,4 +67,36 @@ module.exports = {
         // candidates for turning off
         "no-underscore-dangle": "error",
     },
+    overrides: [
+        {
+            // ref: https://github.com/typescript-eslint/typescript-eslint/issues/109#issuecomment-536160947
+            files: ["**/*.ts", "**/*.tsx"],
+            extends: [
+                "plugin:@typescript-eslint/eslint-recommended",
+                "plugin:@typescript-eslint/recommended",
+                "plugin:@typescript-eslint/recommended-requiring-type-checking"
+            ],
+            parser: "@typescript-eslint/parser",
+            rules: {
+                "@typescript-eslint/array-type": ["error", {default: "array-simple"}],
+                '@typescript-eslint/camelcase': 'off',
+                '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
+                '@typescript-eslint/explicit-function-return-type': 'off',
+                "@typescript-eslint/explicit-member-accessibility": ["error", {accessibility: "no-public"}],
+                "@typescript-eslint/indent": ["error", 2],
+                '@typescript-eslint/no-empty-interface': 'off',
+                "@typescript-eslint/no-explicit-any": "off",
+                '@typescript-eslint/no-namespace': 'off',
+                "@typescript-eslint/no-unused-expressions": "error",
+                '@typescript-eslint/no-unused-vars': ['warn', { args: 'none' }],
+                "@typescript-eslint/no-use-before-define": "off",
+                "@typescript-eslint/quotes": ["error", "double", {avoidEscape: true, allowTemplateLiterals: true}],
+                "@typescript-eslint/semi": "error",
+                "@typescript-eslint/unified-signatures": "error",
+                'no-unused-vars': "off",
+                "quotes": "off",
+                "semi": "off",
+            }
+        }
+    ]
 };
