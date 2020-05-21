@@ -22,7 +22,7 @@ parameters:
     - bash: env
       displayName: "List all environment variables"
 
-    - bash: pip install --upgrade --upgrade-strategy=eager pip wheel setuptools
+    - bash: pip install --upgrade pip wheel setuptools
       displayName: 'Install Python base dependencies'
 
     - bash: |
@@ -104,7 +104,7 @@ parameters:
 - name: testPythonSteps
   type: stepList
   default:
-    - bash: pip install --upgrade --upgrade-strategy=eager -e .[dev] -v
+    - bash: pip install --upgrade -e .[dev] -v
       displayName: 'Dev install of serverextension'
 
     - script: make testpy

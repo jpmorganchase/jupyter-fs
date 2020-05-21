@@ -20,7 +20,7 @@ init:
 - cmd: set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%
 
 # install latest pip
-- python -m pip install --upgrade --upgrade-strategy=eager pip wheel setuptools
+- python -m pip install --upgrade pip wheel setuptools
 
 # set the node version
 - ps: Install-Product node 12
@@ -41,7 +41,7 @@ install:
 - curl http://127.0.0.1:9000/
 
 # install python deps
-- pip install --upgrade --upgrade-strategy=eager -e .[dev] -v
+- pip install --upgrade -e .[dev] -v
 
 # install js deps
 - yarn install
