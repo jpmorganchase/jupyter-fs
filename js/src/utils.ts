@@ -41,14 +41,14 @@ export const CommandIDs = {
 
 export const Patterns = {
   tree: new RegExp(`^${PageConfig.getOption("treeUrl")}([^?]+)`),
-  workspace: new RegExp(`^${PageConfig.getOption("workspacesUrl")}[^?\/]+/tree/([^?]+)`),
+  workspace: new RegExp(`^${PageConfig.getOption("workspacesUrl")}[^?/]+/tree/([^?]+)`),
 };
 
 /**
  * Version of btoa that omits any "=" padding chars at the end
  */
 export function btoaNopad(s: string): string {
-  return btoa(s).replace(/\=+$/, "");
+  return btoa(s).replace(/=+$/, "");
 }
 
 export function createOpenNode(): HTMLElement {
