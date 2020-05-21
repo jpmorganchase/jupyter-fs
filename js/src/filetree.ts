@@ -26,17 +26,17 @@ import { Uploader } from "./upload";
 import { CommandIDs, doRename, fileSizeString, OpenDirectWidget, Patterns, switchView, writeZipFile } from "./utils";
 
 export class FileTree extends Widget {
-  public cm: ContentsManager;
-  public dr: DocumentRegistry;
-  public commands: any;
-  public toolbar: Toolbar;
-  public table: HTMLTableElement;
-  public tree: HTMLElement;
-  public controller: any;
-  public selected: string;
-  public basepath: string;
+  cm: ContentsManager;
+  dr: DocumentRegistry;
+  commands: any;
+  toolbar: Toolbar;
+  table: HTMLTableElement;
+  tree: HTMLElement;
+  controller: any;
+  selected: string;
+  basepath: string;
 
-  public constructor({
+  constructor({
     app,
     basepath = "",
     caption = "File Tree",
@@ -67,14 +67,14 @@ export class FileTree extends Widget {
     this.basepath = basepath === "" ? basepath : basepath + ":";
 
     const base = this.cm.get(this.basepath);
-    base.then((res) => {
-      this.controller[""] = {last_modified: res.last_modified, open: true};
+    base.then(res => {
+      this.controller[""] = { last_modified: res.last_modified, open: true };
       const table = this.buildTable(["Name", "Size", "Timestamp", "Permission"], res.content);
       this.node.appendChild(table);
     });
   }
 
-  public buildTable(headers: any, data: any) {
+  buildTable(headers: any, data: any) {
     const table = document.createElement("table");
     table.className = "filetree-head";
     const thead = table.createTHead();
@@ -100,48 +100,48 @@ export class FileTree extends Widget {
     return table;
   }
 
-  public reload() { // rebuild tree
+  reload() { // rebuild tree
     this.table.removeChild(this.tree);
     const tbody = this.table.createTBody();
     tbody.id = "filetree-body";
     this.tree = tbody;
     const base = this.cm.get(this.basepath);
-    base.then((res) => {
+    base.then(res => {
       this.buildTableContents(res.content, 1, "");
     });
     this.table.appendChild(tbody);
   }
 
-  public restore() { // restore expansion prior to rebuild
+  restore() { // restore expansion prior to rebuild
     const array: Array<Promise<any>> = [];
-    Object.keys(this.controller).forEach((key) => {
+    Object.keys(this.controller).forEach(key => {
       if (this.controller[key].open && (key !== "")) {
         const promise = this.cm.get(this.basepath + key);
-        promise.catch((res) => {
+        promise.catch(res => {
           // eslint-disable-next-line no-console
           console.log(res);
         });
         array.push(promise);
       }
     });
-    Promise.all(array).then((results) => {
+    Promise.all(array).then(results => {
       for (const r in results) {
         const row_element = this.node.querySelector("[id='" + btoa(results[r].path.replace(this.basepath, "")) + "']");
         this.buildTableContents(results[r].content, 1 + results[r].path.split("/").length, row_element);
       }
-    }).catch((reasons) => {
+    }).catch(reasons => {
       // eslint-disable-next-line no-console
       console.log(reasons);
     });
   }
 
-  public refresh() {
+  refresh() {
     this.reload();
     this.restore();
   }
 
-  public updateController(oldPath: string, newPath: string) { // replace keys for renamed path
-    Object.keys(this.controller).forEach((key) => {
+  updateController(oldPath: string, newPath: string) { // replace keys for renamed path
+    Object.keys(this.controller).forEach(key => {
       if (key.startsWith(oldPath)) {
         if (newPath !== "") {
           this.controller[key.replace(oldPath, newPath)] = this.controller[key];
@@ -151,7 +151,7 @@ export class FileTree extends Widget {
     });
   }
 
-  public buildTableContents(data: any, level: number, parent: any) {
+  buildTableContents(data: any, level: number, parent: any) {
     const commands = this.commands;
     const map = this.sortContents(data);
     for (const index in data) {
@@ -165,52 +165,52 @@ export class FileTree extends Widget {
       }
 
       tr.oncontextmenu = () => {
-        commands.execute((CommandIDs.set_context + ":" + this.id), {path});
+        commands.execute((CommandIDs.set_context + ":" + this.id), { path });
       };
       tr.draggable = true;
-      tr.ondragstart = (event) => {
+      tr.ondragstart = event => {
         event.dataTransfer.setData("Path", tr.id);
       };
 
       if (entry.type === "directory") {
-        tr.onclick = (event) => {
+        tr.onclick = event => {
           event.stopPropagation();
           event.preventDefault();
           const classList = (event.target as HTMLElement).classList;
           if (classList.contains("jp-DirListing-itemIcon") || classList.contains("jp-icon-selectable")) {
-            commands.execute((CommandIDs.select + ":" + this.id), {path});
+            commands.execute((CommandIDs.select + ":" + this.id), { path });
             // clicks on icon -> expand
-            commands.execute((CommandIDs.toggle + ":" + this.id), {row: path, level: level + 1});
+            commands.execute((CommandIDs.toggle + ":" + this.id), { row: path, level: level + 1 });
           } else if (this.selected === path && (event.target as HTMLElement).classList.contains("filetree-name-span")) {
             // clicks on name -> rename
             commands.execute((CommandIDs.rename + ":" + this.id));
           } else {
-            commands.execute((CommandIDs.select + ":" + this.id), {path});
+            commands.execute((CommandIDs.select + ":" + this.id), { path });
           }
         };
 
-        tr.ondrop = (event) => {
-          commands.execute("filetree:move", {from: event.dataTransfer.getData("Path"), to: path});
+        tr.ondrop = event => {
+          commands.execute("filetree:move", { from: event.dataTransfer.getData("Path"), to: path });
         };
-        tr.ondragover = (event) => {
+        tr.ondragover = event => {
           event.preventDefault();
         };
         if (!(path in this.controller)) {
-          this.controller[path] = {last_modified: entry.last_modified, open: false};
+          this.controller[path] = { last_modified: entry.last_modified, open: false };
         }
       } else {
-        tr.onclick = (event) => {
+        tr.onclick = event => {
           event.stopPropagation();
           event.preventDefault();
           if (this.selected === path && (event.target as HTMLElement).classList.contains("filetree-name-span")) {
             // clicks on name -> rename
             commands.execute((CommandIDs.rename + ":" + this.id));
           } else {
-            commands.execute((CommandIDs.select + ":" + this.id), {path});
+            commands.execute((CommandIDs.select + ":" + this.id), { path });
           }
         };
         tr.ondblclick = () => {
-          commands.execute("docmanager:open", {path: this.basepath + path});
+          commands.execute("docmanager:open", { path: this.basepath + path });
         };
       }
 
@@ -223,7 +223,7 @@ export class FileTree extends Widget {
     }
   }
 
-  public sortContents(data: any) {
+  sortContents(data: any) {
     const names = [];
     for (const i in data) {
       names[names.length] = [data[i].name, parseInt(i, 10)];
@@ -231,7 +231,7 @@ export class FileTree extends Widget {
     return names.sort();
   }
 
-  public createTreeElement(object: any, level: number) {
+  createTreeElement(object: any, level: number) {
     const tr = document.createElement("tr");
     const td = document.createElement("td");
     const td1 = document.createElement("td");
@@ -289,10 +289,10 @@ export class FileTree extends Widget {
       perm.innerHTML = "Writable";
     } else {
       this.cm.get(this.basepath + object.path)
-        .then((res) => {
+        .then(res => {
           perm.innerHTML = "Readable";
         })
-        .catch((err) => {
+        .catch(err => {
           perm.innerHTML = "Locked";
         });
     }
@@ -307,7 +307,7 @@ export class FileTree extends Widget {
     return tr;
   }
 
-  public async download(path: string, folder: boolean): Promise<any> {
+  async download(path: string, folder: boolean): Promise<any> {
     if (folder) {
       const zip = new JSZip();
       await this.wrapFolder(zip, path); // folder packing
@@ -315,7 +315,7 @@ export class FileTree extends Widget {
       path = PathExt.basename(path);
       writeZipFile(zip, path);
     } else {
-      return this.cm.getDownloadUrl(this.basepath + path).then((url) => {
+      return this.cm.getDownloadUrl(this.basepath + path).then(url => {
         const element = document.createElement("a");
         document.body.appendChild(element);
         element.setAttribute("href", url);
@@ -327,9 +327,9 @@ export class FileTree extends Widget {
     }
   }
 
-  public async wrapFolder(zip: JSZip, path: string) {
+  async wrapFolder(zip: JSZip, path: string) {
     const base = this.cm.get(this.basepath + path);
-    const next = base.then(async (res) => {
+    const next = base.then(async res => {
       if (res.type === "directory") {
         const new_folder = zip.folder(res.name);
         for (const c in res.content) {
@@ -390,15 +390,15 @@ export namespace FileTree {
     id = "jupyterlab-filetree",
     side = "left",
   }: FileTree.ISidebarProps): IDisposable {
-    const widget = new FileTree({app, basepath, caption, id});
+    const widget = new FileTree({ app, basepath, caption, id });
     restorer.add(widget, widget.id);
     app.shell.add(widget, side);
 
-    const uploader_button = new Uploader({manager, widget});
+    const uploader_button = new Uploader({ manager, widget });
     const new_file_button = new ToolbarButton({
       icon: newFolderIcon,
       onClick: () => {
-        app.commands.execute((CommandIDs.create_folder + ":" + widget.id), {path: ""});
+        app.commands.execute((CommandIDs.create_folder + ":" + widget.id), { path: "" });
       },
       tooltip: "New Folder",
     });
@@ -416,10 +416,10 @@ export namespace FileTree {
 
     // remove context highlight on context menu exit
     document.ondblclick = () => {
-      app.commands.execute((CommandIDs.set_context + ":" + widget.id), {path: ""});
+      app.commands.execute((CommandIDs.set_context + ":" + widget.id), { path: "" });
     };
-    widget.node.onclick = (event) => {
-      app.commands.execute((CommandIDs.select + ":" + widget.id), {path: ""});
+    widget.node.onclick = event => {
+      app.commands.execute((CommandIDs.select + ":" + widget.id), { path: "" });
     };
 
     // setInterval(() => {
@@ -429,7 +429,7 @@ export namespace FileTree {
     // return a disposable containing all disposables associated
     // with this widget, ending with the widget itself
     return [app.commands.addCommand((CommandIDs.toggle + ":" + widget.id), {
-      execute: (args) => {
+      execute: args => {
         const row = args.row as string;
         const level = args.level as number;
 
@@ -450,16 +450,16 @@ export namespace FileTree {
           }
         } else { // if children elements don't exist yet
           const base = app.serviceManager.contents.get(widget.basepath + row);
-          base.then((res) => {
+          base.then(res => {
             widget.buildTableContents(res.content, level, row_element);
-            widget.controller[row] = {last_modified: res.last_modified, open: true};
+            widget.controller[row] = { last_modified: res.last_modified, open: true };
           });
         }
       },
     }),
 
     app.commands.addCommand((CommandIDs.navigate + ":" + widget.id), {
-      execute: (args) => {
+      execute: args => {
         // eslint-disable-next-line @typescript-eslint/prefer-regexp-exec
         const treeMatch = router.current.path.match(Patterns.tree);
         // eslint-disable-next-line @typescript-eslint/prefer-regexp-exec
@@ -484,10 +484,10 @@ export namespace FileTree {
             tree_paths.push(current);
           }
           const array: Array<Promise<any>> = [];
-          tree_paths.forEach((key) => {
+          tree_paths.forEach(key => {
             array.push(app.serviceManager.contents.get(key));
           });
-          Promise.all(array).then((results) => {
+          Promise.all(array).then(results => {
             for (const r in results) {
               if (results[r].type === "directory") {
                 const row_element = widget.node.querySelector("[id='" + btoa(results[r].path) + "']");
@@ -504,14 +504,14 @@ export namespace FileTree {
 
     app.commands.addCommand((CommandIDs.refresh + ":" + widget.id), {
       execute: () => {
-        Object.keys(widget.controller).forEach((key) => {
+        Object.keys(widget.controller).forEach(key => {
           const promise = app.serviceManager.contents.get(widget.basepath + key);
-          promise.then((res) => {
+          promise.then(res => {
             if (res.last_modified > widget.controller[key].last_modified) {
               widget.controller[key].last_modified = res.last_modified;
             }
           });
-          promise.catch((reason) => {
+          promise.catch(reason => {
             // eslint-disable-next-line no-console
             console.log(reason);
             delete widget.controller[key];
@@ -522,7 +522,7 @@ export namespace FileTree {
     }),
 
     app.commands.addCommand((CommandIDs.set_context + ":" + widget.id), {
-      execute: (args) => {
+      execute: args => {
         if (widget.selected !== "") {
           const element = (widget.node.querySelector("[id='" + btoa(widget.selected) + "']"));
           if (element !== null) {
@@ -541,7 +541,7 @@ export namespace FileTree {
     }),
 
     app.commands.addCommand((CommandIDs.select + ":" + widget.id), {
-      execute: (args) => {
+      execute: args => {
         if (widget.selected !== "") {
           // eslint-disable-next-line no-shadow
           const element = (widget.node.querySelector("[id='" + btoa(widget.selected) + "']"));
@@ -573,7 +573,7 @@ export namespace FileTree {
         const original = text_area.innerHTML;
         const edit = document.createElement("input");
         edit.value = original;
-        doRename(text_area, edit).then((newName) => {
+        doRename(text_area, edit).then(newName => {
           if (!newName || newName === original) {
             return original;
           }
@@ -601,7 +601,7 @@ export namespace FileTree {
     }),
 
     app.commands.addCommand((CommandIDs.create_folder + ":" + widget.id), {
-      execute: async (args) => {
+      execute: async args => {
         await manager.newUntitled({
           path: widget.basepath + (args.path as string || widget.selected),
           type: "directory",
@@ -624,7 +624,7 @@ export namespace FileTree {
             const new_file = PathExt.join(widget.selected, result.value);
             manager.createNew(widget.basepath + new_file);
             if (!(widget.selected in widget.controller) || widget.controller[widget.selected].open === false) {
-              app.commands.execute((CommandIDs.toggle + ":" + widget.id), {row: widget.selected, level: new_file.split("/").length});
+              app.commands.execute((CommandIDs.toggle + ":" + widget.id), { row: widget.selected, level: new_file.split("/").length });
             }
             widget.refresh();
           }
@@ -645,7 +645,7 @@ export namespace FileTree {
           if (result.button.accept) {
             await manager.deleteFile(widget.basepath + widget.selected);
             widget.updateController(widget.selected, "");
-            app.commands.execute((CommandIDs.set_context + ":" + widget.id), {path: ""});
+            app.commands.execute((CommandIDs.set_context + ":" + widget.id), { path: "" });
             widget.refresh();
           }
         });
@@ -655,7 +655,7 @@ export namespace FileTree {
     }),
 
     app.commands.addCommand((CommandIDs.download + ":" + widget.id), {
-      execute: (args) => {
+      execute: args => {
         widget.download(widget.selected, args.folder as boolean || false);
       },
       iconClass: "p-Menu-itemIcon jp-MaterialIcon jp-DownloadIcon",
@@ -671,7 +671,7 @@ export namespace FileTree {
     }),
 
     app.commands.addCommand((CommandIDs.move + ":" + widget.id), {
-      execute: (args) => {
+      execute: args => {
         const from = args.from as string;
         const to = args.to as string;
         const file_name = PathExt.basename(from);
@@ -743,7 +743,7 @@ export namespace FileTree {
     }),
 
     app.contextMenu.addItem({
-      args: {folder: true},
+      args: { folder: true },
       command: (CommandIDs.download + ":" + widget.id),
       rank: 1,
       selector: "div." + widget.id + " > table > *> .filetree-folder",

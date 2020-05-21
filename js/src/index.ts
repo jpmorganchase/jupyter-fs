@@ -96,4 +96,4 @@ async function activate(
 }
 
 export default plugin;
-export {activate as _activate};
+export { activate as _activate };

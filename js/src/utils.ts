@@ -83,32 +83,32 @@ export function doRename(text: HTMLElement, edit: HTMLInputElement) {
     };
     edit.onkeydown = (event: KeyboardEvent) => {
       switch (event.keyCode) {
-      case 13: // Enter
-        event.stopPropagation();
-        event.preventDefault();
-        edit.blur();
-        break;
-      case 27: // Escape
-        event.stopPropagation();
-        event.preventDefault();
-        edit.blur();
-        break;
-      case 38: // Up arrow
-        event.stopPropagation();
-        event.preventDefault();
-        if (edit.selectionStart !== edit.selectionEnd) {
-          edit.selectionStart = edit.selectionEnd = 0;
-        }
-        break;
-      case 40: // Down arrow
-        event.stopPropagation();
-        event.preventDefault();
-        if (edit.selectionStart !== edit.selectionEnd) {
-          edit.selectionStart = edit.selectionEnd = edit.value.length;
-        }
-        break;
-      default:
-        break;
+        case 13: // Enter
+          event.stopPropagation();
+          event.preventDefault();
+          edit.blur();
+          break;
+        case 27: // Escape
+          event.stopPropagation();
+          event.preventDefault();
+          edit.blur();
+          break;
+        case 38: // Up arrow
+          event.stopPropagation();
+          event.preventDefault();
+          if (edit.selectionStart !== edit.selectionEnd) {
+            edit.selectionStart = edit.selectionEnd = 0;
+          }
+          break;
+        case 40: // Down arrow
+          event.stopPropagation();
+          event.preventDefault();
+          if (edit.selectionStart !== edit.selectionEnd) {
+            edit.selectionStart = edit.selectionEnd = edit.value.length;
+          }
+          break;
+        default:
+          break;
       }
     };
   });
@@ -141,22 +141,22 @@ export function switchView(mode: any) {
 }
 
 export function writeZipFile(zip: JSZip, path: string) {
-  zip.generateAsync({type: "blob"}).then((content) => {
+  zip.generateAsync({ type: "blob" }).then(content => {
     saveAs(content, PathExt.basename(path));
   });
 }
 
 export class OpenDirectWidget extends Widget {
 
-  public constructor() {
+  constructor() {
     super({ node: createOpenNode() });
   }
 
-  public getValue(): string {
+  getValue(): string {
     return this.inputNode.value;
   }
 
-  public get inputNode(): HTMLInputElement {
+  get inputNode(): HTMLInputElement {
     return this.node.getElementsByTagName("input")[0];
   }
 }

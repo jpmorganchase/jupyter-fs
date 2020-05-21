@@ -3,10 +3,10 @@ module.exports = {
     env: {
         browser: true,
         es6: true,
-        commonjs: true
+        commonjs: true,
     },
     extends: [
-        "eslint:recommended"
+        "eslint:recommended",
     ],
     parserOptions: {
         project: "tsconfig.eslint.json",
@@ -29,7 +29,7 @@ module.exports = {
         "id-blacklist": ["error", "any", "Number", "number", "String", "string", "Boolean", "boolean", "Undefined", "undefined"],
         "key-spacing": "error",
         "keyword-spacing": "error",
-        "max-len": ["error", {code: 200}],
+        "max-len": ["error", { code: 200 }],
         "new-parens": "error",
         "no-bitwise": "warn",
         "no-caller": "error",
@@ -39,20 +39,20 @@ module.exports = {
         "no-eval": "error",
         "no-multiple-empty-lines": "error",
         "no-new-wrappers": "error",
-        "no-shadow": ["error", {hoist: "all"}],
+        "no-shadow": ["error", { hoist: "all" }],
         "no-throw-literal": "error",
         "no-trailing-spaces": "error",
         "no-undef-init": "error",
-        'no-unused-vars': ['warn', { args: 'none' }],
+        "no-unused-vars": ["warn", { args: "none" }],
         "object-shorthand": "error",
         "one-var": ["error", "never"],
         "quote-props": ["error", "consistent-as-needed"],
-        "quotes": ["error", "double", {avoidEscape: true, allowTemplateLiterals: true}],
+        "quotes": ["error", "double", { avoidEscape: true, allowTemplateLiterals: true }],
         "semi": "error",
         "space-before-blocks": "error",
-        "space-before-function-paren": ["error", {anonymous: "never", asyncArrow: "always", named: "never"}],
+        "space-before-function-paren": ["error", { anonymous: "never", asyncArrow: "always", named: "never" }],
         "space-unary-ops": "error",
-        "spaced-comment": ["off", "always", {markers: ["/"]}],
+        "spaced-comment": ["off", "always", { markers: ["/"] }],
         "valid-typeof": "off",
 
         // imperfect replacement for old tslint import-spacing
@@ -61,7 +61,7 @@ module.exports = {
         // candidates for turning on
         "no-fallthrough": "off",
         "no-invalid-this": "off",
-        "sort-keys": ["off", "asc", {natural: true}],
+        "sort-keys": ["off", "asc", { natural: true }],
         "space-infix-ops": "off",
 
         // candidates for turning off
@@ -74,29 +74,29 @@ module.exports = {
             extends: [
                 "plugin:@typescript-eslint/eslint-recommended",
                 "plugin:@typescript-eslint/recommended",
-                "plugin:@typescript-eslint/recommended-requiring-type-checking"
+                "plugin:@typescript-eslint/recommended-requiring-type-checking",
             ],
             parser: "@typescript-eslint/parser",
             rules: {
-                "@typescript-eslint/array-type": ["error", {default: "array-simple"}],
-                '@typescript-eslint/camelcase': 'off',
-                '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
-                '@typescript-eslint/explicit-function-return-type': 'off',
-                "@typescript-eslint/explicit-member-accessibility": ["error", {accessibility: "no-public"}],
+                "@typescript-eslint/array-type": ["error", { default: "array-simple" }],
+                "@typescript-eslint/camelcase": "off",
+                "@typescript-eslint/consistent-type-definitions": ["error", "interface"],
+                "@typescript-eslint/explicit-function-return-type": "off",
+                "@typescript-eslint/explicit-member-accessibility": ["error", { accessibility: "no-public" }],
                 "@typescript-eslint/indent": ["error", 2],
-                '@typescript-eslint/no-empty-interface': 'off',
+                "@typescript-eslint/no-empty-interface": "off",
                 "@typescript-eslint/no-explicit-any": "off",
-                '@typescript-eslint/no-namespace': 'off',
+                "@typescript-eslint/no-namespace": "off",
                 "@typescript-eslint/no-unused-expressions": "error",
-                '@typescript-eslint/no-unused-vars': ['warn', { args: 'none' }],
+                "@typescript-eslint/no-unused-vars": ["warn", { args: "none" }],
                 "@typescript-eslint/no-use-before-define": "off",
-                "@typescript-eslint/quotes": ["error", "double", {avoidEscape: true, allowTemplateLiterals: true}],
+                "@typescript-eslint/quotes": ["error", "double", { avoidEscape: true, allowTemplateLiterals: true }],
                 "@typescript-eslint/semi": "error",
                 "@typescript-eslint/unified-signatures": "error",
-                'no-unused-vars': "off",
+                "no-unused-vars": "off",
                 "quotes": "off",
                 "semi": "off",
-            }
-        }
-    ]
+            },
+        },
+    ],
 };

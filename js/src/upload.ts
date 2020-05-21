@@ -44,7 +44,7 @@ export class Uploader extends ToolbarButton {
   private context: string;
   private basepath: string;
 
-  public constructor(options: any) {
+  constructor(options: any) {
     super({
       icon: fileUploadIcon,
       onClick: () => {
@@ -63,7 +63,7 @@ export class Uploader extends ToolbarButton {
     this.addClass(options.widget.filetree_id);
   }
 
-  public contextClick(path: string) {
+  contextClick(path: string) {
     this.context = path;
     this._input.click();
   }
@@ -80,7 +80,7 @@ export class Uploader extends ToolbarButton {
    * big to be sent in one request to the server. On newer versions, it will
    * ask for confirmation then upload the file in 1 MB chunks.
    */
-  public async upload(file: File, path: string): Promise<Contents.IModel> {
+  async upload(file: File, path: string): Promise<Contents.IModel> {
     const supportsChunked = PageConfig.getNotebookVersion() >= [5, 1, 0];
     const largeFile = file.size > LARGE_FILE_SIZE;
 
@@ -115,9 +115,9 @@ export class Uploader extends ToolbarButton {
 
   private _onInputChanged = () => {
     const files = Array.prototype.slice.call(this._input.files) as File[];
-    const pending = files.map((file) => this.upload(file, this.context));
+    const pending = files.map(file => this.upload(file, this.context));
     this.context = "";
-    Promise.all(pending).catch((error) => {
+    Promise.all(pending).catch(error => {
       showErrorMessage("Upload Error", error);
     });
   };
@@ -166,7 +166,7 @@ export class Uploader extends ToolbarButton {
       reader.readAsDataURL(blob);
       await new Promise((resolve, reject) => {
         reader.onload = resolve;
-        reader.onerror = (event) =>
+        reader.onerror = event =>
           reject(`Failed to upload "${file.name}":` + event);
       });
       await this._uploadCheckDisposed();
@@ -188,7 +188,7 @@ export class Uploader extends ToolbarButton {
       try {
         return await uploadInner(file);
       } catch (err) {
-        ArrayExt.removeFirstWhere(this._uploads, (uploadIndex) => file.name === uploadIndex.path);
+        ArrayExt.removeFirstWhere(this._uploads, uploadIndex => file.name === uploadIndex.path);
         throw err;
       }
     }
@@ -221,7 +221,7 @@ export class Uploader extends ToolbarButton {
       try {
         currentModel = await uploadInner(file.slice(start, end), chunk);
       } catch (err) {
-        ArrayExt.removeFirstWhere(this._uploads, (uploadIndex) => file.name === uploadIndex.path);
+        ArrayExt.removeFirstWhere(this._uploads, uploadIndex => file.name === uploadIndex.path);
 
         this._uploadChanged.emit({
           name: "failure",

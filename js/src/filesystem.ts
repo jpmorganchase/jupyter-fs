@@ -44,7 +44,7 @@ export interface IFSComm {
 abstract class FSCommBase implements IFSComm {
   protected _settings: ServerConnection.ISettings | undefined = undefined;
 
-  public constructor(props: { baseUrl?: string } = {}) {
+  constructor(props: { baseUrl?: string } = {}) {
     const { baseUrl } = props;
 
     if (baseUrl) {
@@ -55,20 +55,20 @@ abstract class FSCommBase implements IFSComm {
   abstract async getResourcesRequest(): Promise<IFSResource[]>;
   abstract async initResourceRequest(...spec: IFSResourceSpec[]): Promise<IFSResource[]>;
 
-  public get baseUrl(): string {
+  get baseUrl(): string {
     return this.settings.baseUrl;
   }
-  public set baseUrl(baseUrl: string) {
+  set baseUrl(baseUrl: string) {
     if (baseUrl !== this.baseUrl) {
       this._settings = ServerConnection.makeSettings({ baseUrl });
     }
   }
 
-  public get resourcesUrl(): string {
+  get resourcesUrl(): string {
     return URLExt.join(this.baseUrl, "jupyterfs/resources");
   }
 
-  public get settings(): ServerConnection.ISettings {
+  get settings(): ServerConnection.ISettings {
     if (!this._settings) {
       this._settings = ServerConnection.makeSettings();
     }
@@ -78,7 +78,7 @@ abstract class FSCommBase implements IFSComm {
 }
 
 export class FSComm extends FSCommBase {
-  public async getResourcesRequest(): Promise<IFSResource[]> {
+  async getResourcesRequest(): Promise<IFSResource[]> {
     const settings = this.settings;
     const fullUrl = this.resourcesUrl;
 
@@ -86,9 +86,9 @@ export class FSComm extends FSCommBase {
       fullUrl,
       { method: "GET" },
       settings
-    ).then((response) => {
+    ).then(response => {
       if (response.status !== 200) {
-        return response.text().then((data) => {
+        return response.text().then(data => {
           throw new ServerConnection.ResponseError(response, data);
         });
       }
@@ -97,7 +97,7 @@ export class FSComm extends FSCommBase {
     });
   }
 
-  public async initResourceRequest(...spec: IFSResourceSpec[]): Promise<IFSResource[]> {
+  async initResourceRequest(...spec: IFSResourceSpec[]): Promise<IFSResource[]> {
     const settings = this.settings;
     const fullUrl = this.resourcesUrl;
 
@@ -111,9 +111,9 @@ export class FSComm extends FSCommBase {
         method: "POST",
       },
       settings
-    ).then((response) => {
+    ).then(response => {
       if (response.status !== 200) {
-        return response.text().then((data) => {
+        return response.text().then(data => {
           throw new ServerConnection.ResponseError(response, data);
         });
       }
