@@ -22,7 +22,7 @@ parameters:
     - bash: env
       displayName: "List all environment variables"
 
-    - bash: pip install --upgrade --upgrade-strategy=eager pip wheel setuptools
+    - bash: pip install --upgrade pip wheel setuptools
       displayName: 'Install Python base dependencies'
 
     - bash: |
@@ -89,7 +89,7 @@ parameters:
 - name: lintSteps
   type: stepList
   default:
-    - script: yarn install
+    - script: cd js; yarn install
       displayName: 'Install Javascript lint deps'
 
     - script: make lintjs YARN=yarn
@@ -104,7 +104,7 @@ parameters:
 - name: testPythonSteps
   type: stepList
   default:
-    - bash: pip install --upgrade --upgrade-strategy=eager -e .[dev] -v
+    - bash: pip install --upgrade -e .[dev] -v
       displayName: 'Dev install of serverextension'
 
     - script: make testpy
@@ -124,7 +124,7 @@ parameters:
 - name: testJavascriptSteps
   type: stepList
   default:
-    - script: yarn install && yarn build
+    - script: cd js; yarn install && yarn build
       displayName: 'Build the labextension'
 
     - script: make testjs YARN=yarn
@@ -147,7 +147,7 @@ parameters:
         jupyter labextension list
       displayName: 'List Jupyter server/labextensions'
 
-    - script: yarn test:browsercheck
+    - script: cd js; yarn test:browser
       displayName: 'Run JupyterLab browser check'
 
 

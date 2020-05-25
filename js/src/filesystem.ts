@@ -6,13 +6,11 @@
  * the Apache License 2.0.  The full license can be found in the LICENSE file.
  *
  */
+/* eslint-disable max-classes-per-file */
+/* eslint-disable @typescript-eslint/interface-name-prefix */
+/* eslint-disable no-underscore-dangle */
 import { URLExt } from "@jupyterlab/coreutils";
 import { ServerConnection } from "@jupyterlab/services";
-
-// tslint:disable: no-namespace
-// tslint:disable: variable-name
-// tslint:disable: max-line-length
-// tslint:disable: max-classes-per-file
 
 export interface IFSResourceSpec {
   name: string;
@@ -44,6 +42,8 @@ export interface IFSComm {
 }
 
 abstract class FSCommBase implements IFSComm {
+  protected _settings: ServerConnection.ISettings | undefined = undefined;
+
   constructor(props: { baseUrl?: string } = {}) {
     const { baseUrl } = props;
 
@@ -75,8 +75,6 @@ abstract class FSCommBase implements IFSComm {
 
     return this._settings;
   }
-
-  protected _settings: ServerConnection.ISettings | undefined = undefined;
 }
 
 export class FSComm extends FSCommBase {
@@ -108,9 +106,9 @@ export class FSComm extends FSCommBase {
       {
         body: JSON.stringify(spec),
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
-        method: "POST"
+        method: "POST",
       },
       settings
     ).then(response => {

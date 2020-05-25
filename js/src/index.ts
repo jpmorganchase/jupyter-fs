@@ -48,7 +48,7 @@ async function activate(
     paths,
     resolver,
     restorer,
-    router
+    router,
   };
 
   // Attempt to load application settings
@@ -56,7 +56,7 @@ async function activate(
   try {
     settings = await settingRegistry.load(plugin.id);
   } catch (error) {
-    // tslint:disable-next-line:no-console
+    // eslint-disable-next-line no-console
     console.warn(`Failed to load settings for the jupyter-fs extension.\n${error}`);
   }
 
@@ -66,15 +66,15 @@ async function activate(
     disposable = new DisposableSet();
 
     // get user settings from json file
-    const specs: IFSResourceSpec[] = settings.composite["specs"] as any;
-    const verbose: boolean = settings.composite["verbose"] as any;
+    const specs: IFSResourceSpec[] = settings.composite.specs as any;
+    const verbose: boolean = settings.composite.verbose as any;
 
     // send user specs to backend; await return containing resources
     // defined by user settings + resources defined by server config
     const resources = await comm.initResourceRequest(...specs);
 
     if (verbose) {
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       console.info(`jupyter-fs frontend received resources:\n${resources}`);
     }
 
@@ -90,9 +90,10 @@ async function activate(
     refresh();
 
     // rerun setup whenever relevant settings change
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     settings.changed.connect(refresh);
   }
 }
 
 export default plugin;
-export {activate as _activate};
+export { activate as _activate };

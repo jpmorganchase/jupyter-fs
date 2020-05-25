@@ -3,6 +3,7 @@
   "version": "0.0.2",
   "description": "A Filesystem-like mult-contents manager backend for Jupyter",
   "author": "The jupyter-fs authors",
+  "license": "Apache-2.0",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "style": "style/index.css",
@@ -14,17 +15,16 @@
   "scripts": {
     "build": "tsc",
     "build:integrity": "jlpm install && jlpm build",
-    "build:labdist": "jlpm build && jlpm clean:labdist && mkdirp jupyterfs/labdist && cd jupyterfs/labdist && npm pack ../..",
-    "build:all": "jlpm run build:integrity && jlpm run build:labdist",
+    "build:labdist": "jlpm build:integrity && jlpm clean:labdist && mkdirp ../jupyterfs/labdist && cd ../jupyterfs/labdist && npm pack ../../js",
     "clean": "rimraf lib tsconfig.tsbuildinfo *junit.xml coverage* .jupyter",
     "clean:more": "jlpm clean && rimraf build dist MANIFEST",
-    "clean:labdist": "rimraf jupyterfs/labdist",
+    "clean:labdist": "rimraf ../jupyterfs/labdist",
     "clean:slate": "jlpm clean:more && jlpm clean:labdist && rimraf node_modules",
-    "fix": "./node_modules/.bin/tslint --fix src/* src/*/*",
-    "lint": "./node_modules/.bin/tslint src/* src/*/*",
+    "fix": "eslint -c .eslintrc.js --ext .js,.ts --fix .",
+    "lint": "eslint -c .eslintrc.js --ext .js,.ts .",
     "prepublishOnly": "jlpm run build",
     "test": "jest --coverage --collectCoverageFrom=src/*.{ts,tsx}",
-    "test:browsercheck": "ci/browser_check.sh",
+    "test:browser": "../ci/browser_check.sh",
     "watch": "tsc -w"
   },
   "files": [
@@ -70,6 +70,13 @@
     "@babel/core": "^7.0.0",
     "@babel/preset-env": "^7.7.6",
     "@types/jest": "^24",
+    "@typescript-eslint/eslint-plugin": "^2.34.0",
+    "@typescript-eslint/parser": "^2.34.0",
+    "eslint": "^7.0.0",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-jsdoc": "^25.4.2",
+    "eslint-plugin-prefer-arrow": "^1.2.1",
+    "eslint-plugin-unicorn": "^20.0.0",
     "isomorphic-fetch": "^2.2.1",
     "jest": "^25.2.3",
     "jest-raw-loader": "^1.0.1",
@@ -77,6 +84,6 @@
     "rimraf": "^2.7.1",
     "ts-jest": "~25.2.1",
     "tslint": "^5.20.0",
-    "typescript": "^3.7.0"
+    "typescript": "^3.9.0"
   }
 }

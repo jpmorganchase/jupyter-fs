@@ -8,31 +8,25 @@
 from codecs import open
 from pathlib import Path
 from setuptools import setup, find_packages
-from subprocess import CalledProcessError
 
 from jupyter_packaging import (
-    combine_commands, command_for_func, create_cmdclass, ensure_python,
-    ensure_targets, get_version, run
+    combine_commands, create_cmdclass, ensure_python,
+    ensure_targets, get_version, install_npm
 )
-
-
-def run_pack_labextension():
-    if Path('package.json').is_file():
-        try:
-            run(['jlpm', 'build:all'])
-        except CalledProcessError:
-            pass
 
 
 # the name of the project
 name = 'jupyter-fs'
 
-# the Path to the pkg dir
-pkg = Path('jupyterfs')
+# the Path to the python pkg dir
+py_pkg = Path('jupyterfs')
+
+# the Path to the javascript pkg dir
+js_pkg = Path('js')
 
 ensure_python(('2.7', '>=3.3'))
 
-version = get_version(str(pkg/'_version.py'))
+version = get_version(str(py_pkg/'_version.py'))
 
 with open('README.md', encoding='utf-8') as f:
     long_description = f.read()
@@ -40,26 +34,27 @@ with open('README.md', encoding='utf-8') as f:
 
 data_files_spec = [
     # lab extension installed by default:
-    ('share/jupyter/lab/extensions', str(pkg/'labdist'), '*.tgz'),
+    ('share/jupyter/lab/extensions', str(py_pkg/'labdist'), '*.tgz'),
     # config to enable server extension by default:
     ('etc/jupyter', 'jupyter-config', '**/*.json'),
 ]
 
 cmdclass = create_cmdclass('pack_labext', data_files_spec=data_files_spec)
 cmdclass['pack_labext'] = combine_commands(
-    command_for_func(run_pack_labextension),
+    install_npm(js_pkg, build_cmd='build:labdist', npm=['jlpm']),
     ensure_targets([
-        'lib/index.js',
-        'style/index.css'
+        js_pkg/'lib'/'index.js',
+        js_pkg/'style'/'index.css'
     ]),
 )
+
 cmdclass.pop('develop')
 
 
 requires = [
     'fs>=2.4.11',
     'fs-s3fs>=1.1.1',
-    'fs.smbfs>=0.6.2',
+    'fs.smbfs>=0.6.3',
     'jupyterlab>=2.0.0',
     'notebook>=5.7.0',
 ]

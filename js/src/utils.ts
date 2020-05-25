@@ -41,14 +41,14 @@ export const CommandIDs = {
 
 export const Patterns = {
   tree: new RegExp(`^${PageConfig.getOption("treeUrl")}([^?]+)`),
-  workspace: new RegExp(`^${PageConfig.getOption("workspacesUrl")}[^?\/]+/tree/([^?]+)`),
+  workspace: new RegExp(`^${PageConfig.getOption("workspacesUrl")}[^?/]+/tree/([^?]+)`),
 };
 
 /**
  * Version of btoa that omits any "=" padding chars at the end
  */
 export function btoaNopad(s: string): string {
-  return btoa(s).replace(/\=+$/, "");
+  return btoa(s).replace(/=+$/, "");
 }
 
 export function createOpenNode(): HTMLElement {
@@ -66,7 +66,7 @@ export function createOpenNode(): HTMLElement {
 }
 
 export function doRename(text: HTMLElement, edit: HTMLInputElement) {
-  const parent = text.parentElement as HTMLElement;
+  const parent = text.parentElement;
   parent.replaceChild(edit, text);
   edit.focus();
   const index = edit.value.lastIndexOf(".");
@@ -115,29 +115,33 @@ export function doRename(text: HTMLElement, edit: HTMLInputElement) {
 }
 
 export function fileSizeString(fileBytes: number) {
-    if (fileBytes == null) {
-      return "";
-    }
-    if (fileBytes < 1024) {
-      return fileBytes + " B";
-    }
+  if (fileBytes == null) {
+    return "";
+  }
+  if (fileBytes < 1024) {
+    return fileBytes + " B";
+  }
 
-    let i = -1;
-    const byteUnits = [" KB", " MB", " GB", " TB"];
-    do {
-        fileBytes = fileBytes / 1024;
-        i++;
-    } while (fileBytes > 1024);
+  let i = -1;
+  const byteUnits = [" KB", " MB", " GB", " TB"];
+  do {
+    fileBytes = fileBytes / 1024;
+    i++;
+  } while (fileBytes > 1024);
 
-    return Math.max(fileBytes, 0.1).toFixed(1) + byteUnits[i];
+  return Math.max(fileBytes, 0.1).toFixed(1) + byteUnits[i];
 }
 
 export function switchView(mode: any) {
-  if (mode === "none") { return ""; } else { return "none"; }
+  if (mode === "none") {
+    return "";
+  } else {
+    return "none";
+  }
 }
 
 export function writeZipFile(zip: JSZip, path: string) {
-  zip.generateAsync({type: "blob"}).then((content) => {
+  zip.generateAsync({ type: "blob" }).then(content => {
     saveAs(content, PathExt.basename(path));
   });
 }
@@ -148,11 +152,11 @@ export class OpenDirectWidget extends Widget {
     super({ node: createOpenNode() });
   }
 
-  public getValue(): string {
+  getValue(): string {
     return this.inputNode.value;
   }
 
   get inputNode(): HTMLInputElement {
-    return this.node.getElementsByTagName("input")[0] as HTMLInputElement;
+    return this.node.getElementsByTagName("input")[0];
   }
 }

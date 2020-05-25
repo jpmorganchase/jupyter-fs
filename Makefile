@@ -3,13 +3,13 @@ PYTHON := python
 YARN := jlpm
 
 testjs: ## Clean and Make js tests
-	${YARN} test
+	cd js; ${YARN} test
 
 testpy: ## Clean and Make py tests
 	${PYTHON} -m pytest -v jupyterfs/tests --cov=jupyterfs --cov-branch --junitxml=python_junit.xml --cov-report=xml
 
 testbrowser:
-	${YARN} test:browsercheck
+	cd js; ${YARN} test:browser
 
 test: ## run all tests
 	make testjs
@@ -17,7 +17,7 @@ test: ## run all tests
 	make testbrowser
 
 lintjs: ## run linter
-	./node_modules/.bin/tslint src/* src/*/*
+	cd js; yarn lint
 
 lintpy: ## run linter
 	${PYTHON} -m flake8 jupyterfs setup.py
@@ -27,7 +27,7 @@ lint: ## run linter
 	make lintpy
 
 fixjs:  ## run autopep8/tslint fix
-	./node_modules/.bin/tslint --fix src/* src/*/*
+	cd js; yarn fix
 
 fixpy:  ## run autopep8/tslint fix
 	${PYTHON} -m autopep8 --in-place -r -a -a jupyterfs/
@@ -52,8 +52,8 @@ clean: ## clean the repository
 dev_install: ## set up the repo for active development
 	${PIP} install -e .[dev]
 	${PYTHON} -m jupyter serverextension enable --py jupyterfs
-	${YARN} build:integrity
-	${PYTHON} -m jupyter labextension link .
+	cd js; ${YARN} build:integrity
+	cd js; ${PYTHON} -m jupyter labextension link .
 	# verify
 	${PYTHON} -m jupyter serverextension list
 	${PYTHON} -m jupyter labextension list
@@ -69,27 +69,27 @@ serverextension: install ## enable serverextension
 	${PYTHON} -m jupyter serverextension enable --py jupyterfs
 
 js:  ## build javascript
-	${YARN} build:integrity
+	cd js; ${YARN} build:integrity
 
 labextension: js ## enable labextension
 	${PYTHON} -m jupyter labextension install .
 
 dist: ## create dists
-	rm -rf lib tsconfig.tsbuildinfo *junit.xml coverage* .jupyter build dist MANIFEST jupyterfs/labdist node_modules
-	${YARN} build:integrity
+	rm -rf js/lib js/tsconfig.tsbuildinfo *junit.xml coverage* .jupyter build dist js/dist MANIFEST jupyterfs/labdist js/node_modules
+	cd js; ${YARN} build:integrity
 	${PYTHON} setup.py sdist bdist_wheel
 
 publish: dist  ## dist to pypi and npm
 	twine check dist/* && twine upload dist/*
-	npm publish
+	cd js; npm publish
 
 publishdry: dist  ## dry-run dist to pypi and npm
 	twine check dist/*
-	npm publish --dry-run
+	cd js; npm publish --dry-run
 
 publishtest: dist  ## release to test pypi, dry-run npm publish
 	twine check dist/* && twine upload --repository-url https://test.pypi.org/legacy/ dist/*
-	npm publish --dry-run
+	cd js; npm publish --dry-run
 
 
 # Thanks to Francoise at marmelab.com for this
