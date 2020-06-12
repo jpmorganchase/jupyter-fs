@@ -12,10 +12,15 @@
 import { URLExt } from "@jupyterlab/coreutils";
 import { ServerConnection } from "@jupyterlab/services";
 
+export interface IFSResourceOptions {
+  ask?: boolean | {[query: string]: string}
+}
+
 export interface IFSResourceSpec {
   name: string;
-  desc: string;
   url: string;
+
+  options?: IFSResourceOptions
 }
 
 export interface IFSResource extends IFSResourceSpec {
