@@ -11,6 +11,10 @@ import { LabIcon } from "@jupyterlab/ui-components";
 
 import driveSvgstr from "../style/icons/drive.svg";
 import fileTreeSvgstr from "../style/icons/file-tree.svg";
+import visibilitySvgstr from "../style/icons/visibility.svg";
+import visibilityOffSvgstr from "../style/icons/visibility-off.svg";
 
 export const driveIcon = new LabIcon({ name: "fs:drive", svgstr: driveSvgstr });
 export const fileTreeIcon = new LabIcon({ name: "fs:file-tree", svgstr: fileTreeSvgstr });
+export const visibilityIcon = new LabIcon({ name: "fs:visibility", svgstr: visibilitySvgstr });
+export const visibilityOffIcon = new LabIcon({ name: "fs:visibility-off", svgstr: visibilityOffSvgstr });
