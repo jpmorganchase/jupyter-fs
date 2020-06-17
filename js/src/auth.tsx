@@ -51,7 +51,7 @@ export class AskDialog<
           name={key}
           onChange={this._onChange}
           type="password"
-          value={(this.state.values as any)[key]}
+          value={this.state.values[key]}
           InputProps={{
             startAdornment: (
               <InputAdornment position="end">
@@ -60,7 +60,7 @@ export class AskDialog<
                   onMouseDown={this._onMouseDownVisibility}
                   edge="end"
                 >
-                  {(this.state.visibility as any)[key] ? visibilityIcon.react : visibilityOffIcon.react}
+                  {this.state.visibility[key] ? visibilityIcon.react : visibilityOffIcon.react}
                 </IconButton>
               </InputAdornment>
             ),
@@ -98,7 +98,7 @@ export class AskDialog<
     event: React.FormEvent<HTMLFormElement>
   ): Promise<void> {
     event.preventDefault();
-    await this.props.handleSubmit(this.state);
+    await this.props.handleSubmit(this.state.values);
   }
 
   protected _setValue(key: string, value: string) {
@@ -109,7 +109,7 @@ export class AskDialog<
 
   protected _toggleVisibility(key: string) {
     this.setState({
-      visibility: {...this.state.visibility, [key]: !(this.state.visibility as any)[key]}
+      visibility: {...this.state.visibility, [key]: !this.state.visibility[key]}
     });
   }
 }
@@ -122,7 +122,7 @@ export namespace AskDialog {
    * The input props for an AskDialog component
    */
   export interface IProps {
-    handleSubmit: (state: IState) => void;
+    handleSubmit: (values: {[key: string]: string}) => void;
     keys: string[];
     resource: IFSResourceSpec;
   }
@@ -132,8 +132,8 @@ export namespace AskDialog {
    */
   export const initialState = () => {return {
     open: false,
-    values: {},
-    visibility: {},
+    values: {} as {[key: string]: string},
+    visibility: {} as {[key: string]: string},
   }}
 
   /**
