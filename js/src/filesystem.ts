@@ -16,7 +16,7 @@ export interface IFSResourceSpec {
   name: string;
   url: string;
 
-  auth?: 'ask' | 'env' | false;
+  auth?: "ask" | "env" | false;
 }
 
 export interface IFSResourceSpecAuth extends IFSResourceSpec {

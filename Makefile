@@ -17,7 +17,7 @@ test: ## run all tests
 	make testbrowser
 
 lintjs: ## run linter
-	cd js; yarn lint
+	cd js; ${YARN} lint
 
 lintpy: ## run linter
 	${PYTHON} -m flake8 jupyterfs setup.py
@@ -27,7 +27,7 @@ lint: ## run linter
 	make lintpy
 
 fixjs:  ## run autopep8/tslint fix
-	cd js; yarn fix
+	cd js; ${YARN} fix
 
 fixpy:  ## run autopep8/tslint fix
 	${PYTHON} -m autopep8 --in-place -r -a -a jupyterfs/

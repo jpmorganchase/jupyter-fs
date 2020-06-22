@@ -8,7 +8,7 @@
 import os
 from string import Template
 
-__all__ = []
+__all__ = ['BraceTemplate', 'DoubleBraceTemplate', 'substituteAsk', 'substituteEnv', 'substituteNone']
 
 
 class BaseTemplate(Template):
@@ -20,12 +20,12 @@ class BraceTemplate(BaseTemplate):
     """Template subclass that will replace any '{VAR}'
     """
     delimiter = ''
-    pattern = '''
+    pattern = r'''
     (?:
-      [^\{]{(?P<braced>\w*)}[^\}]    | # match anything in single braces
-      (?P<escaped>a^)                | # match nothing
-      (?P<named>a^)                  | # match nothing
-      (?P<invalid>a^)                  # match nothing
+      [^{]{(?P<braced>\w*)}[^}]    | # match anything in single braces
+      (?P<escaped>a^)              | # match nothing
+      (?P<named>a^)                | # match nothing
+      (?P<invalid>a^)                # match nothing
     )
     '''
 
@@ -34,7 +34,7 @@ class DoubleBraceTemplate(BaseTemplate):
     """Template subclass that will replace any '{{VAR}}'
     """
     delimiter = ''
-    pattern = '''
+    pattern = r'''
     (?:
       {{(?P<braced>\w*)}}    | # match anything in double braces
       (?P<escaped>a^)        | # match nothing
@@ -43,9 +43,22 @@ class DoubleBraceTemplate(BaseTemplate):
     )
     '''
 
-
-def substituteEnv(s):
-    s = DoubleBraceTemplate(s).substitute(os.environ)
+def substituteAsk(spec):
+    if 'templateDict' in spec:
+        url = DoubleBraceTemplate(spec['url']).substitute(spec.pop('templateDict'))
+    else:
+        url = spec['url']
 
     # return the substituted string and the names of any missing vars
-    return s, DoubleBraceTemplate(s).tokens()
+    return url, DoubleBraceTemplate(url).tokens()
+
+def substituteEnv(spec):
+    url = DoubleBraceTemplate(spec['url']).substitute(os.environ)
+
+    # return the substituted string and the names of any missing vars
+    return url, DoubleBraceTemplate(url).tokens()
+
+def substituteNone(spec):
+    url = spec['url']
+
+    return url, DoubleBraceTemplate(url).tokens()

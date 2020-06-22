@@ -15,7 +15,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
 import {AskDialog, askRequired} from "./auth";
-import { FSComm, IFSResourceSpec, IFSResource } from "./filesystem";
+import { FSComm, IFSResourceSpec, IFSResource, IFSResourceSpecAuth } from "./filesystem";
 import { FileTree } from "./filetree";
 
 // tslint:disable: variable-name
@@ -90,7 +90,7 @@ async function activate(
     let resources = await comm.initResourceRequest(...specs);
 
     if (askRequired(resources)) {
-      // ask for credentials, if required
+      // ask for url template values, if required
       const dialogElem = document.createElement('div');
       document.body.appendChild(dialogElem);
 
@@ -100,10 +100,11 @@ async function activate(
       }
 
       const handleSubmit = async (values: {[url: string]: {[key: string]: string}}) => {
-        const specsWithAuth = resources.map(r => {return {...r, askDict: values[r.url]}});
+        const specsWithAuth = resources.map((r): IFSResourceSpecAuth => {return {...r, templateDict: values[r.url]}});
+        // send the new request with the populated .templateDicts
+        resources = await comm.initResourceRequest(...specsWithAuth);
 
-        // send the new request with the populated .askDicts
-        refreshWidgets(await comm.initResourceRequest(...specsWithAuth), verbose);
+        refreshWidgets(resources, verbose);
       }
 
       ReactDOM.render(

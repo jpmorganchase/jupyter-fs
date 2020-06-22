@@ -13,6 +13,7 @@ from notebook.base.handlers import APIHandler
 from notebook.services.contents.largefilemanager import LargeFileManager
 from notebook.services.contents.manager import ContentsManager
 
+from .auth import substituteAsk, substituteEnv, substituteNone
 from .fsmanager import FSManager
 from .pathutils import path_first_arg, path_second_arg, path_kwarg, path_old_new
 
@@ -32,15 +33,16 @@ class MetaManager(ContentsManager):
         kwargs.pop('log')
         self._pyfs_kw = kwargs
 
-    def initResource(self, *spec, verbose=False):
+    def initResource(self, *specs, verbose=False):
         """initialize one or more triples representing a PyFilesystem resource specification
         """
         self.resources = []
         managers = dict([self._default_cm])
 
-        for s in spec:
+        for spec in specs:
             # get deterministic hash of PyFilesystem url
-            _hash = md5(s['url'].encode('utf-8')).hexdigest()[:8]
+            _hash = md5(spec['url'].encode('utf-8')).hexdigest()[:8]
+            missingTokens = []
 
             if _hash in self._managers:
                 # reuse existing cm
@@ -49,12 +51,31 @@ class MetaManager(ContentsManager):
                 # don't add redundant cm
                 pass
             else:
-                # create new cm
-                managers[_hash] = FSManager(s['url'], **self._pyfs_kw)
+                if spec['auth'] == 'ask':
+                    urlSubbed, missingTokens = substituteAsk(spec)
+                elif spec['auth'] == 'env':
+                    urlSubbed, missingTokens = substituteEnv(spec)
+                else:
+                    urlSubbed, missingTokens = substituteNone(spec)
+
+                if missingTokens:
+                    # skip trying to init any resource with missing info
+                    _hash = ''
+                else:
+                    # create new cm
+                    managers[_hash] = FSManager(urlSubbed, **self._pyfs_kw)
 
             # assemble resource from spec + hash
-            r = {'drive': _hash}
-            r.update(s)
+            r = {
+                **spec,
+                'drive': _hash,
+                'missingTokens': missingTokens,
+            }
+
+            if 'templateDict' in r:
+                # sanity check: templateDict should not make the round trip
+                raise ValueError('templateDict not removed from resource by initResource')
+
             self.resources.append(r)
 
         # replace existing contents managers with new
