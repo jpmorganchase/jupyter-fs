@@ -1,37 +1,56 @@
-import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, InputAdornment, TextField} from '@material-ui/core';
+import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, InputAdornment, TextField, Paper} from '@material-ui/core';
 import * as React from 'react';
 
-import {visibilityIcon, visibilityOffIcon} from './icons';
 import { IFSResourceSpec } from './filesystem';
+import {visibilityIcon, visibilityOffIcon} from './icons';
+
+class Template {
+  public pattern = /(?:)/;
+
+  constructor(public template: string) {}
+
+  substitute(dict: {[key: string]: string}) {
+    return this.template.replace(this.pattern, (_, p1) => dict[p1]);
+  }
+
+  tokens() {
+    return this.template.match(this.pattern) || [];
+  }
+}
+
+export class DoubleBraceTemplate extends Template {
+  public pattern = /(?<=\{\{)\w*?(?=\}\})/g;
+}
+
+function keysFromUrl(url: string): string[] {
+  return new DoubleBraceTemplate(url).tokens();
+}
 
 export class AskDialog<
   P extends AskDialog.IProps = AskDialog.IProps,
   S extends AskDialog.IState = AskDialog.IState
 > extends React.Component<P, S> {
+  static displayName = "AskDialog";
+
   constructor(props: P) {
     super(props);
 
-    this.state = AskDialog.initialState() as Readonly<S>;
+    this.state = {...AskDialog.initialState(), open: true} as Readonly<S>;
   }
 
   render() {
     return (
       <div>
-        <Dialog open={this.state.open} onClose={this._onClose}>
-          <DialogTitle>{`Please enter fields for filesystem resource ${this.props.resource.name}`}</DialogTitle>
+        <Dialog className="jfs-ask-dialog" open={this.state.open} onClose={this._onClose.bind(this)}>
+          <DialogTitle>Please enter fields for filesystem resources</DialogTitle>
           <DialogContent>
-            <DialogContentText>
-              {this.props.resource.url}
-            </DialogContentText>
-            <form className="jfs-ask-form" onSubmit={this._onSubmit} noValidate autoComplete="off">
-              <ul className="jfs-ask-form-list">{this._inputs()}</ul>
-            </form>
+            {this._form()}
           </DialogContent>
           <DialogActions>
-            <Button onClick={this._onClose} color="primary">
+            <Button onClick={this._onClose.bind(this)} color="primary">
               Cancel
             </Button>
-            <Button onClick={this._onClose} color="primary">
+            <Button onClick={this._onSubmit.bind(this)} color="primary">
               Submit
             </Button>
           </DialogActions>
@@ -40,27 +59,49 @@ export class AskDialog<
     );
   }
 
-  protected _inputs(): React.ReactNodeArray {
-    return this.props.keys.map(key => {
+  protected _form() {
+    return (
+      <form className="jfs-ask-form" onSubmit={this._onSubmit.bind(this)} noValidate autoComplete="off">
+        {this._formInner()}
+      </form>
+    )
+  }
+
+  protected _formInner() {
+    return this.props.resources.map((r) => {
+      return [
+        // <Divider key={`${r.url}_Divider_top`}/>,
+        <Paper variant="outlined" className="jfs-ask-paper" key={`${r.url}_p`}>
+          <DialogContentText>{r.url}</DialogContentText>
+          {this._inputs(r.url)}
+        </Paper>,
+        // <Divider key={`${r.url}_Divider_bot`}/>,
+      ];
+    });
+  }
+
+  protected _inputs(url: string): React.ReactNodeArray {
+    return keysFromUrl(url).map(key => {
       return (
         <TextField
           autoFocus
           fullWidth
+          key={`${url}_${key}`}
           label={key}
           margin="dense"
           name={key}
-          onChange={this._onChange}
-          type="password"
-          value={this.state.values[key]}
+          onChange={this._onChange(url).bind(this)}
+          type={this.state.visibility[url]?.[key] ? 'text' : 'password'}
+          value={this.state.values[url]?.[key] || ''}
           InputProps={{
-            startAdornment: (
+            endAdornment: (
               <InputAdornment position="end">
                 <IconButton
-                  onClick={this._onClickVisiblity(key)}
-                  onMouseDown={this._onMouseDownVisibility}
+                  onClick={this._onClickVisiblity(url, key).bind(this)}
+                  onMouseDown={this._onMouseDownVisibility.bind(this)}
                   edge="end"
                 >
-                  {this.state.visibility[key] ? visibilityIcon.react : visibilityOffIcon.react}
+                  {this.state.visibility[url]?.[key] ? <visibilityIcon.react/> : <visibilityOffIcon.react/>}
                 </IconButton>
               </InputAdornment>
             ),
@@ -70,14 +111,16 @@ export class AskDialog<
     });
   }
 
-  protected _onChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const target = event.target;
-    this._setValue(target.name, target.value);
+  protected _onChange(url: string) {
+    return function(event: React.ChangeEvent<HTMLInputElement>) {
+      const target = event.target;
+      this._setValue(url, target.name, target.value);
+    }
   }
 
-  protected _onClickVisiblity(key: string) {
+  protected _onClickVisiblity(url: string, key: string) {
     return function() {
-      this._toggleVisibility(key);
+      this._toggleVisibility(url, key);
     }
   };
 
@@ -92,24 +135,29 @@ export class AskDialog<
   protected _onClose() {
     // close the dialog and blank the form
     this.setState(AskDialog.initialState());
+    this.props.handleClose();
   };
 
   protected async _onSubmit(
     event: React.FormEvent<HTMLFormElement>
   ): Promise<void> {
     event.preventDefault();
-    await this.props.handleSubmit(this.state.values);
+
+    this.props.handleSubmit(this.state.values);
+    this._onClose();
   }
 
-  protected _setValue(key: string, value: string) {
+  protected _setValue(url: string, key: string, value: string) {
+    const urlValues = {...this.state.values[url], [key]: value};
     this.setState({
-      values: {...this.state.values, [key]: value}
+      values: {...this.state.values, [url]: urlValues}
     });
   }
 
-  protected _toggleVisibility(key: string) {
+  protected _toggleVisibility(url: string, key: string) {
+    const urlVis = {...this.state.visibility[url], [key]: !this.state.visibility[url]?.[key]};
     this.setState({
-      visibility: {...this.state.visibility, [key]: !this.state.visibility[key]}
+      visibility: {...this.state.visibility, [url]: urlVis}
     });
   }
 }
@@ -122,9 +170,9 @@ export namespace AskDialog {
    * The input props for an AskDialog component
    */
   export interface IProps {
-    handleSubmit: (values: {[key: string]: string}) => void;
-    keys: string[];
-    resource: IFSResourceSpec;
+    handleClose: () => void;
+    handleSubmit: (values: {[url: string]: {[key: string]: string}}) => void;
+    resources: IFSResourceSpec[];
   }
 
   /**
@@ -132,8 +180,8 @@ export namespace AskDialog {
    */
   export const initialState = () => {return {
     open: false,
-    values: {} as {[key: string]: string},
-    visibility: {} as {[key: string]: string},
+    values: {} as {[url: string]: {[key: string]: string}},
+    visibility: {} as {[url: string]: {[key: string]: string}},
   }}
 
   /**

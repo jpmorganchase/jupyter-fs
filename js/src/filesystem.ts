@@ -19,6 +19,7 @@ export interface IFSResourceOptions {
 export interface IFSResourceSpec {
   name: string;
   url: string;
+  values?: {[key: string]: string};
 
   options?: IFSResourceOptions;
 }

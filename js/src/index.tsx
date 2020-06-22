@@ -11,9 +11,12 @@ import { IWindowResolver } from "@jupyterlab/apputils";
 import { IDocumentManager } from "@jupyterlab/docmanager";
 import { ISettingRegistry } from "@jupyterlab/settingregistry";
 import { DisposableSet } from "@lumino/disposable";
+import * as React from 'react';
+import * as ReactDOM from 'react-dom';
 
 import { FSComm, IFSResourceSpec } from "./filesystem";
 import { FileTree } from "./filetree";
+import {AskDialog} from "./auth";
 
 // tslint:disable: variable-name
 
@@ -60,15 +63,7 @@ async function activate(
     console.warn(`Failed to load settings for the jupyter-fs extension.\n${error}`);
   }
 
-  async function refresh() {
-    // each disposable can only be disposed once
-    disposable.dispose();
-    disposable = new DisposableSet();
-
-    // get user settings from json file
-    const specs: IFSResourceSpec[] = settings.composite.specs as any;
-    const verbose: boolean = settings.composite.verbose as any;
-
+  async function refreshResources(specs: IFSResourceSpec[], verbose: boolean) {
     // send user specs to backend; await return containing resources
     // defined by user settings + resources defined by server config
     const resources = await comm.initResourceRequest(...specs);
@@ -83,6 +78,36 @@ async function activate(
       // make one composite disposable for all fs resource frontends
       disposable.add(FileTree.sidebarFromResource(r, sidebarProps));
     }
+  }
+
+  async function refresh() {
+    // each disposable can only be disposed once
+    disposable.dispose();
+    disposable = new DisposableSet();
+
+    // get user settings from json file
+    const specs: IFSResourceSpec[] = settings.composite.specs as any;
+    const verbose: boolean = settings.composite.verbose as any;
+
+    const dialogElem = document.createElement('div');
+    document.body.appendChild(dialogElem);
+
+    const handleClose = () => {
+      ReactDOM.unmountComponentAtNode(dialogElem);
+      dialogElem.remove();
+    }
+
+    const handleSubmit = (values: {[url: string]: {[key: string]: string}}) => {
+      refreshResources(specs.map(s => {s.values = values[s.url]; return s;}), verbose);
+    }
+
+    ReactDOM.render(
+      <AskDialog
+        handleClose={handleClose}
+        handleSubmit={handleSubmit}
+        resources={specs}
+      />,
+      dialogElem);
   }
 
   if (settings) {
