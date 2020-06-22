@@ -6,9 +6,7 @@
  * the Apache License 2.0.  The full license can be found in the LICENSE file.
  *
  */
-/* eslint-disable max-classes-per-file */
-/* eslint-disable @typescript-eslint/interface-name-prefix */
-/* eslint-disable no-underscore-dangle */
+
 import { URLExt } from "@jupyterlab/coreutils";
 import { ServerConnection } from "@jupyterlab/services";
 

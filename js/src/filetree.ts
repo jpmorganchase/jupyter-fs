@@ -6,9 +6,9 @@
  * the Apache License 2.0.  The full license can be found in the LICENSE file.
  *
  */
+
 /* eslint-disable @typescript-eslint/no-for-in-array */
 /* eslint-disable guard-for-in */
-/* eslint-disable @typescript-eslint/interface-name-prefix */
 import { ILayoutRestorer, IRouter, JupyterFrontEnd } from "@jupyterlab/application";
 import { Clipboard, Dialog, IWindowResolver, showDialog, showErrorMessage, Toolbar, ToolbarButton } from "@jupyterlab/apputils";
 import { PathExt, Time, URLExt } from "@jupyterlab/coreutils";
