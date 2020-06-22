@@ -19,7 +19,7 @@
     "clean": "rimraf lib tsconfig.tsbuildinfo *junit.xml coverage* .jupyter",
     "clean:more": "jlpm clean && rimraf build dist MANIFEST",
     "clean:labdist": "rimraf ../jupyterfs/labdist",
-    "clean:slate": "jlpm clean:more && jlpm clean:labdist && rimraf node_modules",
+    "clean:slate": "jlpm clean:more && jlpm clean:labdist && rimraf ../node_modules",
     "fix": "eslint -c .eslintrc.js --ext .js,.ts --fix .",
     "lint": "eslint -c .eslintrc.js --ext .js,.ts .",
     "prepublishOnly": "jlpm run build",
@@ -30,6 +30,7 @@
   "files": [
     "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
     "schema/**/*.{json,}",
+    "src/**/*",
     "style/**/*.{css,eot,gif,html,jpg,json,png,svg,woff2,ttf}"
   ],
   "sideEffects": [
@@ -73,6 +74,8 @@
     "@babel/core": "^7.0.0",
     "@babel/preset-env": "^7.7.6",
     "@types/jest": "^24",
+    "@types/react": "^16.9.38",
+    "@types/react-dom": "^16.9.8",
     "@typescript-eslint/eslint-plugin": "^2.34.0",
     "@typescript-eslint/parser": "^2.34.0",
     "eslint": "^7.0.0",

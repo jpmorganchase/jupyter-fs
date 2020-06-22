@@ -53,7 +53,7 @@ dev_install: ## set up the repo for active development
 	${PIP} install -e .[dev]
 	${PYTHON} -m jupyter serverextension enable --py jupyterfs
 	cd js; ${YARN} build:integrity
-	cd js; ${PYTHON} -m jupyter labextension link .
+	cd js; ${PYTHON} -m jupyter labextension install .
 	# verify
 	${PYTHON} -m jupyter serverextension list
 	${PYTHON} -m jupyter labextension list
