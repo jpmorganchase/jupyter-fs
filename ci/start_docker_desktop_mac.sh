@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # refs:
-# https://stackoverflow.com/a/35979292/425458
+# https://stackoverflow.com/a/35979292
 # https://crossprogramming.com/2019/12/27/use-docker-when-running-integration-tests-with-azure-pipelines.html#self-managed-docker-containers
 
 [[ $(uname) == 'Darwin' ]] || { echo "This function only runs on macOS." >&2; exit 2; }
