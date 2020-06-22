@@ -12,16 +12,15 @@
 import { URLExt } from "@jupyterlab/coreutils";
 import { ServerConnection } from "@jupyterlab/services";
 
-export interface IFSResourceOptions {
-  ask?: boolean | {[query: string]: string};
-}
-
 export interface IFSResourceSpec {
   name: string;
   url: string;
-  values?: {[key: string]: string};
 
-  options?: IFSResourceOptions;
+  auth?: 'ask' | 'env' | false;
+}
+
+export interface IFSResourceSpecAuth extends IFSResourceSpec {
+  templateDict: {[key: string]: string};
 }
 
 export interface IFSResource extends IFSResourceSpec {
@@ -103,7 +102,7 @@ export class FSComm extends FSCommBase {
     });
   }
 
-  async initResourceRequest(...spec: IFSResourceSpec[]): Promise<IFSResource[]> {
+  async initResourceRequest(...spec: IFSResourceSpec[] | IFSResourceSpecAuth[]): Promise<IFSResource[]> {
     const settings = this.settings;
     const fullUrl = this.resourcesUrl;
 

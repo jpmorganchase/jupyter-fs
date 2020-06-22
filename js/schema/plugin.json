@@ -15,14 +15,15 @@
           "description": "Display name of resource",
           "type": "string"
         },
-        "desc": {
-          "description": "Optional longer description of resource",
-          "type": "string",
-          "default": ""
-        },
         "url": {
           "description": "A url pointing to an fs resource, as per PyFilesystem",
           "type": "string"
+        },
+        "auth": {
+          "description": "Given any template {{VARS}} in the url, 'ask' (default) to open a dialog box asking for credentials, or `env` to pick up credentials from the server's environment variables",
+          "type": "string",
+          "enum": ["ask", "env", false],
+          "default": "ask"
         }
       }
     }

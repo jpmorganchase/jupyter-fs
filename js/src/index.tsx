@@ -14,9 +14,9 @@ import { DisposableSet } from "@lumino/disposable";
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
-import { FSComm, IFSResourceSpec } from "./filesystem";
+import {AskDialog, askRequired} from "./auth";
+import { FSComm, IFSResourceSpec, IFSResource } from "./filesystem";
 import { FileTree } from "./filetree";
-import {AskDialog} from "./auth";
 
 // tslint:disable: variable-name
 
@@ -63,11 +63,7 @@ async function activate(
     console.warn(`Failed to load settings for the jupyter-fs extension.\n${error}`);
   }
 
-  async function refreshResources(specs: IFSResourceSpec[], verbose: boolean) {
-    // send user specs to backend; await return containing resources
-    // defined by user settings + resources defined by server config
-    const resources = await comm.initResourceRequest(...specs);
-
+  async function refreshWidgets(resources: IFSResource[], verbose: boolean) {
     if (verbose) {
       // eslint-disable-next-line no-console
       console.info(`jupyter-fs frontend received resources:\n${resources}`);
@@ -89,25 +85,39 @@ async function activate(
     const specs: IFSResourceSpec[] = settings.composite.specs as any;
     const verbose: boolean = settings.composite.verbose as any;
 
-    const dialogElem = document.createElement('div');
-    document.body.appendChild(dialogElem);
+    // send user specs to backend; await return containing resources
+    // defined by user settings + resources defined by server config
+    let resources = await comm.initResourceRequest(...specs);
 
-    const handleClose = () => {
-      ReactDOM.unmountComponentAtNode(dialogElem);
-      dialogElem.remove();
+    if (askRequired(resources)) {
+      // ask for credentials, if required
+      const dialogElem = document.createElement('div');
+      document.body.appendChild(dialogElem);
+
+      const handleClose = () => {
+        ReactDOM.unmountComponentAtNode(dialogElem);
+        dialogElem.remove();
+      }
+
+      const handleSubmit = async (values: {[url: string]: {[key: string]: string}}) => {
+        const specsWithAuth = resources.map(r => {return {...r, askDict: values[r.url]}});
+
+        // send the new request with the populated .askDicts
+        refreshWidgets(await comm.initResourceRequest(...specsWithAuth), verbose);
+      }
+
+      ReactDOM.render(
+        <AskDialog
+          handleClose={handleClose}
+          handleSubmit={handleSubmit}
+          specs={specs}
+        />,
+        dialogElem,
+      );
+    } else {
+      // otherwise, just go ahead and refresh the widgets
+      refreshWidgets(resources, verbose);
     }
-
-    const handleSubmit = (values: {[url: string]: {[key: string]: string}}) => {
-      refreshResources(specs.map(s => {s.values = values[s.url]; return s;}), verbose);
-    }
-
-    ReactDOM.render(
-      <AskDialog
-        handleClose={handleClose}
-        handleSubmit={handleSubmit}
-        resources={specs}
-      />,
-      dialogElem);
   }
 
   if (settings) {

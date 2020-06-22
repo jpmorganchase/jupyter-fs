@@ -1,7 +1,7 @@
 import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, InputAdornment, TextField, Paper} from '@material-ui/core';
 import * as React from 'react';
 
-import { IFSResourceSpec } from './filesystem';
+import { IFSResourceSpec, IFSResource } from './filesystem';
 import {visibilityIcon, visibilityOffIcon} from './icons';
 
 class Template {
@@ -24,6 +24,20 @@ export class DoubleBraceTemplate extends Template {
 
 function keysFromUrl(url: string): string[] {
   return new DoubleBraceTemplate(url).tokens();
+}
+
+function _askRequired(spec: IFSResourceSpec | IFSResource) {
+  return spec.auth === 'ask' && !('drive' in spec && spec.drive);
+}
+
+export function askRequired(specs: (IFSResourceSpec | IFSResource)[]) {
+  for (const spec of specs) {
+    if (_askRequired(spec)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 export class AskDialog<
@@ -68,14 +82,15 @@ export class AskDialog<
   }
 
   protected _formInner() {
-    return this.props.resources.map((r) => {
+    return this.props.specs.map((spec) => {
+      // only ask for spec credentials if explicitly requested
+      const inputs = _askRequired(spec) ? this._inputs(spec.url) : [];
+
       return [
-        // <Divider key={`${r.url}_Divider_top`}/>,
-        <Paper variant="outlined" className="jfs-ask-paper" key={`${r.url}_p`}>
-          <DialogContentText>{r.url}</DialogContentText>
-          {this._inputs(r.url)}
-        </Paper>,
-        // <Divider key={`${r.url}_Divider_bot`}/>,
+        <Paper className="jfs-ask-paper" elevation={2} variant="outlined" key={`${spec.url}_p`}>
+          <DialogContentText>{`${spec.url}: `}</DialogContentText>
+          {inputs.length ? inputs : <DialogContentText>None</DialogContentText>}
+        </Paper>
       ];
     });
   }
@@ -172,7 +187,7 @@ export namespace AskDialog {
   export interface IProps {
     handleClose: () => void;
     handleSubmit: (values: {[url: string]: {[key: string]: string}}) => void;
-    resources: IFSResourceSpec[];
+    specs: (IFSResourceSpec | IFSResource)[];
   }
 
   /**

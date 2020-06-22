@@ -1,0 +1,106 @@
+/******************************************************************************
+ *
+ * Copyright (c) 2019, the jupyter-fs authors.
+ *
+ * This file is part of the jupyter-fs library, distributed under the terms of
+ * the Apache License 2.0.  The full license can be found in the LICENSE file.
+ *
+ */
+
+.jp-filetreeWidget {
+  background: var(--jp-layout-color1);
+  overflow: scroll;
+  color: var(--jp-ui-font-color1);
+  /* This is needed so that all font sizing of children done in ems is
+   * relative to this base size */
+  font-size: var(--jp-ui-font-size1);
+}
+
+.jp-filetreeWidget header {
+  border-bottom: var(--jp-border-width) solid var(--jp-border-color2);
+  flex: 0 0 auto;
+  font-size: var(--jp-ui-font-size0);
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin: 0px;
+  padding: 8px 12px;
+  text-transform: uppercase;
+}
+
+.filetree-toolbar {
+  padding: 0px;
+  border-bottom: none;
+  height: auto;
+  margin: var(--jp-toolbar-header-margin);
+  box-shadow: none;
+}
+.filetree-toolbar .jp-ToolbarButtonComponent {
+  padding: 0px 16px;
+}
+
+.filetree-icon {
+  min-width: 16px;
+  min-height: 16px;
+  background-size: 16px;
+  display: inline-block;
+  vertical-align: middle;
+  background-repeat: no-repeat;
+  background-position: center;
+  margin: auto;
+}
+
+.filetree-head {
+  width: 100%;
+  border-spacing: 0px;
+  overflow: scroll;
+}
+
+.filetree-item-name {
+  padding-left: var(--indent);
+  padding-right: 10px; /* fixes overlap into next column*/
+  display: flex;
+}
+
+.filetree-attribute {
+  text-align: right;
+  padding-right: 10px;
+}
+
+.filetree-item {
+  -webkit-user-select: none;  /* Chrome all / Safari all */
+  -moz-user-select: none;     /* Firefox all */
+  -ms-user-select: none;      /* IE 10+ */
+  text-align: center;
+  padding-top: 2px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.filetree-item:hover {
+  cursor: pointer;
+  background-color: var(--jp-input-hover-background);
+}
+
+.filetree-item.selected {
+  color: white;
+  background: var(--jp-brand-color1);
+}
+
+.filetree-header {
+  -webkit-user-select: none;  /* Chrome all / Safari all */
+  -moz-user-select: none;     /* Firefox all */
+  -ms-user-select: none;      /* IE 10+ */
+  border: var(--jp-border-width) solid var(--jp-border-color2);
+  border-left: none;
+  font-size: var(--jp-ui-font-size0);
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin: 0px;
+  padding: 8px 12px;
+  text-transform: uppercase;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.filetree-header.modified {
+  border-right: none;
+}

@@ -7,9 +7,6 @@
  *
  */
 
-:root {
-  --indent: 1em;
+.jfs-ask-paper {
+  margin: 16px;
 }
-
-@import url('./auth.css');
-@import url('./filetree.css');
