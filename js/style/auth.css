@@ -7,6 +7,10 @@
  *
  */
 
-.jfs-ask-paper {
-  margin: 16px;
+.jfs-ask-panel-details {
+  flex-direction: column;
+}
+
+.jfs-ask-panel-summary div {
+  flex-direction: column;
 }

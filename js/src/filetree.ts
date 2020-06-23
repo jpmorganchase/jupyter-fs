@@ -354,17 +354,13 @@ export namespace FileTree {
     id?: string;
   }
 
-  export interface ISidebarProps {
-    app: JupyterFrontEnd;
+  export interface ISidebarProps extends IOptions {
     manager: IDocumentManager;
     paths: JupyterFrontEnd.IPaths;
     resolver: IWindowResolver;
     restorer: ILayoutRestorer;
     router: IRouter;
 
-    basepath?: string;
-    caption?: string;
-    id?: string;
     side?: string;
   }
 
@@ -373,7 +369,7 @@ export namespace FileTree {
       ...props,
       basepath: resource.drive,
       caption: `${resource.name}\nFile Tree`,
-      id: [resource.name, resource.drive].join("_"),
+      id: [resource.name.split(" ").join(""), resource.drive].join("_"),
     });
   }
 

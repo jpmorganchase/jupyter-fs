@@ -7,7 +7,20 @@
  *
  */
 
-import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, InputAdornment, TextField, Paper} from '@material-ui/core';
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  ExpansionPanel,
+  ExpansionPanelDetails,
+  ExpansionPanelSummary,
+  IconButton,
+  InputAdornment,
+  TextField,
+  Typography,
+} from '@material-ui/core';
 import * as React from 'react';
 
 import { IFSResource } from './filesystem';
@@ -31,7 +44,7 @@ export class DoubleBraceTemplate extends Template {
   public pattern = /(?<=\{\{)\w*?(?=\}\})/g;
 }
 
-function keysFromUrl(url: string): string[] {
+function tokensFromUrl(url: string): string[] {
   return new DoubleBraceTemplate(url).tokens();
 }
 
@@ -65,7 +78,7 @@ export class AskDialog<
     return (
       <div>
         <Dialog className="jfs-ask-dialog" open={this.state.open} onClose={this._onClose.bind(this)}>
-          <DialogTitle>Please enter fields for filesystem resources</DialogTitle>
+          <DialogTitle>Please enter token values for filesystem resources</DialogTitle>
           <DialogContent>
             {this._form()}
           </DialogContent>
@@ -91,41 +104,62 @@ export class AskDialog<
   }
 
   protected _formInner() {
-    return this.props.specs.map((spec) => {
-      // only ask for spec credentials if explicitly requested
-      const inputs = _askRequired(spec) ? this._inputs(spec.url) : [];
+    return this.props.specs.map((resource) => {
+      // ask for credentials if needed, or state why not
+      const askReq = _askRequired(resource)
+      const inputs = askReq ? this._inputs(resource.url) : [];
+      const tokens = tokensFromUrl(resource.url);
+
+      let reason = '';
+      if (!tokens.length) {
+        reason = 'no template parameters';
+      } else if (resource.init) {
+        reason = 'already initialized';
+      }
+
+      const summary = `${resource.name}:${reason && ` ${reason}`}`;
 
       return [
-        <Paper className="jfs-ask-paper" elevation={2} variant="outlined" key={`${spec.url}_p`}>
-          <DialogContentText>{`${spec.url}: `}</DialogContentText>
-          {inputs.length ? inputs : <DialogContentText>None</DialogContentText>}
-        </Paper>
+        <ExpansionPanel
+          className="jfs-ask-panel"
+          disabled={!!reason}
+          expanded={!reason}
+          key={`${resource.name}_panel`}
+        >
+          <ExpansionPanelSummary className="jfs-ask-panel-summary">
+            <Typography>{summary}</Typography>
+            {!reason && <Typography>{resource.url}</Typography>}
+          </ExpansionPanelSummary>
+          <ExpansionPanelDetails className="jfs-ask-panel-details">
+            {inputs}
+          </ExpansionPanelDetails>
+        </ExpansionPanel>
       ];
     });
   }
 
   protected _inputs(url: string): React.ReactNodeArray {
-    return keysFromUrl(url).map(key => {
+    return tokensFromUrl(url).map(token => {
       return (
         <TextField
           autoFocus
           fullWidth
-          key={`${url}_${key}`}
-          label={key}
+          key={`${url}_${token}`}
+          label={token}
           margin="dense"
-          name={key}
+          name={token}
           onChange={this._onChange(url).bind(this)}
-          type={this.state.visibility[url]?.[key] ? 'text' : 'password'}
-          value={this.state.values[url]?.[key] || ''}
+          type={this.state.visibility[url]?.[token] ? 'text' : 'password'}
+          value={this.state.values[url]?.[token] || ''}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
                 <IconButton
-                  onClick={this._onClickVisiblity(url, key).bind(this)}
+                  onClick={this._onClickVisiblity(url, token).bind(this)}
                   onMouseDown={this._onMouseDownVisibility.bind(this)}
                   edge="end"
                 >
-                  {this.state.visibility[url]?.[key] ? <visibilityIcon.react/> : <visibilityOffIcon.react/>}
+                  {this.state.visibility[url]?.[token] ? <visibilityIcon.react/> : <visibilityOffIcon.react/>}
                 </IconButton>
               </InputAdornment>
             ),
