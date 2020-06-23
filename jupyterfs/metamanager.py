@@ -42,14 +42,16 @@ class MetaManager(ContentsManager):
         for spec in specs:
             # get deterministic hash of PyFilesystem url
             _hash = md5(spec['url'].encode('utf-8')).hexdigest()[:8]
-            missingTokens = []
+            init = False
+            missingTokens = None
 
             if _hash in self._managers:
                 # reuse existing cm
                 managers[_hash] = self._managers[_hash]
+                init = True
             elif _hash in managers:
                 # don't add redundant cm
-                pass
+                init = True
             else:
                 if spec['auth'] == 'ask':
                     urlSubbed, missingTokens = substituteAsk(spec)
@@ -60,21 +62,25 @@ class MetaManager(ContentsManager):
 
                 if missingTokens:
                     # skip trying to init any resource with missing info
-                    _hash = ''
+                    _hash = '_NOT_INIT'
                 else:
                     # create new cm
                     managers[_hash] = FSManager(urlSubbed, **self._pyfs_kw)
+                    init = True
 
             # assemble resource from spec + hash
-            r = {
-                **spec,
+            r = {}
+            r.update(spec)
+            r.update({
                 'drive': _hash,
-                'missingTokens': missingTokens,
-            }
+                'init': init
+            })
+            if missingTokens is not None:
+                r['missingTokens'] = missingTokens
 
-            if 'templateDict' in r:
-                # sanity check: templateDict should not make the round trip
-                raise ValueError('templateDict not removed from resource by initResource')
+            if 'tokenDict' in r:
+                # sanity check: tokenDict should not make the round trip
+                raise ValueError('tokenDict not removed from resource by initResource')
 
             self.resources.append(r)
 

@@ -35,7 +35,7 @@ PLUGIN_SETTINGS="${JUPYTERLAB_SETTINGS_DIR}/jupyter-fs/plugin.jupyterlab-setting
 mkdir -p $(dirname $PLUGIN_SETTINGS)
 cat <<EOT > "${PLUGIN_SETTINGS}"
 {
-  "specs": [
+  "resources": [
     {
       "name": "osfs-here",
       "url": "osfs://${WORKSPACE_FOLDER}"

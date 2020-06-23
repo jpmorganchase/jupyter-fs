@@ -24,7 +24,7 @@ py_pkg = Path('jupyterfs')
 # the Path to the javascript pkg dir
 js_pkg = Path('js')
 
-ensure_python(('>=3.6'))
+ensure_python(('2.7', '>=3.6'))
 
 version = get_version(str(py_pkg/'_version.py'))
 
@@ -88,6 +88,8 @@ setup(
     license='Apache 2.0',
     classifiers=[
         'Development Status :: 3 - Alpha',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',

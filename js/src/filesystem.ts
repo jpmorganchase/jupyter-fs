@@ -10,19 +10,45 @@
 import { URLExt } from "@jupyterlab/coreutils";
 import { ServerConnection } from "@jupyterlab/services";
 
-export interface IFSResourceSpec {
+export interface IFSResource {
+  /**
+   * The name of this resource
+   */
   name: string;
+
+  /**
+   * The fsurl specifying this resource
+   */
   url: string;
 
-  auth?: "ask" | "env" | false;
-}
+  /**
+   * Auth scheme to be used for this resource, or false for none
+   */
+  auth: "ask" | "env" | false;
 
-export interface IFSResourceSpecAuth extends IFSResourceSpec {
-  templateDict: {[key: string]: string};
-}
+  /**
+   * The jupyterlab drive name associated with this resource. This is defined
+   * on resource initialization
+   */
+  drive?: string;
 
-export interface IFSResource extends IFSResourceSpec {
-  drive: string;
+  /**
+   * `true` if resource has been initialized
+   */
+  init?: boolean;
+
+  /**
+   * If present, a list of "{{token}}" template parameters that were missing
+   * from the tokenDict on the most recent attempt to initialize this resource
+   */
+  missingTokens?: string[];
+
+  /**
+   * If present, a dict of [token, value] pairs that will be substituted
+   * for any "{{token}}" template parameters present in the url on resource
+   * initialization
+   */
+  tokenDict?: {[key: string]: string};
 }
 
 export interface IFSComm {
@@ -36,7 +62,7 @@ export interface IFSComm {
    * Send a parameterized POST request to the `/jupyterfs/resources` api, and
    * return the result.
    */
-  initResourceRequest: (...spec: IFSResourceSpec[]) => Promise<IFSResource[]>;
+  initResourceRequest: (...spec: IFSResource[]) => Promise<IFSResource[]>;
 
   /**
    * The base url to prefix onto the uri of this Comm's requests
@@ -56,7 +82,7 @@ abstract class FSCommBase implements IFSComm {
   }
 
   abstract async getResourcesRequest(): Promise<IFSResource[]>;
-  abstract async initResourceRequest(...spec: IFSResourceSpec[]): Promise<IFSResource[]>;
+  abstract async initResourceRequest(...spec: IFSResource[]): Promise<IFSResource[]>;
 
   get baseUrl(): string {
     return this.settings.baseUrl;
@@ -100,7 +126,7 @@ export class FSComm extends FSCommBase {
     });
   }
 
-  async initResourceRequest(...spec: IFSResourceSpec[] | IFSResourceSpecAuth[]): Promise<IFSResource[]> {
+  async initResourceRequest(...spec: IFSResource[]): Promise<IFSResource[]> {
     const settings = this.settings;
     const fullUrl = this.resourcesUrl;
 

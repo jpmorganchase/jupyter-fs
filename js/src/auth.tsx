@@ -10,7 +10,7 @@
 import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, InputAdornment, TextField, Paper} from '@material-ui/core';
 import * as React from 'react';
 
-import { IFSResourceSpec, IFSResource } from './filesystem';
+import { IFSResource } from './filesystem';
 import {visibilityIcon, visibilityOffIcon} from './icons';
 
 class Template {
@@ -35,11 +35,11 @@ function keysFromUrl(url: string): string[] {
   return new DoubleBraceTemplate(url).tokens();
 }
 
-function _askRequired(spec: IFSResourceSpec | IFSResource) {
-  return spec.auth === 'ask' && !('drive' in spec && spec.drive);
+function _askRequired(spec: IFSResource) {
+  return spec.auth === 'ask' && !spec.init;
 }
 
-export function askRequired(specs: (IFSResourceSpec | IFSResource)[]) {
+export function askRequired(specs: IFSResource[]) {
   for (const spec of specs) {
     if (_askRequired(spec)) {
       return true;
@@ -196,7 +196,7 @@ export namespace AskDialog {
   export interface IProps {
     handleClose: () => void;
     handleSubmit: (values: {[url: string]: {[key: string]: string}}) => void;
-    specs: (IFSResourceSpec | IFSResource)[];
+    specs: IFSResource[];
   }
 
   /**

@@ -16,7 +16,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
 import {AskDialog, askRequired} from "./auth";
-import { FSComm, IFSResourceSpec, IFSResource, IFSResourceSpecAuth } from "./filesystem";
+import { FSComm, IFSResource } from "./filesystem";
 import { FileTree } from "./filetree";
 
 // tslint:disable: variable-name
@@ -83,12 +83,12 @@ async function activate(
     disposable = new DisposableSet();
 
     // get user settings from json file
-    const specs: IFSResourceSpec[] = settings.composite.specs as any;
+    const resourcesRaw: IFSResource[] = settings.composite.resources as any;
     const verbose: boolean = settings.composite.verbose as any;
 
     // send user specs to backend; await return containing resources
     // defined by user settings + resources defined by server config
-    let resources = await comm.initResourceRequest(...specs);
+    let resources = await comm.initResourceRequest(...resourcesRaw);
 
     if (askRequired(resources)) {
       // ask for url template values, if required
@@ -101,24 +101,24 @@ async function activate(
       }
 
       const handleSubmit = async (values: {[url: string]: {[key: string]: string}}) => {
-        const specsWithAuth = resources.map((r): IFSResourceSpecAuth => {return {...r, templateDict: values[r.url]}});
-        // send the new request with the populated .templateDicts
-        resources = await comm.initResourceRequest(...specsWithAuth);
+        resources = resources.map(r => {return {...r, tokenDict: values[r.url]}});
+        // send the new request with the populated .tokenDicts
+        resources = await comm.initResourceRequest(...resources);
 
-        refreshWidgets(resources, verbose);
+        await refreshWidgets(resources, verbose);
       }
 
       ReactDOM.render(
         <AskDialog
           handleClose={handleClose}
           handleSubmit={handleSubmit}
-          specs={specs}
+          specs={resourcesRaw}
         />,
         dialogElem,
       );
     } else {
       // otherwise, just go ahead and refresh the widgets
-      refreshWidgets(resources, verbose);
+      await refreshWidgets(resources, verbose);
     }
   }
 

@@ -6,7 +6,7 @@
   "type": "object",
   "additionalProperties": false,
   "definitions": {
-    "spec": {
+    "resource": {
       "description": "Specification for an fs resource",
       "type": "object",
       "additionalProperties": false,
@@ -16,7 +16,7 @@
           "type": "string"
         },
         "url": {
-          "description": "A url pointing to an fs resource, as per PyFilesystem",
+          "description": "A url pointing to an fs resource, as per the PyFilesystem fsurl specification",
           "type": "string"
         },
         "auth": {
@@ -29,9 +29,9 @@
     }
   },
   "properties": {
-    "specs": {
+    "resources": {
       "description": "The list of fs resource specifications",
-      "items": { "$ref": "#/definitions/spec" },
+      "items": { "$ref": "#/definitions/resource" },
       "type": "array",
       "default": []
     },

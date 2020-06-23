@@ -11,12 +11,12 @@ from string import Template
 __all__ = ['BraceTemplate', 'DoubleBraceTemplate', 'substituteAsk', 'substituteEnv', 'substituteNone']
 
 
-class BaseTemplate(Template):
+class _BaseTemplate(Template):
     def tokens(self):
         return [m[0] for m in self.pattern.findall(self.template)]
 
 
-class BraceTemplate(BaseTemplate):
+class BraceTemplate(_BaseTemplate):
     """Template subclass that will replace any '{VAR}'
     """
     delimiter = ''
@@ -30,7 +30,7 @@ class BraceTemplate(BaseTemplate):
     '''
 
 
-class DoubleBraceTemplate(BaseTemplate):
+class DoubleBraceTemplate(_BaseTemplate):
     """Template subclass that will replace any '{{VAR}}'
     """
     delimiter = ''
@@ -44,8 +44,8 @@ class DoubleBraceTemplate(BaseTemplate):
     '''
 
 def substituteAsk(spec):
-    if 'templateDict' in spec:
-        url = DoubleBraceTemplate(spec['url']).substitute(spec.pop('templateDict'))
+    if 'tokenDict' in spec:
+        url = DoubleBraceTemplate(spec['url']).substitute(spec.pop('tokenDict'))
     else:
         url = spec['url']
 
