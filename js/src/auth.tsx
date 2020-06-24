@@ -78,15 +78,15 @@ export class AskDialog<
     return (
       <div>
         <Dialog className="jfs-ask-dialog" open={this.state.open} onClose={this._onClose.bind(this)}>
-          <DialogTitle>Please enter token values for filesystem resources</DialogTitle>
-          <DialogContent>
+          <DialogTitle className="jfs-ask jfs-ask-dialog-title">Please enter token values for filesystem resources</DialogTitle>
+          <DialogContent className="jfs-ask jfs-ask-dialog-content">
             {this._form()}
           </DialogContent>
-          <DialogActions>
-            <Button onClick={this._onClose.bind(this)} color="primary">
+          <DialogActions className="jfs-ask jfs-ask-dialog-actions">
+            <Button className="jfs-ask jfs-ask-dialog-actions-button-cancel" onClick={this._onClose.bind(this)} color="primary">
               Cancel
             </Button>
-            <Button onClick={this._onSubmit.bind(this)} color="primary">
+            <Button className="jfs-ask jfs-ask-dialog-actions-button-submit" onClick={this._onSubmit.bind(this)} color="primary">
               Submit
             </Button>
           </DialogActions>
@@ -97,7 +97,7 @@ export class AskDialog<
 
   protected _form() {
     return (
-      <form className="jfs-ask-form" onSubmit={this._onSubmit.bind(this)} noValidate autoComplete="off">
+      <form className="jfs-ask jfs-ask-form" onSubmit={this._onSubmit.bind(this)} noValidate autoComplete="off">
         {this._formInner()}
       </form>
     )
@@ -121,16 +121,16 @@ export class AskDialog<
 
       return [
         <ExpansionPanel
-          className="jfs-ask-panel"
+          className="jfs-ask jfs-ask-panel"
           disabled={!!reason}
           expanded={!reason}
           key={`${resource.name}_panel`}
         >
-          <ExpansionPanelSummary className="jfs-ask-panel-summary">
+          <ExpansionPanelSummary className="jfs-ask jfs-ask-panel-summary">
             <Typography>{summary}</Typography>
             {!reason && <Typography>{resource.url}</Typography>}
           </ExpansionPanelSummary>
-          <ExpansionPanelDetails className="jfs-ask-panel-details">
+          <ExpansionPanelDetails className="jfs-ask jfs-ask-panel-details">
             {inputs}
           </ExpansionPanelDetails>
         </ExpansionPanel>
@@ -142,6 +142,7 @@ export class AskDialog<
     return tokensFromUrl(url).map(token => {
       return (
         <TextField
+          className="jfs-ask jfs-ask-input"
           autoFocus
           fullWidth
           key={`${url}_${token}`}
