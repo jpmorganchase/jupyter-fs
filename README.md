@@ -1,15 +1,19 @@
-# jupyter-fs
+<p align="center">
+<img alt="jupyter-fs" src="https://raw.githubusercontent.com/telamonian/jupyter-fs/add-auth/docs/brand-icon.svg" width="400">
+</p>
+
+<p align="center">
+<a href="https://dev.azure.com/tpaine154/jupyter/_apis/build/status/jpmorganchase.jupyter-fs?branchName=master"><img alt="azure ci status" src="https://dev.azure.com/tpaine154/jupyter/_apis/build/status/jpmorganchase.jupyter-fs?branchName=master"></a>
+<a href="https://ci.appveyor.com/project/telamonian/jupyter-fs/branch/master"><img alt="appveyor ci status (telamonian fork)" src="https://ci.appveyor.com/api/projects/status/d8flhw12vpvgime4/branch/master?svg=true"></a>
+<a href="https://pypi.python.org/pypi/jupyter-fs"><img alt="pypi package" src="https://img.shields.io/pypi/v/jupyter-fs.svg"></a>
+<a href="https://www.npmjs.com/package/jupyter-fs"><img alt="npm package" src="https://img.shields.io/npm/v/jupyter-fs.svg"></a>
+</p>
+
+#
+
 A plugin for JupyterLab that lets you set up and use as many filebrowsers as you like, connected to whatever local and/or remote filesystem-like resources you want.
 
 The backend is built on top of [PyFilesystem](https://github.com/PyFilesystem/pyfilesystem2), while the frontend is built on top of [JupyterLab Filetree](https://github.com/youngthejames/jupyterlab_filetree).
-
-
-[![Build Status](https://dev.azure.com/tpaine154/jupyter/_apis/build/status/jpmorganchase.jupyter-fs?branchName=master)](https://dev.azure.com/tpaine154/jupyter/_build/latest?definitionId=23&branchName=master)
-[![GitHub issues](https://img.shields.io/github/issues/timkpaine/jupyter-fs.svg)]()
-[![Coverage](https://img.shields.io/azure-devops/coverage/tpaine154/jupyter/23/master)](https://dev.azure.com/tpaine154/jupyter/_build?definitionId=23&_a=summary)
-[![PyPI](https://img.shields.io/pypi/l/jupyter-fs.svg)](https://pypi.python.org/pypi/jupyter-fs)
-[![PyPI](https://img.shields.io/pypi/v/jupyter-fs.svg)](https://pypi.python.org/pypi/jupyter-fs)
-[![npm](https://img.shields.io/npm/v/jupyter-fs.svg)](https://www.npmjs.com/package/jupyter-fs)
 
 
 ## Install
