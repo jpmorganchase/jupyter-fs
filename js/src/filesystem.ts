@@ -10,6 +10,18 @@
 import { URLExt } from "@jupyterlab/coreutils";
 import { ServerConnection } from "@jupyterlab/services";
 
+export interface IFSOptions {
+  /**
+   * If true, only recreate the actual resource when necessary
+   */
+  cache: boolean;
+
+  /**
+   * If true, enable jupyter-fs debug output in both frontend and backend
+   */
+  verbose: boolean;
+}
+
 export interface IFSResource {
   /**
    * The name of this resource
@@ -62,7 +74,7 @@ export interface IFSComm {
    * Send a parameterized POST request to the `/jupyterfs/resources` api, and
    * return the result.
    */
-  initResourceRequest: (...spec: IFSResource[]) => Promise<IFSResource[]>;
+  initResourceRequest: (args: {options: IFSOptions; resources: IFSResource[]}) => Promise<IFSResource[]>;
 
   /**
    * The base url to prefix onto the uri of this Comm's requests
@@ -82,7 +94,7 @@ abstract class FSCommBase implements IFSComm {
   }
 
   abstract async getResourcesRequest(): Promise<IFSResource[]>;
-  abstract async initResourceRequest(...spec: IFSResource[]): Promise<IFSResource[]>;
+  abstract async initResourceRequest(args: {options: IFSOptions; resources: IFSResource[]}): Promise<IFSResource[]>;
 
   get baseUrl(): string {
     return this.settings.baseUrl;
@@ -126,14 +138,14 @@ export class FSComm extends FSCommBase {
     });
   }
 
-  async initResourceRequest(...spec: IFSResource[]): Promise<IFSResource[]> {
+  async initResourceRequest(args: {options: IFSOptions; resources: IFSResource[]}): Promise<IFSResource[]> {
     const settings = this.settings;
     const fullUrl = this.resourcesUrl;
 
     return ServerConnection.makeRequest(
       fullUrl,
       {
-        body: JSON.stringify(spec),
+        body: JSON.stringify(args),
         headers: {
           "Content-Type": "application/json",
         },

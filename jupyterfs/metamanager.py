@@ -33,56 +33,61 @@ class MetaManager(ContentsManager):
         kwargs.pop('log')
         self._pyfs_kw = kwargs
 
-    def initResource(self, *specs, verbose=False):
-        """initialize one or more triples representing a PyFilesystem resource specification
+    def initResource(self, *resources, options={}):
+        """initialize one or more (name, url) tuple representing a PyFilesystem resource specification
         """
+        # handle options
+        cache = 'cache' not in options or options['cache']
+        verbose = 'verbose' in options and options['verbose']
+
         self.resources = []
         managers = dict([self._default_cm])
 
-        for spec in specs:
+        for resource in resources:
             # get deterministic hash of PyFilesystem url
-            _hash = md5(spec['url'].encode('utf-8')).hexdigest()[:8]
+            _hash = md5(resource['url'].encode('utf-8')).hexdigest()[:8]
             init = False
             missingTokens = None
 
-            if _hash in self._managers:
+            if _hash in self._managers and cache:
                 # reuse existing cm
                 managers[_hash] = self._managers[_hash]
                 init = True
-            elif _hash in managers:
+            elif _hash in managers and cache:
                 # don't add redundant cm
                 init = True
             else:
-                if spec['auth'] == 'ask':
-                    urlSubbed, missingTokens = substituteAsk(spec)
-                elif spec['auth'] == 'env':
-                    urlSubbed, missingTokens = substituteEnv(spec)
+                if resource['auth'] == 'ask':
+                    urlSubbed, missingTokens = substituteAsk(resource)
+                elif resource['auth'] == 'env':
+                    urlSubbed, missingTokens = substituteEnv(resource)
                 else:
-                    urlSubbed, missingTokens = substituteNone(spec)
+                    urlSubbed, missingTokens = substituteNone(resource)
 
                 if missingTokens:
                     # skip trying to init any resource with missing info
                     _hash = '_NOT_INIT'
+                    init = False
                 else:
                     # create new cm
                     managers[_hash] = FSManager(urlSubbed, **self._pyfs_kw)
                     init = True
 
             # assemble resource from spec + hash
-            r = {}
-            r.update(spec)
-            r.update({
+            newResource = {}
+            newResource.update(resource)
+            newResource.update({
                 'drive': _hash,
                 'init': init
             })
             if missingTokens is not None:
-                r['missingTokens'] = missingTokens
+                newResource['missingTokens'] = missingTokens
 
-            if 'tokenDict' in r:
+            if 'tokenDict' in newResource:
                 # sanity check: tokenDict should not make the round trip
                 raise ValueError('tokenDict not removed from resource by initResource')
 
-            self.resources.append(r)
+            self.resources.append(newResource)
 
         # replace existing contents managers with new
         self._managers = managers
@@ -124,8 +129,8 @@ class MetaManager(ContentsManager):
 
 class MetaManagerHandler(APIHandler):
     @property
-    def config_specs(self):
-        return self.config.get('jupyterfs', {}).get('specs', [])
+    def config_resources(self):
+        return self.config.get('jupyterfs', {}).get('resources', [])
 
     @web.authenticated
     async def get(self):
@@ -149,8 +154,8 @@ class MetaManagerHandler(APIHandler):
     @web.authenticated
     async def post(self):
         # will be a list of resource dicts
-        specs = self.get_json_body()
+        body = self.get_json_body()
 
         self.finish(json.dumps(
-            self.contents_manager.initResource(*self.config_specs, *specs, verbose=True)
+            self.contents_manager.initResource(*self.config_resources, *body['resources'], options=body['options'])
         ))

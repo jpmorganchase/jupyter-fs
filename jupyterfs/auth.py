@@ -43,22 +43,22 @@ class DoubleBraceTemplate(_BaseTemplate):
     )
     '''
 
-def substituteAsk(spec):
-    if 'tokenDict' in spec:
-        url = DoubleBraceTemplate(spec['url']).substitute(spec.pop('tokenDict'))
+def substituteAsk(resource):
+    if 'tokenDict' in resource:
+        url = DoubleBraceTemplate(resource['url']).substitute(resource.pop('tokenDict'))
     else:
-        url = spec['url']
+        url = resource['url']
 
     # return the substituted string and the names of any missing vars
     return url, DoubleBraceTemplate(url).tokens()
 
-def substituteEnv(spec):
-    url = DoubleBraceTemplate(spec['url']).substitute(os.environ)
+def substituteEnv(resource):
+    url = DoubleBraceTemplate(resource['url']).substitute(os.environ)
 
     # return the substituted string and the names of any missing vars
     return url, DoubleBraceTemplate(url).tokens()
 
-def substituteNone(spec):
-    url = spec['url']
+def substituteNone(resource):
+    url = resource['url']
 
     return url, DoubleBraceTemplate(url).tokens()

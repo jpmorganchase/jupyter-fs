@@ -15,8 +15,8 @@ import { DisposableSet } from "@lumino/disposable";
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
-import {AskDialog, askRequired} from "./auth";
-import { FSComm, IFSResource } from "./filesystem";
+import { AskDialog, askRequired } from "./auth";
+import { FSComm, IFSOptions, IFSResource } from "./filesystem";
 import { FileTree } from "./filetree";
 
 // tslint:disable: variable-name
@@ -64,8 +64,8 @@ async function activate(
     console.warn(`Failed to load settings for the jupyter-fs extension.\n${error}`);
   }
 
-  async function refreshWidgets(resources: IFSResource[], verbose: boolean) {
-    if (verbose) {
+  async function refreshWidgets({resources, options}: {resources: IFSResource[], options: IFSOptions}) {
+    if (options.verbose) {
       // eslint-disable-next-line no-console
       console.info(`jupyter-fs frontend received resources:\n${resources}`);
     }
@@ -83,12 +83,12 @@ async function activate(
     disposable = new DisposableSet();
 
     // get user settings from json file
-    const resourcesRaw: IFSResource[] = settings.composite.resources as any;
-    const verbose: boolean = settings.composite.verbose as any;
+    let resources: IFSResource[] = settings.composite.resources as any;
+    const options: IFSOptions = settings.composite.options as any;
 
     // send user specs to backend; await return containing resources
     // defined by user settings + resources defined by server config
-    let resources = await comm.initResourceRequest(...resourcesRaw);
+    resources = await comm.initResourceRequest({resources, options});
 
     if (askRequired(resources)) {
       // ask for url template values, if required
@@ -101,24 +101,27 @@ async function activate(
       }
 
       const handleSubmit = async (values: {[url: string]: {[key: string]: string}}) => {
-        resources = resources.map(r => {return {...r, tokenDict: values[r.url]}});
-        // send the new request with the populated .tokenDicts
-        resources = await comm.initResourceRequest(...resources);
-
-        await refreshWidgets(resources, verbose);
+        await refreshWidgets({
+          options,
+          resources: await comm.initResourceRequest({
+            options,
+            resources: resources.map(r => {return {...r, tokenDict: values[r.url]}}),
+          }),
+        });
       }
 
       ReactDOM.render(
         <AskDialog
           handleClose={handleClose}
           handleSubmit={handleSubmit}
-          specs={resourcesRaw}
+          options={options}
+          resources={resources}
         />,
         dialogElem,
       );
     } else {
       // otherwise, just go ahead and refresh the widgets
-      await refreshWidgets(resources, verbose);
+      await refreshWidgets({options, resources});
     }
   }
 

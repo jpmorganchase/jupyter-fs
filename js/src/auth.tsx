@@ -23,8 +23,8 @@ import {
 } from '@material-ui/core';
 import * as React from 'react';
 
-import { IFSResource } from './filesystem';
-import {visibilityIcon, visibilityOffIcon} from './icons';
+import { IFSOptions, IFSResource } from './filesystem';
+import { visibilityIcon, visibilityOffIcon } from './icons';
 
 class Template {
   public pattern = /(?:)/;
@@ -68,10 +68,10 @@ export class AskDialog<
 > extends React.Component<P, S> {
   static displayName = "AskDialog";
 
-  constructor(props: P) {
+  constructor(props: P, options: IFSOptions) {
     super(props);
 
-    this.state = {...AskDialog.initialState(), open: true} as Readonly<S>;
+    this.state = AskDialog.initialState({open: true, options}) as Readonly<S>;
   }
 
   render() {
@@ -104,17 +104,17 @@ export class AskDialog<
   }
 
   protected _formInner() {
-    return this.props.specs.map((resource) => {
+    return this.props.resources.map((resource) => {
       // ask for credentials if needed, or state why not
       const askReq = _askRequired(resource)
       const inputs = askReq ? this._inputs(resource.url) : [];
       const tokens = tokensFromUrl(resource.url);
 
       let reason = '';
-      if (!tokens.length) {
-        reason = 'no template parameters';
-      } else if (resource.init) {
+      if (resource.init && this.props.options.cache) {
         reason = 'already initialized';
+      } else if (!tokens.length) {
+        reason = 'no template parameters';
       }
 
       const summary = `${resource.name}:${reason && ` ${reason}`}`;
@@ -193,7 +193,7 @@ export class AskDialog<
 
   protected _onClose() {
     // close the dialog and blank the form
-    this.setState(AskDialog.initialState());
+    this.setState(AskDialog.initialState({options: this.state.options}));
     this.props.handleClose();
   };
 
@@ -231,14 +231,16 @@ export namespace AskDialog {
   export interface IProps {
     handleClose: () => void;
     handleSubmit: (values: {[url: string]: {[key: string]: string}}) => void;
-    specs: IFSResource[];
+    options: IFSOptions;
+    resources: IFSResource[];
   }
 
   /**
    * The initial state for a new AskDialog
    */
-  export const initialState = () => {return {
-    open: false,
+  export const initialState = ({open = false, options}: {open?: boolean, options: IFSOptions}) => {return {
+    open,
+    options: {...options},
     values: {} as {[url: string]: {[key: string]: string}},
     visibility: {} as {[url: string]: {[key: string]: string}},
   }}
