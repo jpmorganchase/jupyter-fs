@@ -24,11 +24,20 @@ test_root_osfs = 'osfs_local'
 test_url_s3 = 'http://127.0.0.1/'
 test_port_s3 = '9000'
 
+# TODO: remove the try/except once https://github.com/actions/virtual-environments/issues/1042 is resolved
+try:
+    test_host_smb_docker_share = socket.gethostbyname(socket.gethostname())
+except socket.gaierror:
+    test_host_smb_docker_share = 'this_computer'
 test_hostname_smb_docker_share = 'TESTNET'
 test_name_port_smb_docker_share = 3669
 
 test_direct_tcp_smb_os_share = False
-test_host_smb_os_share = socket.gethostbyname_ex(socket.gethostname())[2][-1]
+# TODO: remove the try/except once https://github.com/actions/virtual-environments/issues/1042 is resolved
+try:
+    test_host_smb_os_share = socket.gethostbyname_ex(socket.gethostname())[2][-1]
+except socket.gaierror:
+    test_host_smb_os_share = 'this_computer'
 test_smb_port_smb_os_share = 139
 
 _test_file_model = {
@@ -136,8 +145,8 @@ class Test_FSManager_s3(_TestBase):
 
         return FSManager.open_fs(uri)
 
-
-@pytest.mark.darwin
+# TODO: reenable darwin once https://github.com/actions/virtual-environments/issues/1042 is resolved
+# @pytest.mark.darwin
 @pytest.mark.linux
 class Test_FSManager_smb_docker_share(_TestBase):
     """(mac/linux only. future: windows) runs its own samba server via
@@ -154,6 +163,7 @@ class Test_FSManager_smb_docker_share(_TestBase):
     """
     _rootDirUtil = samba.RootDirUtil(
         dir_name=test_dir,
+        host=test_host_smb_docker_share,
         hostname=test_hostname_smb_docker_share,
         name_port=test_name_port_smb_docker_share,
     )
@@ -183,7 +193,7 @@ class Test_FSManager_smb_docker_share(_TestBase):
         uri = 'smb://{username}:{passwd}@{host}/{share}?name-port={name_port}'.format(
             username=samba.smb_user,
             passwd=samba.smb_passwd,
-            host=socket.gethostbyname(socket.gethostname()),
+            host=test_host_smb_docker_share,
             name_port=test_name_port_smb_docker_share,
             share=test_dir,
         )

@@ -41,7 +41,9 @@ cat <<EOT > "${PLUGIN_SETTINGS}"
       "url": "osfs://${WORKSPACE_FOLDER}"
     }
   ],
-  "verbose": true
+  "options": {
+    "verbose": true
+  },
 }
 EOT
 
