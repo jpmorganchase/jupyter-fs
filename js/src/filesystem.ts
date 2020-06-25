@@ -6,20 +6,61 @@
  * the Apache License 2.0.  The full license can be found in the LICENSE file.
  *
  */
-/* eslint-disable max-classes-per-file */
-/* eslint-disable @typescript-eslint/interface-name-prefix */
-/* eslint-disable no-underscore-dangle */
+
 import { URLExt } from "@jupyterlab/coreutils";
 import { ServerConnection } from "@jupyterlab/services";
 
-export interface IFSResourceSpec {
-  name: string;
-  desc: string;
-  url: string;
+export interface IFSOptions {
+  /**
+   * If true, only recreate the actual resource when necessary
+   */
+  cache: boolean;
+
+  /**
+   * If true, enable jupyter-fs debug output in both frontend and backend
+   */
+  verbose: boolean;
 }
 
-export interface IFSResource extends IFSResourceSpec {
-  drive: string;
+export interface IFSResource {
+  /**
+   * The name of this resource
+   */
+  name: string;
+
+  /**
+   * The fsurl specifying this resource
+   */
+  url: string;
+
+  /**
+   * Auth scheme to be used for this resource, or false for none
+   */
+  auth: "ask" | "env" | false;
+
+  /**
+   * The jupyterlab drive name associated with this resource. This is defined
+   * on resource initialization
+   */
+  drive?: string;
+
+  /**
+   * `true` if resource has been initialized
+   */
+  init?: boolean;
+
+  /**
+   * If present, a list of "{{token}}" template parameters that were missing
+   * from the tokenDict on the most recent attempt to initialize this resource
+   */
+  missingTokens?: string[];
+
+  /**
+   * If present, a dict of [token, value] pairs that will be substituted
+   * for any "{{token}}" template parameters present in the url on resource
+   * initialization
+   */
+  tokenDict?: {[key: string]: string};
 }
 
 export interface IFSComm {
@@ -33,7 +74,7 @@ export interface IFSComm {
    * Send a parameterized POST request to the `/jupyterfs/resources` api, and
    * return the result.
    */
-  initResourceRequest: (...spec: IFSResourceSpec[]) => Promise<IFSResource[]>;
+  initResourceRequest: (args: {options: IFSOptions; resources: IFSResource[]}) => Promise<IFSResource[]>;
 
   /**
    * The base url to prefix onto the uri of this Comm's requests
@@ -53,7 +94,7 @@ abstract class FSCommBase implements IFSComm {
   }
 
   abstract async getResourcesRequest(): Promise<IFSResource[]>;
-  abstract async initResourceRequest(...spec: IFSResourceSpec[]): Promise<IFSResource[]>;
+  abstract async initResourceRequest(args: {options: IFSOptions; resources: IFSResource[]}): Promise<IFSResource[]>;
 
   get baseUrl(): string {
     return this.settings.baseUrl;
@@ -97,14 +138,14 @@ export class FSComm extends FSCommBase {
     });
   }
 
-  async initResourceRequest(...spec: IFSResourceSpec[]): Promise<IFSResource[]> {
+  async initResourceRequest(args: {options: IFSOptions; resources: IFSResource[]}): Promise<IFSResource[]> {
     const settings = this.settings;
     const fullUrl = this.resourcesUrl;
 
     return ServerConnection.makeRequest(
       fullUrl,
       {
-        body: JSON.stringify(spec),
+        body: JSON.stringify(args),
         headers: {
           "Content-Type": "application/json",
         },

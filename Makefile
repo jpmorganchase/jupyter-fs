@@ -17,7 +17,7 @@ test: ## run all tests
 	make testbrowser
 
 lintjs: ## run linter
-	cd js; yarn lint
+	cd js; ${YARN} lint
 
 lintpy: ## run linter
 	${PYTHON} -m flake8 jupyterfs setup.py
@@ -27,7 +27,7 @@ lint: ## run linter
 	make lintpy
 
 fixjs:  ## run autopep8/tslint fix
-	cd js; yarn fix
+	cd js; ${YARN} fix
 
 fixpy:  ## run autopep8/tslint fix
 	${PYTHON} -m autopep8 --in-place -r -a -a jupyterfs/
@@ -53,7 +53,7 @@ dev_install: ## set up the repo for active development
 	${PIP} install -e .[dev]
 	${PYTHON} -m jupyter serverextension enable --py jupyterfs
 	cd js; ${YARN} build:integrity
-	cd js; ${PYTHON} -m jupyter labextension link .
+	cd js; ${PYTHON} -m jupyter labextension install .
 	# verify
 	${PYTHON} -m jupyter serverextension list
 	${PYTHON} -m jupyter labextension list

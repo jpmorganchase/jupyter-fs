@@ -55,6 +55,7 @@ test_script:
 - python -m pytest -v jupyterfs/tests --cov=jupyterfs --cov-branch
 
 # test the js code
+- ps: cd js
 - yarn build
 - yarn test
 

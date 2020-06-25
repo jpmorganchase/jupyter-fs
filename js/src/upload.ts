@@ -6,8 +6,7 @@
  * the Apache License 2.0.  The full license can be found in the LICENSE file.
  *
  */
-/* eslint-disable @typescript-eslint/interface-name-prefix */
-/* eslint-disable no-underscore-dangle */
+
 import { Dialog, showDialog, showErrorMessage, ToolbarButton } from "@jupyterlab/apputils";
 import { IChangedArgs, PageConfig } from "@jupyterlab/coreutils";
 import { IDocumentManager, shouldOverwrite } from "@jupyterlab/docmanager";

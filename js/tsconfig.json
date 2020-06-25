@@ -6,6 +6,7 @@
     "declaration": true,
     "esModuleInterop": true,
     "incremental": true,
+    "jsx": "react",
     "module": "esnext",
     "moduleResolution": "node",
     "noEmitOnError": true,
@@ -14,8 +15,9 @@
     "preserveWatchOutput": true,
     "resolveJsonModule": true,
     "sourceMap": true,
-    "target": "es2017",
-    "types": ["jest"],
+    // "strictNullChecks": true,
+    "target": "es2018",
+    // "types": ["jest"],
 
     "outDir": "lib",
     "rootDir": "src"

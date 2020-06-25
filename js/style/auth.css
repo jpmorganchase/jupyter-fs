@@ -1,0 +1,43 @@
+/******************************************************************************
+ *
+ * Copyright (c) 2019, the jupyter-fs authors.
+ *
+ * This file is part of the jupyter-fs library, distributed under the terms of
+ * the Apache License 2.0.  The full license can be found in the LICENSE file.
+ *
+ */
+
+.jfs-ask-dialog > * > .MuiPaper-root {
+  color: var(--jp-ui-font-color0);
+  background-color: var(--jp-layout-color0);
+  font-size: var(--jp-ui-font-size1);
+}
+
+.jfs-ask-input > * > input {
+  color: var(--jp-ui-font-color0);
+  font-size: var(--jp-ui-font-size1);
+}
+
+.jfs-ask-input > .MuiInput-underline:before {
+  border-bottom: 1px solid var(--jp-ui-font-color0);
+}
+
+.jfs-ask-input > .MuiInputLabel-root {
+  background-color: var(--jp-layout-color1);
+  color: var(--jp-ui-font-color0);
+  font-size: var(--jp-ui-font-size1);
+}
+
+.jfs-ask-panel.MuiExpansionPanel-root {
+  background-color: var(--jp-layout-color1);
+  color: var(--jp-ui-font-color0);
+  font-size: var(--jp-ui-font-size1);
+}
+
+.jfs-ask-panel-details {
+  flex-direction: column;
+}
+
+.jfs-ask-panel-summary > div {
+  flex-direction: column;
+}

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="500" viewBox="0 0 100 100">
+  <rect class="jp-icon3" stroke="#616161" stroke-width="4" width="91" height="21" fill="none" rx="4" x="4.5" y="9.5"/>
+  <circle class="jp-icon3" fill="#616161" cx="85" cy="20" r="3"/>
+  <circle class="jp-icon3" fill="#616161" cx="73" cy="20" r="3"/>
+
+  <rect class="jp-icon3" stroke="#616161" stroke-width="4" width="91" height="21" fill="none" rx="4" x="4.5" y="39.5"/>
+  <circle class="jp-icon3" fill="#616161" cx="85" cy="50" r="3"/>
+  <circle class="jp-icon3" fill="#616161" cx="73" cy="50" r="3"/>
+
+  <rect class="jp-icon3" stroke="#616161" stroke-width="4" width="91" height="21" fill="none" rx="4" x="4.5" y="69.5"/>
+  <circle class="jp-icon3" fill="#616161" cx="85" cy="80" r="3"/>
+  <circle class="jp-icon3" fill="#616161" cx="73" cy="80" r="3"/>
+</svg>

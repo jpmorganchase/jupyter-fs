@@ -1,12 +1,14 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "jupyter-fs",
   "description": "Settings for the jupyter-fs extension.",
   "jupyter.lab.setting-icon": "fs:drive",
   "jupyter.lab.setting-icon-label": "fs",
   "type": "object",
   "additionalProperties": false,
+
   "definitions": {
-    "spec": {
+    "resource": {
       "description": "Specification for an fs resource",
       "type": "object",
       "additionalProperties": false,
@@ -15,29 +17,44 @@
           "description": "Display name of resource",
           "type": "string"
         },
-        "desc": {
-          "description": "Optional longer description of resource",
-          "type": "string",
-          "default": ""
-        },
         "url": {
-          "description": "A url pointing to an fs resource, as per PyFilesystem",
+          "description": "A url pointing to an fs resource, as per the PyFilesystem fsurl specification",
           "type": "string"
+        },
+        "auth": {
+          "description": "Given any template {{VARS}} in the url, 'ask' (default) to open a dialog box asking for credentials, or `env` to pick up credentials from the server's environment variables",
+          "type": "string",
+          "enum": ["ask", "env", false],
+          "default": "ask"
         }
       }
     }
   },
+
   "properties": {
-    "specs": {
+    "resources": {
       "description": "The list of fs resource specifications",
-      "items": { "$ref": "#/definitions/spec" },
+      "items": { "$ref": "#/definitions/resource" },
       "type": "array",
       "default": []
     },
-    "verbose": {
-      "description": "If true, jupyter-fs will output helpful info messages to the console",
-      "type": "boolean",
-      "default": false
+    "options": {
+      "description": "Global options for jupyter-fs",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cache": {
+          "description": "If true, only recreate the actual resources when necessary (ie on initial load or changes to 'resources')",
+          "type": "boolean",
+          "default": true
+        },
+        "verbose": {
+          "description": "If true, jupyter-fs will output helpful info messages to the console",
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "default": {}
     }
   }
 }

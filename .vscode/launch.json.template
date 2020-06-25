@@ -29,11 +29,11 @@
             "request": "launch",
 
             "sourceMapPathOverrides": {
-                "webpack:///../*": "${webRoot}/*"
+                "webpack:///./node_modules/jupyter-fs/*": "${webRoot}/*"
             },
             "timeout": 180000,
             "url": "http://localhost:9999",
-            "webRoot": "${workspaceFolder}",
+            "webRoot": "${workspaceFolder}/js",
 
             // debug using a specific copy of chrome/chromium
             // "runtimeExecutable": "<path-to-your-chrome-or-chromium>",

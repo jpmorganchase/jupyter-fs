@@ -24,7 +24,7 @@ py_pkg = Path('jupyterfs')
 # the Path to the javascript pkg dir
 js_pkg = Path('js')
 
-ensure_python(('2.7', '>=3.3'))
+ensure_python(('2.7', '>=3.6'))
 
 version = get_version(str(py_pkg/'_version.py'))
 

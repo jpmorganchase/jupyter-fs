@@ -1,7 +1,7 @@
 trigger:
   branches:
     include:
-    - '*'  # must quote since "*" is a YAML reserved character; we want a string
+    - '*'  # must quote since '*' is a YAML reserved character; we want a string
 
 parameters:
 - name: initSteps
@@ -17,10 +17,10 @@ parameters:
         versionSpec: '12.x'
 
     - bash: npm install -g yarn
-      displayName: "Install Yarn"
+      displayName: 'Install Yarn'
 
     - bash: env
-      displayName: "List all environment variables"
+      displayName: 'List all environment variables'
 
     - bash: pip install --upgrade pip wheel setuptools
       displayName: 'Install Python base dependencies'
@@ -30,7 +30,15 @@ parameters:
         which python
         python --version
         pip list
-      displayName: "Python info"
+      displayName: 'Python info'
+
+- name: fixGethostnameMacSteps
+  type: stepList
+  default:
+    - script: |
+        ci/enable_sharing_mac.sh
+        ci/add_etc_hosts.sh
+      displayName: 'Fix socket.gethostname() in python on mac'
 
 - name: initDockerSteps
   type: stepList
@@ -63,7 +71,7 @@ parameters:
     - bash: |
         nohup ci/s3_local.sh -d -r
         sleep 5
-      displayName: "Start up local S3 server"
+      displayName: 'Start up local S3 server'
 
     - script: curl http://127.0.0.1:9000/
       displayName: 'Test local S3 server'
@@ -172,18 +180,6 @@ jobs:
     - ${{ parameters.initSteps }}
     - ${{ parameters.testJavascriptSteps }}
 
-- job: 'python__linux'
-  pool:
-    vmImage: 'ubuntu-latest'
-  variables:
-    python.version: '3.7'
-
-  steps:
-    - ${{ parameters.initDockerSteps }}
-    - ${{ parameters.pullContainersSteps }}
-    - ${{ parameters.initSteps }}
-    - ${{ parameters.testPythonSteps }}
-
 - job: 'browser_check__linux'
   pool:
     vmImage: 'ubuntu-latest'
@@ -196,12 +192,53 @@ jobs:
     - ${{ parameters.initSteps }}
     - ${{ parameters.testBrowserSteps }}
 
+- job: 'python__linux'
+  pool:
+    vmImage: 'ubuntu-latest'
+  variables:
+    python.version: '3.7'
+
+  steps:
+    - ${{ parameters.initDockerSteps }}
+    - ${{ parameters.pullContainersSteps }}
+    - ${{ parameters.initSteps }}
+    - ${{ parameters.testPythonSteps }}
 
 - job: 'python__mac'
   pool:
     vmImage: 'macos-10.14'
   variables:
     python.version: '3.7'
+
+  steps:
+    - ${{ parameters.initDockerMacSteps }}
+    - ${{ parameters.pullContainersSteps }}
+    - ${{ parameters.initSteps }}
+    - ${{ parameters.testPythonSteps }}
+
+# TODO: delete this duplicate job, once the required test has been renamed on github: "Linux Python37" => "python__linux"
+- job: 'Linux'
+  pool:
+    vmImage: 'ubuntu-latest'
+  strategy:
+    matrix:
+      Python37:
+        python.version: '3.7'
+
+  steps:
+    - ${{ parameters.initDockerSteps }}
+    - ${{ parameters.pullContainersSteps }}
+    - ${{ parameters.initSteps }}
+    - ${{ parameters.testPythonSteps }}
+
+# TODO: delete this duplicate job, once the required test has been renamed on github: "Mac Python37" => "python__mac"
+- job: 'Mac'
+  pool:
+    vmImage: 'macos-10.14'
+  strategy:
+    matrix:
+      Python37:
+        python.version: '3.7'
 
   steps:
     - ${{ parameters.initDockerMacSteps }}
