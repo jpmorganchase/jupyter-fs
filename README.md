@@ -77,7 +77,7 @@ Any stretch of a `"url"` that is enclosed in double-brackets `{{VAR}}` will be t
     ...
 
     {
-      "name": "smb guest share",
+      "name": "samba share",
       "url": "smb://{{user}}:{{passwd}}@127.0.0.1/test?name-port=3669"
     }
   ]
