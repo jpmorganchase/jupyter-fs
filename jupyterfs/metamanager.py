@@ -44,6 +44,10 @@ class MetaManager(ContentsManager):
         managers = dict([self._default_cm])
 
         for resource in resources:
+            # server side resources don't have a default 'auth' key
+            if 'auth' not in resource:
+                resource['auth'] = 'ask'
+
             # get deterministic hash of PyFilesystem url
             _hash = md5(resource['url'].encode('utf-8')).hexdigest()[:8]
             init = False
