@@ -37,7 +37,7 @@ def load_jupyter_server_extension(nb_server_app):
 
     # init managers from resources described in notebook server config
     nb_server_app.contents_manager.initResource(
-        *nb_server_app.config.get('jupyterfs', {}).get('specs', [])
+        *nb_server_app.config.get('jupyterfs', {}).get('resources', [])
     )
 
     resources_url = 'jupyterfs/resources'
