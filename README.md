@@ -27,7 +27,7 @@ pip install jupyter-fs
 
 Add the following to your `jupyter_notebook_config.json`:
 
-```
+```json
 {
   "NotebookApp": {
     "contents_manager_class": "jupyterfs.metamanager.MetaManager",
@@ -118,10 +118,10 @@ The `"url"` field jupyter-fs config is based on the PyFilesystem [opener url](ht
 
 ## Server-side settings
 
-If you prefer to set up your filesystem resources in the server-side config, you can do so. For example, you can set up a local filesystem by adding the following to your `jupyter_notebook_config.py`:
+If you prefer to set up your filesystem resources in the server-side config, you can do so. For example, you can set up a local filesystem by adding the following to your `jupyter_notebook_config.py` file:
 
 ```python
-c.jupyterfs.specs = [
+c.jupyterfs.resources = [
     {
         "name": "local_test",
         "url": "osfs:///Users/foo/test"
@@ -129,7 +129,28 @@ c.jupyterfs.specs = [
 ]
 ```
 
-Any filesystem specs given in the server-side config will be merged with the specs given in a user's settings.
+ALternatively, you can add resource specifications alongside the basic jupyter-fs config in your `jupyter_notebook_config.json` file:
+
+```json
+{
+  "NotebookApp": {
+    "contents_manager_class": "jupyterfs.metamanager.MetaManager",
+    "nbserver_extensions": {
+      "jupyterfs.extension": true
+    }
+  },
+  "jupyterfs": {
+    "resources": [
+      {
+        "name": "local_test",
+        "url": "osfs:///Users/foo/test"
+      },
+    ]
+  }
+}
+```
+
+Any filesystem resources specified in any server-side config file will be merged with the resources given in a user's settings.
 
 
 ## Development
