@@ -2,8 +2,8 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "jupyter-fs",
   "description": "Settings for the jupyter-fs extension.",
-  "jupyter.lab.setting-icon": "fs:drive",
-  "jupyter.lab.setting-icon-label": "fs",
+  "jupyter.lab.setting-icon": "jfs:drive",
+  "jupyter.lab.setting-icon-label": "jupyter-fs",
   "type": "object",
   "additionalProperties": false,
 
