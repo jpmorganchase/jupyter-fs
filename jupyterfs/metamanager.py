@@ -44,6 +44,10 @@ class MetaManager(ContentsManager):
         managers = dict([self._default_cm])
 
         for resource in resources:
+            # server side resources don't have a default 'auth' key
+            if 'auth' not in resource:
+                resource['auth'] = 'ask'
+
             # get deterministic hash of PyFilesystem url
             _hash = md5(resource['url'].encode('utf-8')).hexdigest()[:8]
             init = False
@@ -155,7 +159,13 @@ class MetaManagerHandler(APIHandler):
     async def post(self):
         # will be a list of resource dicts
         body = self.get_json_body()
+        options = body['options']
+
+        if '_addServerside' in options and options['_addServerside']:
+            resources = list((*self.config_resources, *body['resources']))
+        else:
+            resources = body['resources']
 
         self.finish(json.dumps(
-            self.contents_manager.initResource(*self.config_resources, *body['resources'], options=body['options'])
+            self.contents_manager.initResource(*resources, options=options)
         ))

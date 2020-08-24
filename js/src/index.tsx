@@ -88,7 +88,13 @@ async function activate(
 
     // send user specs to backend; await return containing resources
     // defined by user settings + resources defined by server config
-    resources = await comm.initResourceRequest({resources, options});
+    resources = await comm.initResourceRequest({
+      resources,
+      options: {
+        ...options,
+        _addServerside: true,
+      },
+    });
 
     if (askRequired(resources)) {
       // ask for url template values, if required
@@ -102,11 +108,11 @@ async function activate(
 
       const handleSubmit = async (values: {[url: string]: {[key: string]: string}}) => {
         await refreshWidgets({
-          options,
           resources: await comm.initResourceRequest({
-            options,
             resources: resources.map(r => {return {...r, tokenDict: values[r.url]}}),
+            options,
           }),
+          options,
         });
       }
 
