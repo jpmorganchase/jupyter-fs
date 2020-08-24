@@ -159,7 +159,13 @@ class MetaManagerHandler(APIHandler):
     async def post(self):
         # will be a list of resource dicts
         body = self.get_json_body()
+        options = body['options']
+
+        if '_addServerside' in options and options['_addServerside']:
+            resources = list((*self.config_resources, *body['resources']))
+        else:
+            resources = body['resources']
 
         self.finish(json.dumps(
-            self.contents_manager.initResource(*self.config_resources, *body['resources'], options=body['options'])
+            self.contents_manager.initResource(*resources, options=options)
         ))
