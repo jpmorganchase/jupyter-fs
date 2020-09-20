@@ -105,6 +105,10 @@ class MetaManager(ContentsManager):
     def root_manager(self):
         return self._managers.get('')
 
+    @property
+    def root_dir(self):
+        return self.root_manager.root_dir
+
     is_hidden = path_first_arg('is_hidden', False)
     dir_exists = path_first_arg('dir_exists', False)
     file_exists = path_kwarg('file_exists', '', False)
