@@ -19,7 +19,13 @@ The backend is built on top of [PyFilesystem](https://github.com/PyFilesystem/py
 ## Install
 
 ```bash
+# install both lab and serverextension
 pip install jupyter-fs
+
+# enable the serverextension
+jupyter serverextension enable jupyterfs
+
+# add the labextension to the jupyterlab build
 jupyter lab build
 ```
 
@@ -30,10 +36,7 @@ Add the following to your `jupyter_notebook_config.json`:
 ```json
 {
   "NotebookApp": {
-    "contents_manager_class": "jupyterfs.metamanager.MetaManager",
-    "nbserver_extensions": {
-      "jupyterfs": true
-    }
+    "contents_manager_class": "jupyterfs.metamanager.MetaManager"
   }
 }
 ```
