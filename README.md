@@ -20,8 +20,8 @@ The backend is built on top of [PyFilesystem](https://github.com/PyFilesystem/py
 
 ```bash
 pip install jupyter-fs
+jupyter lab build
 ```
-
 
 ## Configure
 
@@ -38,6 +38,16 @@ Add the following to your `jupyter_notebook_config.json`:
 }
 ```
 
+## Check
+
+Once you're done with the install and configure steps, you can ensure that your install of jupyter-fs is set up correctly using the following commands:
+
+```bash
+jupyter serverextension list
+jupyter labextension list
+```
+
+Both commands should list a working jupyter-fs extension, and the versions should match.
 
 ## Simple use (no auth/credentials)
 
