@@ -214,9 +214,18 @@ export class FileTree extends Widget {
         };
       }
 
+      let element;
       if (level === 1) {
+        element = this.tree.querySelector("[id='" + tr.id + "']");
+        if (element !== null) {
+          this.tree.removeChild(element);
+        }
         this.tree.appendChild(tr);
       } else {
+        element = parent.parentNode.querySelector("[id='" + tr.id + "']");
+        if (element !== null) {
+          parent.parentNode.removeChild(element);
+        }
         parent.after(tr);
         parent = tr;
       }
