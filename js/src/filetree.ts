@@ -25,12 +25,12 @@ import { fileTreeIcon } from "./icons";
 import { Uploader } from "./upload";
 import { CommandIDs, doRename, fileSizeString, OpenDirectWidget, Patterns, switchView, writeZipFile } from "./utils";
 
-function u_btoa(str : string) {
-    return btoa(encodeURIComponent(str));
+function u_btoa(str: string) {
+  return btoa(encodeURIComponent(str));
 }
 
-function u_atob(str : string) {
-    return decodeURIComponent(atob(str));
+function u_atob(str: string) {
+  return decodeURIComponent(atob(str));
 }
 
 export class FileTree extends Widget {
@@ -162,7 +162,7 @@ export class FileTree extends Widget {
   buildTableContents(data: any, level: number, parent: any) {
     const commands = this.commands;
     const map = this.sortContents(data);
-    data.forEach ( (item: any, index: any) => {
+    data.forEach((item: any, index: any) => {
       const sorted_entry = map[index];
       const entry = data[sorted_entry[1]];
       const tr = this.createTreeElement(entry, level);
@@ -232,7 +232,7 @@ export class FileTree extends Widget {
   }
 
   sortContents(data: any) {
-    const names = data.map( (value : any, index : number,
+    const names = data.map( (value: any, index: number,
       array: any) => [value.name, index]);
     return names.sort();
   }
