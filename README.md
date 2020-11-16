@@ -64,7 +64,7 @@ Add specifications for additional contents managers in your user settings (in th
 
 You should see your new filebrowsers pop up in the left-hand sidebar instantly when you save your settings:
 
-![](./docs/osfs_example.png)
+![](https://raw.githubusercontent.com/jpmorganchase/jupyter-fs/master/docs/osfs_example.png)
 
 
 ## Use with auth/credentials
@@ -86,7 +86,7 @@ Any stretch of a `"url"` that is enclosed in double-brackets `{{VAR}}` will be t
 
 When you save the above `"resouces"` config, a dialog box will pop asking for the `username` and `passwd` values:
 
-![](./docs/remote_example.png)
+![](https://raw.githubusercontent.com/jpmorganchase/jupyter-fs/master/docs/remote_example.png)
 
 Once you enter those values and hit ok, the new filebrowsers will then immediately appear in the sidebar:
 
@@ -155,10 +155,10 @@ Any filesystem resources specified in any server-side config file will be merged
 
 ## Development
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+See [CONTRIBUTING.md](https://github.com/jpmorganchase/jupyter-fs/blob/master/CONTRIBUTING.md) for guidelines.
 
 
 ## License
 
 This software is licensed under the Apache 2.0 license. See the
-[LICENSE](LICENSE) and [AUTHORS](AUTHORS) files for details.
+[LICENSE](https://github.com/jpmorganchase/jupyter-fs/blob/master/LICENSE) and [AUTHORS](https://github.com/jpmorganchase/jupyter-fs/blob/master/AUTHORS) files for details.
