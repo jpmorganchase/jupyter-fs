@@ -210,6 +210,8 @@ class FSManager(FileContentsManager):
         except OSError:
             self.log.error("Failed to check write permissions on %s", path)
             model['writable'] = False
+        except AttributeError:
+            model['writable'] = False
         return model
 
     def _dir_model(self, path, content=True):
