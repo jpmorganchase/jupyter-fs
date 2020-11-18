@@ -12,7 +12,7 @@ from notebook.utils import url_path_join
 
 from .metamanager import MetaManagerHandler, MetaManager
 
-_mc_config_warning_msg = """Misconfiguration of MetaManager. Please add:
+_mm_config_warning_msg = """Misconfiguration of MetaManager. Please add:
 
 "NotebookApp": {
   "contents_manager_class": "jupyterfs.metamanager.MetaManager"
@@ -32,7 +32,7 @@ def load_jupyter_server_extension(nb_server_app):
     host_pattern = '.*$'
 
     if not isinstance(nb_server_app.contents_manager, MetaManager):
-        warnings.warn(_mc_config_warning_msg)
+        warnings.warn(_mm_config_warning_msg)
         return
 
     # init managers from resources described in notebook server config
