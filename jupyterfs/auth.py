@@ -22,7 +22,7 @@ class BraceTemplate(_BaseTemplate):
     delimiter = ''
     pattern = r'''
     (?:
-      [^{]{(?P<braced>\w*)}[^}]    | # match anything in single braces
+      [^{]{(?P<braced>\S+?)}[^}]    | # match anything in single braces
       (?P<escaped>a^)              | # match nothing
       (?P<named>a^)                | # match nothing
       (?P<invalid>a^)                # match nothing
@@ -36,7 +36,7 @@ class DoubleBraceTemplate(_BaseTemplate):
     delimiter = ''
     pattern = r'''
     (?:
-      {{(?P<braced>\w*)}}    | # match anything in double braces
+      {{(?P<braced>\S+?)}}    | # match anything in double braces
       (?P<escaped>a^)        | # match nothing
       (?P<named>a^)          | # match nothing
       (?P<invalid>a^)          # match nothing
