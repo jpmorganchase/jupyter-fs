@@ -40,6 +40,44 @@ If you have any questions about the contribution process, please feel free to se
 
     you can make edits to the typescript sources and then see the effect of your changes by refreshing JupyterLab's browser window.
 
+## Do a Release
+
+1. Have access to `jupyter-fs` on pypi and npmjs
+
+2. Checkout new release branch
+
+    ```bash
+    git checkout -b release-v<major>.<minor>.<patch>
+    ```
+
+3. Bump version
+
+    ```bash
+    # example: bump2version patch --new-version "0, 0, 5, 'final', 0"
+    bump2version patch --new-version "<major>, <minor>, <patch>, 'final', 0"
+    ```
+
+4. Do release
+
+    ```bash
+    make publish
+    ```
+
+5. Tag and push
+
+    ```bash
+    git tag v<major>.<minor>.<patch>
+    git push upstream v<major>.<minor>.<patch>
+    ```
+
+6. Push release branch to your fork
+
+    ```bash
+    git push -u origin release-v<major>.<minor>.<patch>
+    ```
+
+7. Open a PR for the release branch on https://github.com/jpmorganchase/jupyter-fs
+
 ## Guidelines
 
 When submitting PRs to jupyter-fs, please respect the following general

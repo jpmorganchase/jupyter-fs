@@ -46,7 +46,9 @@ clean: ## clean the repository
 	find . -name "__pycache__" | xargs  rm -rf
 	find . -name "*.pyc" | xargs rm -rf
 	find . -name ".ipynb_checkpoints" | xargs  rm -rf
-	rm -rf .coverage coverage cover htmlcov logs build dist *.egg-info lib node_modules
+	rm -rf build coverage* dist *.egg-info *junit.xml .jupyter MANIFEST node_modules
+	rm -rf js/dist js/lib js/node_modules js/tsconfig.tsbuildinfo
+	rm -rf jupyterfs/labdist
 	# make -C ./docs clean
 
 dev_install: ## set up the repo for active development
@@ -74,9 +76,8 @@ js:  ## build javascript
 labextension: js ## enable labextension
 	${PYTHON} -m jupyter labextension install .
 
-dist: ## create dists
-	rm -rf js/lib js/tsconfig.tsbuildinfo *junit.xml coverage* .jupyter build dist js/dist MANIFEST jupyterfs/labdist js/node_modules
-	cd js; ${YARN} build:integrity
+dist: clean ## create dists
+	cd js; ${YARN} install
 	${PYTHON} setup.py sdist bdist_wheel
 
 publish: dist  ## dist to pypi and npm
@@ -100,4 +101,4 @@ help:
 print-%:
 	@echo '$*=$($*)'
 
-.PHONY: clean install serverextension labextension test tests help docs dist
+.PHONY: clean dist docs help install js labextension serverextension test tests
