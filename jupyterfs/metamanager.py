@@ -28,10 +28,12 @@ class MetaManager(ContentsManager):
 
         self._managers = dict([self._default_cm])
 
+        self._pyfs_kw = {}
+        self._pyfs_kw.update(kwargs)
+
         # remove kwargs not relevant to pyfs
-        kwargs.pop('parent')
-        kwargs.pop('log')
-        self._pyfs_kw = kwargs
+        self._pyfs_kw.pop('parent')
+        self._pyfs_kw.pop('log')
 
     def initResource(self, *resources, options={}):
         """initialize one or more (name, url) tuple representing a PyFilesystem resource specification
@@ -103,6 +105,7 @@ class MetaManager(ContentsManager):
 
     @property
     def root_manager(self):
+        # in jlab, the root drive prefix is blank
         return self._managers.get('')
 
     @property
