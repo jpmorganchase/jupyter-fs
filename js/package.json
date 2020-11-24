@@ -14,15 +14,18 @@
   ],
   "scripts": {
     "build": "tsc",
-    "build:integrity": "jlpm install && jlpm build",
-    "build:labdist": "jlpm build:integrity && jlpm clean:labdist && mkdirp ../jupyterfs/labdist && cd ../jupyterfs/labdist && npm pack ../../js",
+    "build:integrity": "yarn install && yarn deduplicate && yarn install && yarn build",
+    "build:labdist": "yarn build:integrity && yarn clean:labdist && mkdirp ../jupyterfs/labdist && cd ../jupyterfs/labdist && npm pack ../../js",
     "clean": "rimraf lib tsconfig.tsbuildinfo *junit.xml coverage* .jupyter",
-    "clean:more": "jlpm clean && rimraf build dist MANIFEST",
+    "clean:more": "yarn clean && rimraf build dist MANIFEST",
     "clean:labdist": "rimraf ../jupyterfs/labdist",
-    "clean:slate": "jlpm clean:more && jlpm clean:labdist && rimraf ../node_modules",
+    "clean:slate": "yarn clean:more && yarn clean:labdist && rimraf ../node_modules",
+    "deduplicate": "yarn yarn-deduplicate -s fewer ../yarn.lock || yarn yarn-deduplicate -s fewer",
     "fix": "eslint -c .eslintrc.js --ext .js,.ts --fix .",
     "lint": "eslint -c .eslintrc.js --ext .js,.ts .",
-    "prepublishOnly": "jlpm run build",
+    "postpack": "shx rm README.md",
+    "prepack": "shx cp ../README.md .",
+    "prepublishOnly": "yarn run build",
     "test": "jest --coverage --collectCoverageFrom=src/*.{ts,tsx}",
     "test:browser": "../ci/browser_check.sh",
     "watch": "tsc -w"
@@ -88,7 +91,9 @@
     "jest-raw-loader": "^1.0.1",
     "mkdirp": "^0.5.1",
     "rimraf": "^2.7.1",
+    "shx": "^0.3.3",
     "ts-jest": "~25.2.1",
-    "typescript": "^3.9.0"
+    "typescript": "^3.9.0",
+    "yarn-deduplicate": "^3.1.0"
   }
 }

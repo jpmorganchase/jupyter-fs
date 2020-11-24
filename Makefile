@@ -2,10 +2,10 @@ PIP := pip
 PYTHON := python
 YARN := jlpm
 
-testjs: ## Clean and Make js tests
+testjs: ## Make js tests
 	cd js; ${YARN} test
 
-testpy: ## Clean and Make py tests
+testpy: ## Make py tests
 	${PYTHON} -m pytest -v jupyterfs/tests --cov=jupyterfs --cov-branch --junitxml=python_junit.xml --cov-report=xml
 
 testbrowser:
@@ -46,8 +46,8 @@ clean: ## clean the repository
 	find . -name "__pycache__" | xargs  rm -rf
 	find . -name "*.pyc" | xargs rm -rf
 	find . -name ".ipynb_checkpoints" | xargs  rm -rf
-	rm -rf build coverage* dist *.egg-info *junit.xml .jupyter MANIFEST node_modules
-	rm -rf js/dist js/lib js/node_modules js/tsconfig.tsbuildinfo
+	rm -rf build coverage* dist *.egg-info *junit.xml .jupyter MANIFEST node_modules package-lock.json pip-wheel-metadata yarn.lock
+	rm -rf js/dist js/lib js/node_modules js/package-lock.json js/tsconfig.tsbuildinfo js/yarn.lock
 	rm -rf jupyterfs/labdist
 	# make -C ./docs clean
 
