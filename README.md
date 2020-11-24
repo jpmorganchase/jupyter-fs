@@ -55,6 +55,11 @@ Add specifications for additional contents managers in your user settings (in th
       "url": "s3://test"
     },
     {
+      "name": "s3 test key",
+      "url": "s3://test-2/prefix/",
+      "defaultWritable": false
+    },
+    {
       "name": "samba guest share",
       "url": "smb://guest@127.0.0.1/test?name-port=3669"
     }

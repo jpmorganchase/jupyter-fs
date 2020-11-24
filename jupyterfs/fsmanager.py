@@ -112,7 +112,8 @@ class FSManager(FileContentsManager):
     def init_fs(cls, pyfs_class, *args, **kwargs):
         return cls(pyfs_class(*args, **kwargs))
 
-    def __init__(self, pyfs, *args, **kwargs):
+    def __init__(self, pyfs, *args, default_writable=True, **kwargs):
+        self._default_writable = default_writable
         if isinstance(pyfs, str):
             # pyfs is an opener url
             self._pyfilesystem_instance = open_fs(pyfs, *args, **kwargs)
@@ -204,9 +205,8 @@ class FSManager(FileContentsManager):
         try:
             model['writable'] = info.permissions.check('u_w')  # TODO check
         except (errors.MissingInfoNamespace,):
-            # if relevant namespace is missing, assume writable
-            # TODO: decide if this is wise
-            model['writable'] = True
+            # use default if access namespace is missing
+            model['writable'] = self._default_writable
         except OSError:
             self.log.error("Failed to check write permissions on %s", path)
             model['writable'] = False
