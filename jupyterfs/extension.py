@@ -36,11 +36,6 @@ def load_jupyter_server_extension(nb_server_app):
         warnings.warn(_mm_config_warning_msg)
         return
 
-    # init managers from resources described in notebook server config
-    nb_server_app.contents_manager.initConfig(
-        JupyterfsConfig(config=nb_server_app.config)
-    )
-
     resources_url = 'jupyterfs/resources'
     print('Installing jupyter-fs resources handler on path %s' % url_path_join(base_url, resources_url))
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, resources_url), MetaManagerHandler)])

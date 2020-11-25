@@ -22,12 +22,14 @@ __all__ = ["MetaManager", "MetaManagerHandler"]
 
 class MetaManager(ContentsManager):
     def __init__(self, **kwargs):
-        self._jupyterfsConfig = None
+        super().__init__(**kwargs)
+        self._jupyterfsConfig = JupyterfsConfig(config=self.config)
+
         self._kwargs = kwargs
         self._pyfs_kw = {}
 
         self.resources = []
-        self._default_root_manager = FSManager('mem://')
+        self._default_root_manager = self._jupyterfsConfig.root_manager_class(**self._kwargs)
         self._managers = dict((('', self._default_root_manager),))
 
         # copy kwargs to pyfs_kw, removing kwargs not relevant to pyfs
@@ -35,10 +37,6 @@ class MetaManager(ContentsManager):
         for k in (k for k in ('config', 'log', 'parent') if k in self._pyfs_kw):
             self._pyfs_kw.pop(k)
 
-    def initConfig(self, config):
-        self._jupyterfsConfig = config
-
-        self._default_root_manager = self._jupyterfsConfig.root_manager_class(**self._kwargs)
         self.initResource(*self._jupyterfsConfig.resources)
 
     def initResource(self, *resources, options={}):
