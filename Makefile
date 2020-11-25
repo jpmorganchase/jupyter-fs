@@ -53,7 +53,7 @@ clean: ## clean the repository
 
 dev_install: ## set up the repo for active development
 	${PIP} install -e .[dev]
-	${PYTHON} -m jupyter serverextension enable --py jupyterfs
+	${PYTHON} -m jupyter serverextension enable --py jupyterfs.extension
 	cd js; ${YARN} build:integrity
 	cd js; ${PYTHON} -m jupyter labextension install .
 	# verify
@@ -68,7 +68,7 @@ install:  ## install to site-packages
 	${PIP} install .
 
 serverextension: install ## enable serverextension
-	${PYTHON} -m jupyter serverextension enable --py jupyterfs
+	${PYTHON} -m jupyter serverextension enable --py jupyterfs.extension
 
 js:  ## build javascript
 	cd js; ${YARN} build:integrity

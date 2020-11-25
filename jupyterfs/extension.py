@@ -12,6 +12,7 @@ from notebook.utils import url_path_join
 
 from .config import Jupyterfs as JupyterfsConfig
 from .metamanager import MetaManagerHandler, MetaManager
+from ._version import __version__  # noqa: F401
 
 _mm_config_warning_msg = """Misconfiguration of MetaManager. Please add:
 
@@ -20,6 +21,11 @@ _mm_config_warning_msg = """Misconfiguration of MetaManager. Please add:
 }
 
 to your Notebook Server config."""
+
+def _jupyter_server_extension_paths():
+    return [{
+        "module": "jupyterfs.extension"
+    }]
 
 def load_jupyter_server_extension(nb_server_app):
     """
