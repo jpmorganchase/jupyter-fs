@@ -260,10 +260,13 @@ export class FileTree extends Widget {
         icon = this.dr.getFileType("text").icon.element({
           className: "jp-DirListing-itemIcon",
         });
-      } else {
+      } else if (fileTypes[0].icon) {
         icon = fileTypes[0].icon.element({
           className: "jp-DirListing-itemIcon",
         });
+      } else {
+        icon = document.createElement("div");
+        icon.className = fileTypes[0].iconClass ?? "";
       }
     }
 
