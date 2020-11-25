@@ -10,6 +10,7 @@ import warnings
 
 from notebook.utils import url_path_join
 
+from .config import Jupyterfs as JupyterfsConfig
 from .metamanager import MetaManagerHandler, MetaManager
 
 _mm_config_warning_msg = """Misconfiguration of MetaManager. Please add:
@@ -36,8 +37,8 @@ def load_jupyter_server_extension(nb_server_app):
         return
 
     # init managers from resources described in notebook server config
-    nb_server_app.contents_manager.initResource(
-        *nb_server_app.config.get('jupyterfs', {}).get('resources', [])
+    nb_server_app.contents_manager.initConfig(
+        JupyterfsConfig(config=nb_server_app.config)
     )
 
     resources_url = 'jupyterfs/resources'
