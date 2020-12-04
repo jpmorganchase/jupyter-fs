@@ -17,13 +17,13 @@ class Jupyterfs(Configurable):
     root_manager_class = Type(
         config=True,
         default_value=LargeFileManager,
-        help=_("the root contents manager class to use. Will back eg the Jupyterlab default filebrowser"),
+        help=_("the root contents manager class to use. Used by the Jupyterlab default filebrowser and elsewhere"),
         klass=ContentsManager,
     )
 
     resources = List(
         config=True,
         default_value=[],
-        help=_("server side definitions of fsspec resources for jupyter-fs"),
+        help=_("server-side definitions of fsspec resources for jupyter-fs"),
         # trait=Dict(traits={"name": Unicode, "url": Unicode}),
     )
