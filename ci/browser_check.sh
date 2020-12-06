@@ -22,7 +22,7 @@ cat <<EOT > "${SERVER_SETTINGS}"
   "NotebookApp": {
     "contents_manager_class": "jupyterfs.metamanager.MetaManager",
     "nbserver_extensions": {
-      "jupyterfs": true
+      "jupyterfs.extension": true
     }
   }
 }

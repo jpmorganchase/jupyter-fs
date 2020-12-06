@@ -11,6 +11,7 @@ import warnings
 from notebook.utils import url_path_join
 
 from .metamanager import MetaManagerHandler, MetaManager
+from ._version import __version__  # noqa: F401
 
 _mm_config_warning_msg = """Misconfiguration of MetaManager. Please add:
 
@@ -19,6 +20,11 @@ _mm_config_warning_msg = """Misconfiguration of MetaManager. Please add:
 }
 
 to your Notebook Server config."""
+
+def _jupyter_server_extension_paths():
+    return [{
+        "module": "jupyterfs.extension"
+    }]
 
 def load_jupyter_server_extension(nb_server_app):
     """
@@ -34,11 +40,6 @@ def load_jupyter_server_extension(nb_server_app):
     if not isinstance(nb_server_app.contents_manager, MetaManager):
         warnings.warn(_mm_config_warning_msg)
         return
-
-    # init managers from resources described in notebook server config
-    nb_server_app.contents_manager.initResource(
-        *nb_server_app.config.get('jupyterfs', {}).get('resources', [])
-    )
 
     resources_url = 'jupyterfs/resources'
     print('Installing jupyter-fs resources handler on path %s' % url_path_join(base_url, resources_url))

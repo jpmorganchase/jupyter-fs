@@ -51,30 +51,27 @@ clean: ## clean the repository
 	rm -rf jupyterfs/labdist
 	# make -C ./docs clean
 
-dev_install: ## set up the repo for active development
-	${PIP} install -e .[dev]
-	${PYTHON} -m jupyter serverextension enable --py jupyterfs
-	cd js; ${YARN} build:integrity
-	cd js; ${PYTHON} -m jupyter labextension install .
+dev_install: dev_serverextension dev_labextension ## set up the repo for active development
 	# verify
 	${PYTHON} -m jupyter serverextension list
 	${PYTHON} -m jupyter labextension list
+
+dev_labextension: js  ## build and install labextension for active development
+	cd js; ${PYTHON} -m jupyter labextension install .
+
+dev_serverextension:  ## install and enable serverextension for active development
+	${PIP} install -e .[dev]
+	${PYTHON} -m jupyter serverextension enable --py jupyterfs.extension
 
 docs:  ## make documentation
 	make -C ./docs html
 	open ./docs/_build/html/index.html
 
-install:  ## install to site-packages
+install:  ## do standard install of both server/labextension to site-packages
 	${PIP} install .
-
-serverextension: install ## enable serverextension
-	${PYTHON} -m jupyter serverextension enable --py jupyterfs
 
 js:  ## build javascript
 	cd js; ${YARN} build:integrity
-
-labextension: js ## enable labextension
-	${PYTHON} -m jupyter labextension install .
 
 dist: clean ## create dists
 	cd js; ${YARN} install
@@ -101,4 +98,4 @@ help:
 print-%:
 	@echo '$*=$($*)'
 
-.PHONY: clean dist docs help install js labextension serverextension test tests
+.PHONY: clean dev_install dev_labextension dev_serverextension dist docs help install js test tests
