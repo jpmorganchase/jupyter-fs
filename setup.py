@@ -98,7 +98,7 @@ setup(
     ],
     cmdclass=cmdclass,
     keywords='jupyter jupyterlab',
-    packages=find_packages(exclude=['tests', ]),
+    packages=find_packages(exclude=('js', 'js.*')),
     install_requires=requires,
     extras_require={
         'dev': dev_requires

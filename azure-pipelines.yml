@@ -132,7 +132,7 @@ parameters:
 - name: testJavascriptSteps
   type: stepList
   default:
-    - script: cd js; yarn install && yarn build
+    - script: make js YARN=yarn
       displayName: 'Build the labextension'
 
     - script: make testjs YARN=yarn

@@ -2,10 +2,10 @@ PIP := pip
 PYTHON := python
 YARN := jlpm
 
-testjs: ## Clean and Make js tests
+testjs: ## Make js tests
 	cd js; ${YARN} test
 
-testpy: ## Clean and Make py tests
+testpy: ## Make py tests
 	${PYTHON} -m pytest -v jupyterfs/tests --cov=jupyterfs --cov-branch --junitxml=python_junit.xml --cov-report=xml
 
 testbrowser:
@@ -46,37 +46,35 @@ clean: ## clean the repository
 	find . -name "__pycache__" | xargs  rm -rf
 	find . -name "*.pyc" | xargs rm -rf
 	find . -name ".ipynb_checkpoints" | xargs  rm -rf
-	rm -rf .coverage coverage cover htmlcov logs build dist *.egg-info lib node_modules lab-dist yarn-error.log coverage.xml python_junit.xml
+	rm -rf build coverage* dist *.egg-info *junit.xml .jupyter MANIFEST node_modules package-lock.json pip-wheel-metadata yarn.lock
+	rm -rf js/dist js/lib js/node_modules js/package-lock.json js/tsconfig.tsbuildinfo js/yarn.lock
+	rm -rf jupyterfs/labdist
 	# make -C ./docs clean
 
-dev_install: ## set up the repo for active development
-	${PIP} install -e .[dev]
-	${PYTHON} -m jupyter serverextension enable --py jupyterfs
-	cd js; ${YARN} build:integrity
-	cd js; ${PYTHON} -m jupyter labextension install .
+dev_install: dev_serverextension dev_labextension ## set up the repo for active development
 	# verify
 	${PYTHON} -m jupyter serverextension list
 	${PYTHON} -m jupyter labextension list
+
+dev_labextension: js  ## build and install labextension for active development
+	cd js; ${PYTHON} -m jupyter labextension install .
+
+dev_serverextension:  ## install and enable serverextension for active development
+	${PIP} install -e .[dev]
+	${PYTHON} -m jupyter serverextension enable --py jupyterfs.extension
 
 docs:  ## make documentation
 	make -C ./docs html
 	open ./docs/_build/html/index.html
 
-install:  ## install to site-packages
+install:  ## do standard install of both server/labextension to site-packages
 	${PIP} install .
-
-serverextension: install ## enable serverextension
-	${PYTHON} -m jupyter serverextension enable --py jupyterfs
 
 js:  ## build javascript
 	cd js; ${YARN} build:integrity
 
-labextension: js ## enable labextension
-	${PYTHON} -m jupyter labextension install .
-
-dist: ## create dists
-	rm -rf js/lib js/tsconfig.tsbuildinfo *junit.xml coverage* .jupyter build dist js/dist MANIFEST jupyterfs/labdist js/node_modules
-	cd js; ${YARN} build:integrity
+dist: clean ## create dists
+	cd js; ${YARN} install
 	${PYTHON} setup.py sdist bdist_wheel
 
 publish: dist  ## dist to pypi and npm
@@ -100,4 +98,4 @@ help:
 print-%:
 	@echo '$*=$($*)'
 
-.PHONY: clean install serverextension labextension test tests help docs dist
+.PHONY: clean dev_install dev_labextension dev_serverextension dist docs help install js test tests

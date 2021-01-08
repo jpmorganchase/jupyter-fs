@@ -11,6 +11,8 @@ import { URLExt } from "@jupyterlab/coreutils";
 import { ServerConnection } from "@jupyterlab/services";
 
 export interface IFSOptions {
+  _addServerside: boolean;
+
   /**
    * If true, only recreate the actual resource when necessary
    */
