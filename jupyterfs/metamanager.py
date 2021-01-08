@@ -10,10 +10,10 @@ import json
 from tornado import web
 
 from notebook.base.handlers import APIHandler
-from notebook.services.contents.largefilemanager import LargeFileManager
 from notebook.services.contents.manager import ContentsManager
 
 from .auth import substituteAsk, substituteEnv, substituteNone
+from .config import Jupyterfs as JupyterfsConfig
 from .fsmanager import FSManager
 from .pathutils import path_first_arg, path_second_arg, path_kwarg, path_old_new
 
@@ -22,16 +22,22 @@ __all__ = ["MetaManager", "MetaManagerHandler"]
 
 class MetaManager(ContentsManager):
     def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._jupyterfsConfig = JupyterfsConfig(config=self.config)
+
+        self._kwargs = kwargs
+        self._pyfs_kw = {}
+
         self.resources = []
+        self._default_root_manager = self._jupyterfsConfig.root_manager_class(**self._kwargs)
+        self._managers = dict((('', self._default_root_manager),))
 
-        self._default_cm = ('', LargeFileManager(**kwargs))
+        # copy kwargs to pyfs_kw, removing kwargs not relevant to pyfs
+        self._pyfs_kw.update(kwargs)
+        for k in (k for k in ('config', 'log', 'parent') if k in self._pyfs_kw):
+            self._pyfs_kw.pop(k)
 
-        self._managers = dict([self._default_cm])
-
-        # remove kwargs not relevant to pyfs
-        kwargs.pop('parent')
-        kwargs.pop('log')
-        self._pyfs_kw = kwargs
+        self.initResource(*self._jupyterfsConfig.resources)
 
     def initResource(self, *resources, options={}):
         """initialize one or more (name, url) tuple representing a PyFilesystem resource specification
@@ -41,9 +47,13 @@ class MetaManager(ContentsManager):
         verbose = 'verbose' in options and options['verbose']
 
         self.resources = []
-        managers = dict([self._default_cm])
+        managers = dict((('', self._default_root_manager),))
 
         for resource in resources:
+            # server side resources don't have a default 'auth' key
+            if 'auth' not in resource:
+                resource['auth'] = 'ask'
+
             # get deterministic hash of PyFilesystem url
             _hash = md5(resource['url'].encode('utf-8')).hexdigest()[:8]
             init = False
@@ -70,7 +80,12 @@ class MetaManager(ContentsManager):
                     init = False
                 else:
                     # create new cm
-                    managers[_hash] = FSManager(urlSubbed, **self._pyfs_kw)
+                    default_writable = resource.get('defaultWritable', True)
+                    managers[_hash] = FSManager(
+                        urlSubbed,
+                        default_writable=default_writable,
+                        **self._pyfs_kw
+                    )
                     init = True
 
             # assemble resource from spec + hash
@@ -99,7 +114,12 @@ class MetaManager(ContentsManager):
 
     @property
     def root_manager(self):
+        # in jlab, the root drive prefix is blank
         return self._managers.get('')
+
+    @property
+    def root_dir(self):
+        return self.root_manager.root_dir
 
     is_hidden = path_first_arg('is_hidden', False)
     dir_exists = path_first_arg('dir_exists', False)
@@ -128,9 +148,14 @@ class MetaManager(ContentsManager):
     )
 
 class MetaManagerHandler(APIHandler):
+    _jupyterfsConfig = None
+
     @property
     def config_resources(self):
-        return self.config.get('jupyterfs', {}).get('resources', [])
+        if self._jupyterfsConfig is None:
+            self._jupyterfsConfig = JupyterfsConfig(config=self.config)
+
+        return self._jupyterfsConfig.resources
 
     @web.authenticated
     async def get(self):
@@ -155,7 +180,13 @@ class MetaManagerHandler(APIHandler):
     async def post(self):
         # will be a list of resource dicts
         body = self.get_json_body()
+        options = body['options']
+
+        if '_addServerside' in options and options['_addServerside']:
+            resources = list((*self.config_resources, *body['resources']))
+        else:
+            resources = body['resources']
 
         self.finish(json.dumps(
-            self.contents_manager.initResource(*self.config_resources, *body['resources'], options=body['options'])
+            self.contents_manager.initResource(*resources, options=options)
         ))

@@ -36,12 +36,17 @@ class Template {
   }
 
   tokens() {
-    return this.template.match(this.pattern) || [];
+    let toks = [];
+    let match;
+    while (match = this.pattern.exec(this.template)) {
+      toks.push(match[1]);
+    }
+    return toks;
   }
 }
 
 export class DoubleBraceTemplate extends Template {
-  public pattern = /(?<=\{\{)\w*?(?=\}\})/g;
+  public pattern = /{{(\S+?)}}/g;
 }
 
 function tokensFromUrl(url: string): string[] {
