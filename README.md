@@ -29,7 +29,7 @@ Add the following to your `jupyter_notebook_config.json`:
 
 ```json
 {
-  "NotebookApp": {
+  "ServerApp": {
     "contents_manager_class": "jupyterfs.metamanager.MetaManager",
     "nbserver_extensions": {
       "jupyterfs.extension": true
@@ -138,7 +138,7 @@ ALternatively, you can add resource specifications alongside the basic jupyter-f
 
 ```json
 {
-  "NotebookApp": {
+  "ServerApp": {
     "contents_manager_class": "jupyterfs.metamanager.MetaManager",
     "nbserver_extensions": {
       "jupyterfs.extension": true
