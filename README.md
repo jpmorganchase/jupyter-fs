@@ -1,5 +1,5 @@
 <p align="center">
-<img alt="jupyter-fs" src="https://raw.githubusercontent.com/jpmorganchase/jupyter-fs/add-auth/docs/brand-icon.svg" width="400">
+<img alt="jupyter-fs" src="https://raw.githubusercontent.com/jpmorganchase/jupyter-fs/main/docs/brand-icon.svg" width="400">
 </p>
 
 #
