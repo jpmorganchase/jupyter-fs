@@ -19,7 +19,7 @@ SERVER_SETTINGS="${JUPYTER_CONFIG_DIR}/jupyter_notebook_config.json"
 mkdir -p $(dirname "$SERVER_SETTINGS")
 cat <<EOT > "${SERVER_SETTINGS}"
 {
-  "NotebookApp": {
+  "ServerApp": {
     "contents_manager_class": "jupyterfs.metamanager.MetaManager",
     "nbserver_extensions": {
       "jupyterfs": true
