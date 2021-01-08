@@ -14,7 +14,7 @@ from .metamanager import MetaManagerHandler, MetaManager
 
 _mc_config_warning_msg = """Misconfiguration of MetaManager. Please add:
 
-"NotebookApp": {
+"ServerApp": {
   "contents_manager_class": "jupyterfs.metamanager.MetaManager"
 }
 
