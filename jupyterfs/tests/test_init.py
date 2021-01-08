@@ -7,7 +7,7 @@
 #
 
 # for Coverage
-from jupyterfs import _jupyter_server_extension_paths
+from jupyterfs.extension import _jupyter_server_extension_paths
 
 
 class TestInit:

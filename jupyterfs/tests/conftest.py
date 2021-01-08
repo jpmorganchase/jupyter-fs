@@ -6,6 +6,7 @@ import sys
 PLATFORM_INFO = {'darwin': 'mac', 'linux': 'linux', 'win32': 'windows'}
 PLATFORMS = set(PLATFORM_INFO.keys())
 
+
 def pytest_configure(config):
     # register the platform markers
     for info in PLATFORM_INFO.items():
