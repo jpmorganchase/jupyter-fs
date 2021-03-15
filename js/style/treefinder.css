@@ -7,13 +7,11 @@
  *
  */
 
-:root {
-  --indent: 1em;
+tree-finder-panel {
+  background: var(--jp-layout-color1);
+  color: var(--jp-ui-font-color1);
 }
 
-@import url('~tree-finder/dist/tree-finder.css');
-@import url('~tree-finder/dist/theme/material.css');
-
-@import url('./auth.css');
-@import url('./filetree.css');
-@import url('./treefinder.css');
+tree-finder-grid table {
+  color: var(--jp-ui-font-color1);
+}
