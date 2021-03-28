@@ -22,7 +22,7 @@
     "clean:slate": "yarn clean:more && yarn clean:labdist && rimraf node_modules",
     "deduplicate": "yarn yarn-deduplicate -s fewer yarn.lock || yarn yarn-deduplicate -s fewer",
     "fix": "yarn lint --fix",
-    "lint": "eslint -c .eslintrc.js --ext .js,.ts,.tsx .",
+    "lint": "eslint -c .eslintrc.js --ext .js,.ts,.tsx src/ tests/",
     "postpack": "shx rm README.md",
     "prepack": "shx cp ../README.md .",
     "prepublishOnly": "yarn run build",
