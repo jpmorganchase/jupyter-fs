@@ -10,35 +10,36 @@
 import {
   Button,
   Dialog,
-  DialogActions,
-  DialogContent,
   DialogTitle,
+  DialogContent,
+  DialogActions,
   ExpansionPanel,
-  ExpansionPanelDetails,
   ExpansionPanelSummary,
-  IconButton,
-  InputAdornment,
-  TextField,
   Typography,
-} from '@material-ui/core';
-import * as React from 'react';
+  ExpansionPanelDetails,
+  TextField,
+  InputAdornment,
+  IconButton,
+} from "@material-ui/core";
+import * as React from "react";
 
-import { IFSOptions, IFSResource } from './filesystem';
-import { visibilityIcon, visibilityOffIcon } from './icons';
+import { IFSOptions, IFSResource } from "./filesystem";
+import { visibilityIcon, visibilityOffIcon } from "./icons";
 
 class Template {
-  public pattern = /(?:)/;
+  pattern = /(?:)/;
 
   constructor(public template: string) {}
 
-  substitute(dict: {[key: string]: string}) {
+  substitute(dict: { [key: string]: string }) {
     return this.template.replace(this.pattern, (_, p1) => dict[p1]);
   }
 
   tokens() {
-    let toks = [];
+    const toks = [];
     let match;
-    while (match = this.pattern.exec(this.template)) {
+    // eslint-disable-next-line no-cond-assign
+    while ((match = this.pattern.exec(this.template))) {
       toks.push(match[1]);
     }
     return toks;
@@ -46,7 +47,7 @@ class Template {
 }
 
 export class DoubleBraceTemplate extends Template {
-  public pattern = /{{(\S+?)}}/g;
+  pattern = /{{(\S+?)}}/g;
 }
 
 function tokensFromUrl(url: string): string[] {
@@ -54,7 +55,7 @@ function tokensFromUrl(url: string): string[] {
 }
 
 function _askRequired(spec: IFSResource) {
-  return spec.auth === 'ask' && !spec.init;
+  return spec.auth === "ask" && !spec.init;
 }
 
 export function askRequired(specs: IFSResource[]) {
@@ -76,22 +77,36 @@ export class AskDialog<
   constructor(props: P, options: IFSOptions) {
     super(props);
 
-    this.state = AskDialog.initialState({open: true, options}) as Readonly<S>;
+    this.state = AskDialog.initialState({ open: true, options }) as Readonly<S>;
   }
 
   render() {
     return (
       <div>
-        <Dialog className="jfs-ask-dialog" open={this.state.open} onClose={this._onClose.bind(this)}>
-          <DialogTitle className="jfs-ask jfs-ask-dialog-title">Please enter token values for filesystem resources</DialogTitle>
+        <Dialog
+          className="jfs-ask-dialog"
+          open={this.state.open}
+          onClose={this._onClose.bind(this)}
+        >
+          <DialogTitle className="jfs-ask jfs-ask-dialog-title">
+            Please enter token values for filesystem resources
+          </DialogTitle>
           <DialogContent className="jfs-ask jfs-ask-dialog-content">
             {this._form()}
           </DialogContent>
           <DialogActions className="jfs-ask jfs-ask-dialog-actions">
-            <Button className="jfs-ask jfs-ask-dialog-actions-button-cancel" onClick={this._onClose.bind(this)} color="primary">
+            <Button
+              className="jfs-ask jfs-ask-dialog-actions-button-cancel"
+              onClick={this._onClose.bind(this)}
+              color="primary"
+            >
               Cancel
             </Button>
-            <Button className="jfs-ask jfs-ask-dialog-actions-button-submit" onClick={this._onSubmit.bind(this)} color="primary">
+            <Button
+              className="jfs-ask jfs-ask-dialog-actions-button-submit"
+              onClick={this._onSubmit.bind(this)}
+              color="primary"
+            >
               Submit
             </Button>
           </DialogActions>
@@ -102,24 +117,29 @@ export class AskDialog<
 
   protected _form() {
     return (
-      <form className="jfs-ask jfs-ask-form" onSubmit={this._onSubmit.bind(this)} noValidate autoComplete="off">
+      <form
+        className="jfs-ask jfs-ask-form"
+        onSubmit={this._onSubmit.bind(this)}
+        noValidate
+        autoComplete="off"
+      >
         {this._formInner()}
       </form>
-    )
+    );
   }
 
   protected _formInner() {
-    return this.props.resources.map((resource) => {
+    return this.props.resources.map(resource => {
       // ask for credentials if needed, or state why not
-      const askReq = _askRequired(resource)
+      const askReq = _askRequired(resource);
       const inputs = askReq ? this._inputs(resource.url) : [];
       const tokens = tokensFromUrl(resource.url);
 
-      let reason = '';
+      let reason = "";
       if (resource.init && this.props.options.cache) {
-        reason = 'already initialized';
+        reason = "already initialized";
       } else if (!tokens.length) {
-        reason = 'no template parameters';
+        reason = "no template parameters";
       }
 
       const summary = `${resource.name}:${reason && ` ${reason}`}`;
@@ -138,59 +158,61 @@ export class AskDialog<
           <ExpansionPanelDetails className="jfs-ask jfs-ask-panel-details">
             {inputs}
           </ExpansionPanelDetails>
-        </ExpansionPanel>
+        </ExpansionPanel>,
       ];
     });
   }
 
   protected _inputs(url: string): React.ReactNodeArray {
-    return tokensFromUrl(url).map(token => {
-      return (
-        <TextField
-          className="jfs-ask jfs-ask-input"
-          autoFocus
-          fullWidth
-          key={`${url}_${token}`}
-          label={token}
-          margin="dense"
-          name={token}
-          onChange={this._onChange(url).bind(this)}
-          type={this.state.visibility[url]?.[token] ? 'text' : 'password'}
-          value={this.state.values[url]?.[token] || ''}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton
-                  onClick={this._onClickVisiblity(url, token).bind(this)}
-                  onMouseDown={this._onMouseDownVisibility.bind(this)}
-                  edge="end"
-                >
-                  {this.state.visibility[url]?.[token] ? <visibilityIcon.react/> : <visibilityOffIcon.react/>}
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
-      );
-    });
+    return tokensFromUrl(url).map(token => (
+      <TextField
+        className="jfs-ask jfs-ask-input"
+        autoFocus
+        fullWidth
+        key={`${url}_${token}`}
+        label={token}
+        margin="dense"
+        name={token}
+        onChange={this._onChange(url).bind(this)}
+        type={this.state.visibility[url]?.[token] ? "text" : "password"}
+        value={this.state.values[url]?.[token] || ""}
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton
+                onClick={this._onClickVisiblity(url, token).bind(this)}
+                onMouseDown={this._onMouseDownVisibility.bind(this)}
+                edge="end"
+              >
+                {this.state.visibility[url]?.[token] ? (
+                  <visibilityIcon.react />
+                ) : (
+                  <visibilityOffIcon.react />
+                )}
+              </IconButton>
+            </InputAdornment>
+          ),
+        }}
+      />
+    ));
   }
 
   protected _onChange(url: string) {
     return function(event: React.ChangeEvent<HTMLInputElement>) {
       const target = event.target;
       this._setValue(url, target.name, target.value);
-    }
+    };
   }
 
   protected _onClickVisiblity(url: string, key: string) {
     return function() {
       this._toggleVisibility(url, key);
-    }
-  };
+    };
+  }
 
   protected _onMouseDownVisibility(event: React.MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
-  };
+  }
 
   protected _onOpen() {
     this.setState({ open: true });
@@ -198,9 +220,9 @@ export class AskDialog<
 
   protected _onClose() {
     // close the dialog and blank the form
-    this.setState(AskDialog.initialState({options: this.state.options}));
+    this.setState(AskDialog.initialState({ options: this.state.options }));
     this.props.handleClose();
-  };
+  }
 
   protected async _onSubmit(
     event: React.FormEvent<HTMLFormElement>
@@ -212,16 +234,19 @@ export class AskDialog<
   }
 
   protected _setValue(url: string, key: string, value: string) {
-    const urlValues = {...this.state.values[url], [key]: value};
+    const urlValues = { ...this.state.values[url], [key]: value };
     this.setState({
-      values: {...this.state.values, [url]: urlValues}
+      values: { ...this.state.values, [url]: urlValues },
     });
   }
 
   protected _toggleVisibility(url: string, key: string) {
-    const urlVis = {...this.state.visibility[url], [key]: !this.state.visibility[url]?.[key]};
+    const urlVis = {
+      ...this.state.visibility[url],
+      [key]: !this.state.visibility[url]?.[key],
+    };
     this.setState({
-      visibility: {...this.state.visibility, [url]: urlVis}
+      visibility: { ...this.state.visibility, [url]: urlVis },
     });
   }
 }
@@ -235,7 +260,9 @@ export namespace AskDialog {
    */
   export interface IProps {
     handleClose: () => void;
-    handleSubmit: (values: {[url: string]: {[key: string]: string}}) => void;
+    handleSubmit: (values: {
+      [url: string]: { [key: string]: string };
+    }) => void;
     options: IFSOptions;
     resources: IFSResource[];
   }
@@ -243,12 +270,18 @@ export namespace AskDialog {
   /**
    * The initial state for a new AskDialog
    */
-  export const initialState = ({open = false, options}: {open?: boolean, options: IFSOptions}) => {return {
+  export const initialState = ({
+    open = false,
+    options,
+  }: {
+    open?: boolean;
+    options: IFSOptions;
+  }) => ({
     open,
-    options: {...options},
-    values: {} as {[url: string]: {[key: string]: string}},
-    visibility: {} as {[url: string]: {[key: string]: string}},
-  }}
+    options: { ...options },
+    values: {} as { [url: string]: { [key: string]: string } },
+    visibility: {} as { [url: string]: { [key: string]: string } },
+  });
 
   /**
    * The state for an AskDialog component

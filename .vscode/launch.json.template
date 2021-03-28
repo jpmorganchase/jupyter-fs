@@ -14,7 +14,7 @@
                 // "--watch",
                 "--notebook-dir=${env:HOME}",
                 "--no-browser",
-                "--NotebookApp.token=''",
+                "--ServerApp.token=''",
                 "--port=9999"
             ],
             "justMyCode": false,
