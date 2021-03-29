@@ -34,7 +34,6 @@ version = get_version(str(py_pkg / "_version.py"))
 with open("README.md", encoding="utf-8") as f:
     long_description = f.read()
 
-
 data_files_spec = [
     # lab extension installed by default:
     ("share/jupyter/lab/extensions", str(py_pkg / "labdist"), "*.tgz"),
@@ -42,14 +41,11 @@ data_files_spec = [
     ("etc/jupyter", "jupyter-config", "**/*.json"),
 ]
 
-cmdclass = create_cmdclass("pack_labext", data_files_spec=data_files_spec)
-cmdclass["pack_labext"] = combine_commands(
+cmdclass = create_cmdclass("jsdeps", data_files_spec=data_files_spec)
+cmdclass["jsdeps"] = combine_commands(
     install_npm(js_pkg, build_cmd="build:labdist", npm=["jlpm"]),
     ensure_targets([js_pkg / "lib" / "index.js", js_pkg / "style" / "index.css"]),
 )
-
-cmdclass.pop("develop")
-
 
 requires = [
     "fs>=2.4.11",
