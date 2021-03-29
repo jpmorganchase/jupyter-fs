@@ -22,7 +22,7 @@ parameters:
     - bash: env
       displayName: 'List all environment variables'
 
-    - bash: pip install --upgrade pip wheel setuptools
+    - bash: pip install --upgrade pip wheel setuptools jupyterlab
       displayName: 'Install Python base dependencies'
 
     - bash: |
@@ -143,7 +143,7 @@ parameters:
   default:
     - bash: |
         set -ex
-        pip install .
+        python -m pip install -U . -v
         jupyter lab build --debug
       displayName: 'Standard jupyter-fs install'
 
