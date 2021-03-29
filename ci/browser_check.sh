@@ -22,7 +22,9 @@ cat <<EOT > "${SERVER_SETTINGS}"
   "ServerApp": {
     "contents_manager_class": "jupyterfs.metamanager.MetaManager",
     "jpserver_extensions": {
-      "jupyterfs.extension": true
+      "__main__": true,
+      "jupyterfs.extension": true,
+      "jupyterlab.browser_check": true
     }
   }
 }
