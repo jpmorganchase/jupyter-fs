@@ -96,5 +96,9 @@
     "ts-jest": "~25.2.1",
     "typescript": "^3.9.0",
     "yarn-deduplicate": "^3.1.0"
+  },
+  "resolutions": {
+    "node-fetch": "^2.6.1",
+    "node-notifier": "^8.0.1"
   }
 }
