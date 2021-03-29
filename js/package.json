@@ -15,7 +15,7 @@
   "scripts": {
     "build": "tsc --jsx react",
     "build:integrity": "yarn install && yarn deduplicate && yarn install && yarn build",
-    "build:labdist": "yarn build:integrity && yarn clean:labdist && mkdirp ../jupyterfs/labdist && cd ../jupyterfs/labdist && npm pack ../../js",
+    "build:labdist": "yarn build:integrity && yarn clean:labdist && mkdirp ../jupyterfs/labdist && cd ../jupyterfs/labdist && yarn build && npm pack ../../js",
     "clean": "rimraf lib tsconfig.tsbuildinfo *junit.xml coverage* .jupyter",
     "clean:more": "yarn clean && rimraf build dist MANIFEST",
     "clean:labdist": "rimraf ../jupyterfs/labdist",
