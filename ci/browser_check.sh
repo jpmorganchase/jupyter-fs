@@ -13,16 +13,18 @@ export JUPYTERLAB_SETTINGS_DIR="${WORKSPACE_FOLDER}/.jupyter/lab"
 export JUPYTERLAB_WORKSPACES_DIR="${WORKSPACE_FOLDER}/.jupyter/lab"
 
 # set a custom server settings path
-SERVER_SETTINGS="${JUPYTER_CONFIG_DIR}/jupyter_notebook_config.json"
+SERVER_SETTINGS="${JUPYTER_CONFIG_DIR}/jupyter_server_config.json"
 
 # enable the serverextension and the MetaManager contents manager
 mkdir -p $(dirname "$SERVER_SETTINGS")
 cat <<EOT > "${SERVER_SETTINGS}"
 {
-  "NotebookApp": {
+  "ServerApp": {
     "contents_manager_class": "jupyterfs.metamanager.MetaManager",
-    "nbserver_extensions": {
-      "jupyterfs.extension": true
+    "jpserver_extensions": {
+      "__main__": true,
+      "jupyterfs.extension": true,
+      "jupyterlab.browser_check": true
     }
   }
 }

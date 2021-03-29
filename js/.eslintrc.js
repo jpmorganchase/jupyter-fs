@@ -9,10 +9,11 @@ module.exports = {
     "eslint:recommended",
   ],
   parserOptions: {
-    project: "tsconfig.eslint.json",
+    project: "tsconfig.json",
   },
   plugins: [
     "@typescript-eslint",
+    "react",
   ],
   rules: {
     "arrow-body-style": ["error", "as-needed"],
@@ -67,6 +68,10 @@ module.exports = {
     "no-invalid-this": "off",
     "sort-keys": ["off", "asc", { natural: true }],
     "space-infix-ops": "off",
+
+    // set tsx to react
+    "react/jsx-uses-react": "error",
+    "react/jsx-uses-vars": "error",
   },
   overrides: [
     {
@@ -87,6 +92,7 @@ module.exports = {
         "@typescript-eslint/no-empty-interface": "off",
         "@typescript-eslint/no-explicit-any": "off",
         "@typescript-eslint/no-namespace": "off",
+        "@typescript-eslint/require-await": "warn",
         "@typescript-eslint/unified-signatures": "error",
 
         // typescript rules that extend core eslint rules

@@ -1,7 +1,7 @@
 {
-  "NotebookApp": {
+  "ServerApp": {
     "contents_manager_class": "jupyterfs.metamanager.MetaManager",
-    "nbserver_extensions": {
+    "jpserver_extensions": {
       "jupyterfs.extension": true
     }
   }

@@ -13,8 +13,7 @@ module.exports = {
   transformIgnorePatterns: ["/node_modules/(?!(@jupyterlab/.*)/)"],
   globals: {
     "ts-jest": {
-      // in tsconfig.test.json, rootDir is parent of both tests and src dirs
-      tsConfig: "tsconfig.test.json",
+      tsConfig: "tsconfig.json",
     },
   },
 };
