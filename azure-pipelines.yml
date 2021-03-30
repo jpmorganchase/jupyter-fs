@@ -22,7 +22,7 @@ parameters:
     - bash: env
       displayName: 'List all environment variables'
 
-    - bash: pip install --upgrade pip wheel setuptools jupyterlab
+    - bash: pip install --upgrade pip wheel setuptools
       displayName: 'Install Python base dependencies'
 
     - bash: |
@@ -103,7 +103,7 @@ parameters:
     - script: make lintjs YARN=yarn
       displayName: 'Lint JS'
 
-    - bash: pip install flake8 flake8-black
+    - bash: pip install flake8
       displayName: 'Install Python lint deps'
 
     - script: make lintpy
@@ -143,7 +143,7 @@ parameters:
   default:
     - bash: |
         set -ex
-        python -m pip install -U . -v
+        pip install .
         jupyter lab build --debug
       displayName: 'Standard jupyter-fs install'
 

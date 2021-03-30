@@ -222,18 +222,9 @@ export class FileTree extends Widget {
         };
       }
 
-      let element;
       if (level === 1) {
-        element = this.tree.querySelector("[id='" + tr.id + "']");
-        if (element !== null) {
-          this.tree.removeChild(element);
-        }
         this.tree.appendChild(tr);
       } else {
-        element = parent.parentNode.querySelector("[id='" + tr.id + "']");
-        if (element !== null) {
-          parent.parentNode.removeChild(element);
-        }
         parent.after(tr);
         parent = tr;
       }
@@ -483,7 +474,7 @@ export namespace FileTree {
         // const { page, workspaces } = app.info.urls;
         const workspace = PathExt.basename(resolver.name);
         const url =
-          (workspaceMatch ? URLExt.join(paths.urls.base, "workspaces", workspace) : paths.urls.app) +
+          (workspaceMatch ? URLExt.join(paths.urls.workspaces, workspace) : paths.urls.app) +
           router.current.search +
           router.current.hash;
 
