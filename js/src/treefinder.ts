@@ -6,7 +6,7 @@
  * the Apache License 2.0.  The full license can be found in the LICENSE file.
  *
  */
-import { IContentRow, Path, TreeFinderPanelElement } from "tree-finder";
+import { Format, IContentRow, Path, TreeFinderPanelElement } from "tree-finder";
 import { ILayoutRestorer, IRouter, JupyterFrontEnd } from "@jupyterlab/application";
 // import { Clipboard, Dialog, IWindowResolver, showDialog, showErrorMessage, Toolbar, ToolbarButton } from "@jupyterlab/apputils";
 import { IWindowResolver, Toolbar } from "@jupyterlab/apputils";
@@ -132,6 +132,10 @@ export class TreeFinder extends Widget {
       this.node.init({
         root,
         gridOptions: {
+          columnFormatters: {
+            "last_modified": (x => Format.timeSince(x as any as Date)),
+            "size": (x => Format.bytesToHumanReadable(x)),
+          },
           doWindowReize: true,
           showFilter: true,
         },
