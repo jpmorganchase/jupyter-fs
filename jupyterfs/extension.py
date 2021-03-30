@@ -15,7 +15,7 @@ from ._version import __version__  # noqa: F401
 
 _mm_config_warning_msg = """Misconfiguration of MetaManager. Please add:
 
-"NotebookApp": {
+"ServerApp": {
   "contents_manager_class": "jupyterfs.metamanager.MetaManager"
 }
 

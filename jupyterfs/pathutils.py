@@ -135,7 +135,7 @@ def path_old_new(method_name, returns_model):
                 "Can't move files between backends yet ({old} -> {new})".format(
                     old=old_path,
                     new=new_path,
-                )
+                ),
             )
         assert new_prefix == old_prefix
         result = getattr(new_mgr, method_name)(

@@ -179,18 +179,18 @@ export class AskDialog<
     return function(event: React.ChangeEvent<HTMLInputElement>) {
       const target = event.target;
       this._setValue(url, target.name, target.value);
-    }
+    };
   }
 
   protected _onClickVisiblity(url: string, key: string) {
     return function() {
       this._toggleVisibility(url, key);
-    }
-  };
+    };
+  }
 
   protected _onMouseDownVisibility(event: React.MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
-  };
+  }
 
   protected _onOpen() {
     this.setState({ open: true });
@@ -200,7 +200,7 @@ export class AskDialog<
     // close the dialog and blank the form
     this.setState(AskDialog.initialState({options: this.state.options}));
     this.props.handleClose();
-  };
+  }
 
   protected async _onSubmit(
     event: React.FormEvent<HTMLFormElement>
@@ -221,7 +221,7 @@ export class AskDialog<
   protected _toggleVisibility(url: string, key: string) {
     const urlVis = {...this.state.visibility[url], [key]: !this.state.visibility[url]?.[key]};
     this.setState({
-      visibility: {...this.state.visibility, [url]: urlVis}
+      visibility: {...this.state.visibility, [url]: urlVis},
     });
   }
 }

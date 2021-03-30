@@ -104,17 +104,17 @@ async function activate(
       const handleClose = () => {
         ReactDOM.unmountComponentAtNode(dialogElem);
         dialogElem.remove();
-      }
+      };
 
       const handleSubmit = async (values: {[url: string]: {[key: string]: string}}) => {
         await refreshWidgets({
           resources: await comm.initResourceRequest({
-            resources: resources.map(r => {return {...r, tokenDict: values[r.url]}}),
+            resources: resources.map(r => ({...r, tokenDict: values[r.url]})),
             options,
           }),
           options,
         });
-      }
+      };
 
       ReactDOM.render(
         <AskDialog

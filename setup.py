@@ -7,7 +7,7 @@
 
 from codecs import open
 from pathlib import Path
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 from jupyter_packaging import (
     combine_commands, create_cmdclass, ensure_python,
@@ -36,7 +36,7 @@ data_files_spec = [
     # lab extension installed by default:
     ('share/jupyter/lab/extensions', str(py_pkg/'labdist'), '*.tgz'),
     # config to enable server extension by default:
-    ('etc/jupyter', 'jupyter-config', '**/*.json'),
+    ('etc/jupyter/jupyter_server_config.d', 'jupyter-config', 'jupyterfs.json'),
 ]
 
 cmdclass = create_cmdclass('pack_labext', data_files_spec=data_files_spec)

@@ -9,13 +9,13 @@ from hashlib import md5
 import json
 from tornado import web
 
-from notebook.base.handlers import APIHandler
-from notebook.services.contents.manager import ContentsManager
+from jupyter_server.base.handlers import APIHandler
+from jupyter_server.services.contents.manager import ContentsManager
 
 from .auth import substituteAsk, substituteEnv, substituteNone
 from .config import Jupyterfs as JupyterfsConfig
 from .fsmanager import FSManager
-from .pathutils import path_first_arg, path_second_arg, path_kwarg, path_old_new
+from .pathutils import path_first_arg, path_kwarg, path_old_new, path_second_arg
 
 __all__ = ["MetaManager", "MetaManagerHandler"]
 

@@ -5,7 +5,7 @@
 # This file is part of the jupyter-fs library, distributed under the terms of
 # the Apache License 2.0.  The full license can be found in the LICENSE file.
 #
-from base64 import encodebytes, decodebytes
+from base64 import decodebytes, encodebytes
 from datetime import datetime
 from fs import errors, open_fs
 from fs.base import FS
@@ -13,11 +13,11 @@ import mimetypes
 import os.path
 from tornado import web
 
+from jupyter_server.services.contents.checkpoints import Checkpoints
+from jupyter_server.services.contents.filecheckpoints import GenericFileCheckpoints
+from jupyter_server.services.contents.filemanager import FileContentsManager
 import nbformat
 from notebook import _tz as tz
-from notebook.services.contents.checkpoints import Checkpoints
-from notebook.services.contents.filecheckpoints import GenericFileCheckpoints
-from notebook.services.contents.filemanager import FileContentsManager
 from traitlets import default
 
 __all__ = ["FSManager"]

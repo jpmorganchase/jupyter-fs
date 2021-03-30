@@ -4,7 +4,7 @@
 # https://github.com/MicrosoftDocs/vsts-docs/issues/3784
 # https://forums.docker.com/t/docker-for-mac-unattended-installation/27112
 
-brew cask install docker
+brew install --cask docker
 # allow the app to run without confirmation
 xattr -d -r com.apple.quarantine /Applications/Docker.app
 
