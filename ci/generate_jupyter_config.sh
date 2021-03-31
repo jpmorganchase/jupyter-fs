@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-WORKSPACE_FOLDER="$( cd -P . >/dev/null 2>&1 && pwd )"
+WORKSPACE_FOLDER=${1:-"$( cd -P . >/dev/null 2>&1 && pwd )"}
 
 # jupyter env vars
 export JUPYTER_CONFIG_DIR="${WORKSPACE_FOLDER}/.jupyter"
