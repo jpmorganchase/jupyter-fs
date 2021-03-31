@@ -68,4 +68,4 @@ echo "WORKSPACE_FOLDER: ${WORKSPACE_FOLDER}"
 echo "SERVER_SETTINGS: ${SERVER_SETTINGS}"
 echo "PLUGIN_SETTINGS: ${PLUGIN_SETTINGS}"
 
-jupyter lab --ip=0.0.0.0
+$(echo "$@" | sed 's/notebook/lab/g')
