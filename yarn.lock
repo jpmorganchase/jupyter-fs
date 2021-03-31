@@ -5498,6 +5498,11 @@ regjsparser@^0.6.4:
   dependencies:
     jsesc "~0.5.0"
 
+regular-table@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/regular-table/-/regular-table-0.3.0.tgz#86e770b436fe360027f12dcb8d70e129d861f046"
+  integrity sha512-qg1n2fesXmqxmVTeExWvlAlju4r/VrwBDpC53VpPI11cd9XGw8bK28PA/vjlEP+lV0rG68M6V18Ebv/GgEpSpQ==
+
 remove-trailing-separator@^1.0.1:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/remove-trailing-separator/-/remove-trailing-separator-1.1.0.tgz#c24bce2a283adad5bc3f58e0d48249b92379d8ef"
@@ -5646,6 +5651,13 @@ rsvp@^4.8.4:
   version "4.8.5"
   resolved "https://registry.yarnpkg.com/rsvp/-/rsvp-4.8.5.tgz#c8f155311d167f68f21e168df71ec5b083113734"
   integrity sha512-nfMOlASu9OnRJo1mbEk2cz0D56a1MBNrJ7orjRZQG10XDyuvwksKbuXNp6qa+kbn839HwjwhBzhFmdsaEAfauA==
+
+rxjs@^6.6.3:
+  version "6.6.7"
+  resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-6.6.7.tgz#90ac018acabf491bf65044235d5863c4dab804c9"
+  integrity sha512-hTdwr+7yYNIT5n4AMYp85KA6yw2Va0FLa3Rguvbpa4W3I5xynaBZo41cM3XM+4Q6fRMj3sBYIR1VAmZMXYJvRQ==
+  dependencies:
+    tslib "^1.9.0"
 
 safe-buffer@^5.0.1, safe-buffer@^5.1.2, safe-buffer@~5.1.0, safe-buffer@~5.1.1:
   version "5.1.2"
@@ -6211,6 +6223,14 @@ tr46@^2.0.2:
   dependencies:
     punycode "^2.1.1"
 
+tree-finder@^0.0.11:
+  version "0.0.11"
+  resolved "https://registry.yarnpkg.com/tree-finder/-/tree-finder-0.0.11.tgz#fd9658dde47bab53af6656a0b8e0bf15fb0ba290"
+  integrity sha512-+p0pdW/CRdYCdKoZnUfkhQTYcyc8ZP+KRr+DmkdkQBz+NXbFjGXHW6KHSo9/9Bhp4wglFb/7IqySVhrijjNnzQ==
+  dependencies:
+    regular-table "^0.3.0"
+    rxjs "^6.6.3"
+
 ts-jest@^26.5.4:
   version "26.5.4"
   resolved "https://registry.yarnpkg.com/ts-jest/-/ts-jest-26.5.4.tgz#207f4c114812a9c6d5746dd4d1cdf899eafc9686"
@@ -6241,6 +6261,11 @@ tslib@^1.8.1, tslib@~1.13.0:
   version "1.13.0"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.13.0.tgz#c881e13cc7015894ed914862d276436fa9a47043"
   integrity sha512-i/6DQjL8Xf3be4K/E6Wgpekn5Qasl1usyw++dAA35Ue5orEn65VIxOA+YvNNl9HV3qv70T7CNwjODHZrLwvd1Q==
+
+tslib@^1.9.0:
+  version "1.14.1"
+  resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.14.1.tgz#cf2d38bdc34a134bcaf1091c41f6619e2f672d00"
+  integrity sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==
 
 tsutils@^3.17.1:
   version "3.21.0"
