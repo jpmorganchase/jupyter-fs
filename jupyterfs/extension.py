@@ -9,7 +9,7 @@ from __future__ import print_function
 
 import warnings
 
-from notebook.utils import url_path_join
+from jupyter_server.utils import url_path_join
 
 from ._version import __version__  # noqa: F401
 from .metamanager import MetaManager, MetaManagerHandler

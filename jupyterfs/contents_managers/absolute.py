@@ -6,7 +6,7 @@
 # the Apache License 2.0.  The full license can be found in the LICENSE file.
 #
 
-from notebook.services.contents.largefilemanager import LargeFileManager
+from jupyter_server.services.contents.largefilemanager import LargeFileManager
 
 
 class AbsolutePathFileManager(LargeFileManager):

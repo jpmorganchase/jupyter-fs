@@ -14,10 +14,10 @@ import os.path
 from tornado import web
 
 import nbformat
-from notebook import _tz as tz
-from notebook.services.contents.checkpoints import Checkpoints
-from notebook.services.contents.filecheckpoints import GenericFileCheckpoints
-from notebook.services.contents.filemanager import FileContentsManager
+from jupyter_server import _tz as tz
+from jupyter_server.services.contents.checkpoints import Checkpoints
+from jupyter_server.services.contents.filecheckpoints import GenericFileCheckpoints
+from jupyter_server.services.contents.filemanager import FileContentsManager
 from traitlets import default
 
 __all__ = ["FSManager"]

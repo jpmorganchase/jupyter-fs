@@ -9,8 +9,8 @@ from hashlib import md5
 import json
 from tornado import web
 
-from notebook.base.handlers import APIHandler
-from notebook.services.contents.manager import ContentsManager
+from jupyter_server.base.handlers import APIHandler
+from jupyter_server.services.contents.manager import ContentsManager
 
 from .auth import substituteAsk, substituteEnv, substituteNone
 from .config import Jupyterfs as JupyterfsConfig
