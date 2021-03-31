@@ -103,7 +103,7 @@ parameters:
     - script: make lintjs YARN=yarn
       displayName: 'Lint JS'
 
-    - bash: pip install flake8 flake8-black
+    - bash: pip install flake8
       displayName: 'Install Python lint deps'
 
     - script: make lintpy
