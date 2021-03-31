@@ -131,10 +131,10 @@ export class TreeFinder extends Widget {
         root,
         gridOptions: {
           columnFormatters: {
-            last_modified: (x => Format.timeSince(x as Date)),
+            last_modified: (x => Format.timeSince(x as any as Date)),
             size: (x => Format.bytesToHumanReadable(x)),
           },
-          doWindowReize: true,
+          doWindowResize: true,
           showFilter: true,
         },
         modelOptions: {
