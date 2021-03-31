@@ -10,7 +10,7 @@ module.exports = {
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
   testPathIgnorePatterns: ["/lib/", "/node_modules/"],
   testRegex: "tests\/.*\.test\.ts[x]?$",  // eslint-disable-line no-useless-escape
-  transformIgnorePatterns: ["/node_modules/(?!(@jupyterlab/.*)/)"],
+  transformIgnorePatterns: ["/node_modules/(?!(@jupyterlab/.*)|(tree-finder)/)"],
   globals: {
     "ts-jest": {
       // in tsconfig.test.json, rootDir is parent of both tests and src dirs
