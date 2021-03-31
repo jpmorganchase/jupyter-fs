@@ -66,7 +66,7 @@ dev_labextension: js  ## build and install labextension for active development
 
 dev_serverextension:  ## install and enable serverextension for active development
 	${PIP} install -e .[dev]
-	${PYTHON} -m jupyter serverextension enable --py jupyterfs.extension
+	${PYTHON} -m jupyter server extension enable --py jupyterfs.extension
 
 docs:  ## make documentation
 	make -C ./docs html
