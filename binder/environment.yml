@@ -1,0 +1,16 @@
+# a mybinder.org-ready environment for demoing jupyter-fs
+# this environment may also be used locally on Linux/MacOS/Windows, e.g.
+#
+#   conda env update --file binder/environment.yml
+#   conda activate jupyter-fs-demo
+#
+name: jupyter-fs-demo
+
+channels:
+  - conda-forge
+dependencies:
+  - python >=3.8,<3.9.0a0
+  - jupyterlab >=3,<4.0.0a0
+  - nodejs=15.8
+  - pip
+  - wheel
