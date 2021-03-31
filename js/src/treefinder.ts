@@ -33,23 +33,21 @@ export class JupyterContents {
   }
 
   async get(path: string) {
-    const opt = {content: true};
-    const {kind, content, ...rest} = JupyterContents.toJupyterContentRow(await this.cm.get(path, opt), this.drive);
+    const opt = { content: true };
+    const { kind, content, ...rest } = JupyterContents.toJupyterContentRow(await this.cm.get(path, opt), this.drive);
 
     return {
       kind,
       content,
       ...rest,
       ...(kind !== "dir" ? {} : {
-        getChildren: () => content.map((x: Contents.IModel) => {
-          return this._get(x);
-        }),
+        getChildren: () => content.map((x: Contents.IModel) => this._get(x)),
       }),
     };
   }
 
   protected _get(row: Contents.IModel) {
-    const {path, kind, ...rest} = JupyterContents.toJupyterContentRow(row, this.drive);
+    const { path, kind, ...rest } = JupyterContents.toJupyterContentRow(row, this.drive);
 
     return {
       path,
@@ -62,11 +60,11 @@ export class JupyterContents {
   }
 
   readonly cm: ContentsManager;
-  readonly drive: string
+  readonly drive: string;
 }
 
 export namespace JupyterContents {
-  export interface JupyterContentRow extends Omit<Contents.IModel, "path">, IContentRow {}
+  export interface IJupyterContentRow extends Omit<Contents.IModel, "path">, IContentRow {}
 
   export function getPath(path: string, drive?: string) {
     if (drive && path.startsWith(`${drive}:`)) {
@@ -76,8 +74,8 @@ export namespace JupyterContents {
     return drive ? [drive, path].join(":") : path;
   }
 
-  export function toJupyterContentRow(row: Contents.IModel, drive: string): JupyterContentRow {
-    const {path, type, ...rest} = row;
+  export function toJupyterContentRow(row: Contents.IModel, drive: string): IJupyterContentRow {
+    const { path, type, ...rest } = row;
 
     return {
       path: Path.toarray(getPath(path, drive)),
@@ -96,7 +94,7 @@ export class TreeFinder extends Widget {
   table: HTMLTableElement;
   tree: HTMLElement;
 
-  readonly node: TreeFinderPanelElement<JupyterContents.JupyterContentRow>;
+  readonly node: TreeFinderPanelElement<JupyterContents.IJupyterContentRow>;
 
   constructor({
     app,
@@ -105,8 +103,8 @@ export class TreeFinder extends Widget {
     id = "jupyterlab-tree-finder",
   }: TreeFinder.IOptions) {
 
-    const node = document.createElement<JupyterContents.JupyterContentRow>("tree-finder-panel");
-    super({node});
+    const node = document.createElement<JupyterContents.IJupyterContentRow>("tree-finder-panel");
+    super({ node });
     this.id = id;
     this.title.icon = fileTreeIcon;
     this.title.caption = caption;
@@ -133,15 +131,15 @@ export class TreeFinder extends Widget {
         root,
         gridOptions: {
           columnFormatters: {
-            "last_modified": (x => Format.timeSince(x as any as Date)),
-            "size": (x => Format.bytesToHumanReadable(x)),
+            last_modified: (x => Format.timeSince(x as Date)),
+            size: (x => Format.bytesToHumanReadable(x)),
           },
           doWindowReize: true,
           showFilter: true,
         },
         modelOptions: {
           columnNames: ["size", "mimetype", "last_modified"],
-        }
+        },
       });
     });
   }
