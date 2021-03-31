@@ -1,24 +1,9 @@
 #!/bin/bash
-WORKSPACE_FOLDER="/home/jovyan"
-
 mkdir -p /tmp/yarn
 export YARN_CACHE_FOLDER="/tmp/yarn"
 
 python --version
 jupyter --version
 
-jupyter lab clean --all
-
-ci/generate_jupyter_config.sh "${WORKSPACE_FOLDER}"
-
 make dev_install
-
 pip install theme-darcula
-
-# set a custom user-settings directory
-SETTINGS_DIR="${WORKSPACE_FOLDER}/.jupyter/lab"
-THEME_SETTINGS="${SETTINGS_DIR}/@jupyterlab/apputils-extension/themes.jupyterlab-settings"
-
-# enable the theme in user-settings
-mkdir -p $(dirname $THEME_SETTINGS)
-printf "%s\n" "{" "    \"theme\": \"Darcula\"" "}" > $THEME_SETTINGS

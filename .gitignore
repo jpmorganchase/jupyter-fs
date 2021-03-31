@@ -35,6 +35,12 @@ bower_components
 # node-waf configuration
 .lock-wscript
 
+# Binder/repo2docker build mess
+.*-log.txt
+.local/
+binder/.*
+binder/*.ipynb
+
 # Compiled binary addons (http://nodejs.org/api/addons.html)
 build/Release
 
@@ -185,6 +191,9 @@ ENV/
 .history
 .vscode/*
 !.vscode/*.template
+
+# vim mess
+*.swp
 
 .DS_Store
 
