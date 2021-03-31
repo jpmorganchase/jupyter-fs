@@ -38,7 +38,7 @@ data_files_spec = [
     # lab extension installed by default:
     ('share/jupyter/lab/extensions', str(py_pkg / 'labdist'), '*.tgz'),
     # config to enable server extension by default:
-    ('etc/jupyter', 'jupyter-config', '**/*.json'),
+    ("etc/jupyter/jupyter_server_config.d", "jupyter-config", "jupyterfs.json"),
 ]
 
 cmdclass = create_cmdclass('jsdeps', data_files_spec=data_files_spec)
@@ -46,6 +46,8 @@ cmdclass['jsdeps'] = combine_commands(
     install_npm(js_pkg, build_cmd='build:labdist', npm=['jlpm']),
     ensure_targets([js_pkg / 'lib' / 'index.js', js_pkg / 'style' / 'index.css']),
 )
+
+cmdclass.pop("develop")
 
 requires = [
     'fs>=2.4.11',

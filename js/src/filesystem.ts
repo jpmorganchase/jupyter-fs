@@ -95,8 +95,8 @@ abstract class FSCommBase implements IFSComm {
     }
   }
 
-  abstract async getResourcesRequest(): Promise<IFSResource[]>;
-  abstract async initResourceRequest(args: {options: IFSOptions; resources: IFSResource[]}): Promise<IFSResource[]>;
+  abstract getResourcesRequest(): Promise<IFSResource[]>;
+  abstract initResourceRequest(args: {options: IFSOptions; resources: IFSResource[]}): Promise<IFSResource[]>;
 
   get baseUrl(): string {
     return this.settings.baseUrl;

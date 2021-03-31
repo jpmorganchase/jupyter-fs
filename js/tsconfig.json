@@ -1,18 +1,26 @@
 {
+  "$schema": "http://json.schemastore.org/tsconfig",
   "compilerOptions": {
-    "jsx": "react",
-    "declaration": true,
-    "noImplicitAny": true,
-    "noEmitOnError": true,
-    "noUnusedLocals": true,
     "allowSyntheticDefaultImports": true,
-    "module": "commonjs",
+    "composite": true,
+    "declaration": true,
+    "esModuleInterop": true,
+    "incremental": true,
+    "jsx": "react",
+    "module": "esnext",
     "moduleResolution": "node",
-    "target": "ES6",
-    "outDir": "./lib",
-    "skipLibCheck": true,
-    "lib": ["es5", "es2015.promise", "dom", "es2015.collection", "es2015.iterable"],
-    "types": ["jest", "node"]
+    "noEmitOnError": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "preserveWatchOutput": true,
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    // "strictNullChecks": true,
+    "target": "es2018",
+    // "types": ["jest"],
+
+    "outDir": "lib",
+    "rootDir": "src"
   },
-  "include": ["src/*"]
+  "include": ["src/**/*"]
 }

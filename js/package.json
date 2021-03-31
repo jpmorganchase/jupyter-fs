@@ -13,16 +13,16 @@
     "jupyterlab-extension"
   ],
   "scripts": {
-    "build": "tsc --jsx react",
+    "build": "tsc -b",
     "build:integrity": "yarn install && yarn deduplicate && yarn install && yarn build",
     "build:labdist": "yarn clean:labdist && yarn build:integrity && mkdirp ../jupyterfs/labdist && cd ../jupyterfs/labdist && npm pack ../../js",
     "clean": "rimraf lib tsconfig.tsbuildinfo *junit.xml coverage* .jupyter",
     "clean:more": "yarn clean && rimraf build dist MANIFEST",
     "clean:labdist": "rimraf ../jupyterfs/labdist",
     "clean:slate": "yarn clean:more && yarn clean:labdist && rimraf node_modules",
-    "deduplicate": "yarn yarn-deduplicate -s fewer yarn.lock || yarn yarn-deduplicate -s fewer",
+    "deduplicate": "yarn yarn-deduplicate -s fewer ../yarn.lock || yarn yarn-deduplicate -s fewer",
     "fix": "yarn lint --fix",
-    "lint": "eslint -c .eslintrc.js --ext .js,.ts,.tsx src/",
+    "lint": "eslint -c .eslintrc.js --ext .js,.ts,.tsx src/ tests/",
     "postpack": "shx rm README.md",
     "prepack": "shx cp ../README.md .",
     "prepublishOnly": "yarn run build",
@@ -65,20 +65,20 @@
     "@jupyterlab/ui-components": "^3.0.0",
     "@lumino/algorithm": "^1.3.3",
     "@lumino/disposable": "^1.4.3",
-    "@material-ui/core": "4.10.2",
+    "@material-ui/core": "^4.11.3",
     "@types/file-saver": "^2.0.1",
-    "@types/jszip": "^3.1.6",
-    "file-saver": "^2.0.2",
-    "jszip": "^3.2.2",
-    "react": "^17.0.1",
-    "react-dom": "^17.0.1"
+    "@types/jszip": "^3.4.1",
+    "file-saver": "^2.0.5",
+    "jszip": "^3.6.0",
+    "react": "^17.0.0",
+    "react-dom": "^17.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
     "@babel/preset-env": "^7.7.6",
     "@types/jest": "^24",
-    "@types/react": "^16.9.38",
-    "@types/react-dom": "^16.9.8",
+    "@types/react": "^17.0.0",
+    "@types/react-dom": "^17.0.0",
     "@typescript-eslint/eslint-plugin": "^2.34.0",
     "@typescript-eslint/parser": "^2.34.0",
     "eslint": "^7.0.0",
@@ -94,11 +94,7 @@
     "rimraf": "^2.7.1",
     "shx": "^0.3.3",
     "ts-jest": "~25.2.1",
-    "typescript": "^3.9.0",
+    "typescript": "^4.2.3",
     "yarn-deduplicate": "^3.1.0"
-  },
-  "resolutions": {
-    "node-fetch": "^2.6.1",
-    "node-notifier": "^8.0.1"
   }
 }
