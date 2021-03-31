@@ -25,7 +25,7 @@ pip install jupyter-fs
 
 ## Configure
 
-Add the following to your `jupyter_notebook_config.json`:
+Add the following to your `jupyter_server_config.json`:
 
 ```json
 {
@@ -123,7 +123,7 @@ The `"url"` field jupyter-fs config is based on the PyFilesystem [opener url](ht
 
 ## Server-side settings
 
-If you prefer to set up your filesystem resources in the server-side config, you can do so. For example, you can set up a local filesystem by adding the following to your `jupyter_lab_config.py` file:
+If you prefer to set up your filesystem resources in the server-side config, you can do so. For example, you can set up a local filesystem by adding the following to your `jupyter_server_config.py` file:
 
 ```python
 c.Jupyterfs.resources = [
@@ -134,7 +134,7 @@ c.Jupyterfs.resources = [
 ]
 ```
 
-ALternatively, you can add resource specifications alongside the basic jupyter-fs config in your `jupyter_lab_config.json` file:
+ALternatively, you can add resource specifications alongside the basic jupyter-fs config in your `jupyter_server_config.json` file:
 
 ```json
 {

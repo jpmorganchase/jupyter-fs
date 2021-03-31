@@ -29,8 +29,8 @@ lint: ## run linter
 fixjs:  ## run autopep8/tslint fix
 	cd js; ${YARN} fix
 
-fixpy:  ## run black
-	${PYTHON} -m black jupyterfs/ setup.py
+fixpy:  ## run autopep8
+	${PYTHON} -m autopep8 --in-place -r -a -a jupyterfs/ setup.py
 
 fix:  ## run autopep8/tslint fix
 	make fixjs
