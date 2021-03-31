@@ -54,6 +54,7 @@ clean: ## clean the repository
 dev_install: dev_serverextension dev_labextension ## set up the repo for active development
 	# verify
 	${PYTHON} -m jupyter serverextension list
+	${PYTHON} -m jupyter server extension list
 	${PYTHON} -m jupyter labextension list
 
 dev_labextension: js  ## build and install labextension for active development

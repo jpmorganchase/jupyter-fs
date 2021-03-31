@@ -3,11 +3,10 @@ mkdir -p /tmp/yarn
 export YARN_CACHE_FOLDER="/tmp/yarn"
 
 python --version
+jupyter --version
 
 jupyter lab clean --all
 
-pip install .[dev]
+make dev_install
 
-jupyter --version
-
-jupyter lab build --debug
+ci/generate_jupyter_config.sh
