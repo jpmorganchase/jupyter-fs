@@ -33,30 +33,8 @@ export class JupyterContents {
   }
 
   async get(path: string) {
-    const opt = { content: true };
-    const { kind, content, ...rest } = JupyterContents.toJupyterContentRow(await this.cm.get(path, opt), this.drive);
-
-    return {
-      kind,
-      content,
-      ...rest,
-      ...(kind !== "dir" ? {} : {
-        getChildren: () => content.map((x: Contents.IModel) => this._get(x)),
-      }),
-    };
-  }
-
-  protected _get(row: Contents.IModel) {
-    const { path, kind, ...rest } = JupyterContents.toJupyterContentRow(row, this.drive);
-
-    return {
-      path,
-      kind,
-      ...rest,
-      ...(kind !== "dir" ? {} : {
-        getChildren: async () => await (await this.get(Path.fromarray(path))).getChildren(),
-      }),
-    };
+    path = JupyterContents.fullPath(path, this.drive);
+    return JupyterContents.toJupyterContentRow(await this.cm.get(path), this.cm, this.drive);
   }
 
   readonly cm: ContentsManager;
@@ -64,24 +42,25 @@ export class JupyterContents {
 }
 
 export namespace JupyterContents {
-  export interface IJupyterContentRow extends Omit<Contents.IModel, "path">, IContentRow {}
+  export interface IJupyterContentRow extends Omit<Contents.IModel, "path" | "content" | "type">, IContentRow {}
 
-  export function getPath(path: string, drive?: string) {
-    if (drive && path.startsWith(`${drive}:`)) {
-      return path;
-    }
-
-    return drive ? [drive, path].join(":") : path;
+  export function fullPath(path: string, drive?: string): string {
+    return (!drive || path.startsWith(`${drive}:`)) ? path : [drive, path].join(":");
   }
 
-  export function toJupyterContentRow(row: Contents.IModel, drive: string): IJupyterContentRow {
-    const { path, type, ...rest } = row;
+  export function toJupyterContentRow(row: Contents.IModel, cm: ContentsManager, drive: string): IJupyterContentRow {
+    const { path, content, type, ...rest } = row;
+
+    const pathWithDrive = fullPath(path, drive);
+    const kind = type === "directory" ? "dir" : type;
 
     return {
-      path: Path.toarray(getPath(path, drive)),
-      kind: type === "directory" ? "dir" : type,
-      type,
+      path: Path.toarray(pathWithDrive),
+      kind,
       ...rest,
+      ...(kind === "dir" ? {
+        getChildren: async () => (await cm.get(pathWithDrive, {content: true})).content.map((c: Contents.IModel) => toJupyterContentRow(c, cm, drive)),
+      }: {}),
     };
   }
 }
