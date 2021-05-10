@@ -16,10 +16,11 @@ import { IDocumentManager } from "@jupyterlab/docmanager";
 import { DocumentRegistry } from "@jupyterlab/docregistry";
 import { Contents, ContentsManager } from "@jupyterlab/services";
 // import { newFolderIcon, refreshIcon } from "@jupyterlab/ui-components";
+// import JSZip from "jszip";
 import { CommandRegistry } from "@lumino/commands";
 import { DisposableSet, IDisposable } from "@lumino/disposable";
 import { PanelLayout, Widget } from "@lumino/widgets";
-// import JSZip from "jszip";
+import { Format, IContentRow, Path, TreeFinderPanelElement } from "tree-finder";
 
 import { IFSResource } from "./filesystem";
 import { fileTreeIcon } from "./icons";
@@ -120,6 +121,12 @@ export class TreeFinder extends Widget {
           columnNames: ["size", "mimetype", "last_modified"],
         },
       });
+    }).then(() => {
+      this.model.openSub.subscribe(x => {
+        if (x.kind !== "dir") {
+          app.commands.execute("docmanager:open", { path: Path.fromarray(x.path) });
+        }
+      });
     });
   }
 
@@ -206,10 +213,29 @@ export class TreeFinder extends Widget {
     this.node.draw();
   }
 
+  get model() {
+    return this.node.model;
+  }
+
+  get selection() {
+    return this.node.model.selection;
+  }
+
+  get selectionPathstrs() {
+    return this.node.model.selection.map(c => Path.fromarray(c.row.path));
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace TreeFinder {
+  export const CommandIDs = {
+    copy: "treefinder:copy",
+    cut: "treefinder:cut",
+    open: "treefinder:open",
+    paste: "treefinder:paste",
+    select: "treefinder:rename",
+  }
+
   export interface IOptions {
     app: JupyterFrontEnd;
 
@@ -289,6 +315,25 @@ export namespace TreeFinder {
     // return a disposable containing all disposables associated
     // with this widget, ending with the widget itself
     return [
+      app.commands.addCommand(`${CommandIDs.open}:${widget.id}`, {
+        execute: args => {
+          let dirRow = null;
+
+          for (const row of widget.selection.map(c => c.row)) {
+            if (row.kind === "dir") {
+              dirRow = row;
+            } else {
+              app.commands.execute('docmanager:open', { path: Path.fromarray(row.path) });
+            }
+          }
+
+          // if any of the selected content were dirs, open just the last one
+          // TODO: enable opening of n dirs at once as separate MainArea filebrowser widgets
+          widget.model.open(dirRow);
+        },
+        // mnemonic: 0
+      }),
+
       // app.commands.addCommand((CommandIDs.toggle + ":" + widget.id), {
       //   execute: args => {
       //     const row = args.row as string;
