@@ -12,18 +12,14 @@ import { ClipboardModel, ContentsModel, IContentRow, Path } from "tree-finder";
 
 export class JupyterClipboard {
   constructor() {
-    this.clipboardModel.pasteSub.subscribe(async ({destination, doCut, memo}) => {
-      const destPathstr = Path.fromarray(destination.kind === "dir" ? destination.path : destination.path.slice(-1));
-      const srcPathstrs = memo.map(src => Path.fromarray(src.path));
+    this.clipboardModel.deleteSub.subscribe(async memo => {
+      await Promise.all(memo.map(s => this._onDelete(s)));
+    });
 
-      for (const srcPathstr of srcPathstrs) {
-        if (doCut) {
-          await this.destDrive.copy(srcPathstr, destPathstr);
-          this.srcDrive.delete(srcPathstr);
-        } else {
-          this.destDrive.copy(srcPathstr, destPathstr);
-        }
-      }
+    this.clipboardModel.pasteSub.subscribe(async ({destination, doCut, memo}) => {
+      const destPathstr = Path.fromarray(destination.kind === "dir" ? destination.path : destination.path.slice(0, -1));
+
+      await Promise.all(memo.map(s => this._onPaste(s, destPathstr, doCut)));
     });
   }
 
@@ -37,9 +33,27 @@ export class JupyterClipboard {
     this.clipboardModel.cutSelection(contentsModel);
   }
 
+  deleteSelection<T extends IContentRow>(contentsModel: ContentsModel<T>, drive: Contents.IDrive) {
+    this.srcDrive = drive;
+    this.clipboardModel.deleteSelection(contentsModel);
+  }
+
   pasteSelection<T extends IContentRow>(contentsModel: ContentsModel<T>, drive: Contents.IDrive) {
     this.destDrive = drive;
     this.clipboardModel.pasteSelection(contentsModel);
+  }
+
+  protected async _onDelete<T extends IContentRow>(src: T) {
+    const srcPathstr = Path.fromarray(src.path);
+    await this.srcDrive.delete(srcPathstr);
+  }
+
+  protected async _onPaste<T extends IContentRow>(src: T, destPathstr: string, doCut: boolean) {
+    const srcPathstr = Path.fromarray(src.path);
+    await this.destDrive.copy(srcPathstr, destPathstr);
+    if (doCut) {
+      await this.srcDrive.delete(srcPathstr);
+    }
   }
 
   protected clipboardModel = new ClipboardModel();
@@ -48,5 +62,5 @@ export class JupyterClipboard {
 }
 
 export namespace JupyterClipboard {
-  export const defaultClipboard = new JupyterClipboard();
+  export const global = new JupyterClipboard();
 }

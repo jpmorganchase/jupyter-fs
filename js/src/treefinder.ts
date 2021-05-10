@@ -6,26 +6,29 @@
  * the Apache License 2.0.  The full license can be found in the LICENSE file.
  *
  */
-import { Format, IContentRow, Path, TreeFinderPanelElement } from "tree-finder";
 import { ILayoutRestorer, IRouter, JupyterFrontEnd } from "@jupyterlab/application";
-// import { Clipboard, Dialog, IWindowResolver, showDialog, showErrorMessage, Toolbar, ToolbarButton } from "@jupyterlab/apputils";
-import { IWindowResolver, Toolbar } from "@jupyterlab/apputils";
+import { WidgetTracker /*Clipboard, Dialog, IWindowResolver, showDialog, showErrorMessage, Toolbar, ToolbarButton*/ } from "@jupyterlab/apputils";
+import { IWindowResolver /*Toolbar*/ } from "@jupyterlab/apputils";
 // import { PathExt, URLExt } from "@jupyterlab/coreutils";
 // import { IDocumentManager, isValidFileName, renameFile } from "@jupyterlab/docmanager";
 import { IDocumentManager } from "@jupyterlab/docmanager";
-import { DocumentRegistry } from "@jupyterlab/docregistry";
-import { Contents, ContentsManager } from "@jupyterlab/services";
-// import { newFolderIcon, refreshIcon } from "@jupyterlab/ui-components";
+// import { DocumentRegistry } from "@jupyterlab/docregistry";
+import { Contents, ContentsManager, Drive } from "@jupyterlab/services";
+import {
+  closeIcon,
+  copyIcon,
+  cutIcon,
+  pasteIcon,
+} from '@jupyterlab/ui-components';
 // import JSZip from "jszip";
-import { CommandRegistry } from "@lumino/commands";
 import { DisposableSet, IDisposable } from "@lumino/disposable";
-import { PanelLayout, Widget } from "@lumino/widgets";
+import { Widget /*PanelLayout*/ } from "@lumino/widgets";
 import { Format, IContentRow, Path, TreeFinderPanelElement } from "tree-finder";
 
+import { JupyterClipboard } from "./clipboard";
 import { IFSResource } from "./filesystem";
 import { fileTreeIcon } from "./icons";
 // import { Uploader } from "./upload";
-// import { CommandIDs, doRename, OpenDirectWidget, Patterns, switchView, writeZipFile } from "./utils";
 
 export class JupyterContents {
   constructor(cm: ContentsManager, drive?: string) {
@@ -67,21 +70,13 @@ export namespace JupyterContents {
 }
 
 export class TreeFinder extends Widget {
-  cm: JupyterContents;
-  dr: DocumentRegistry;
-  commands: CommandRegistry;
-  toolbar: Toolbar;
-  table: HTMLTableElement;
-  tree: HTMLElement;
-
-  readonly node: TreeFinderPanelElement<JupyterContents.IJupyterContentRow>;
-
   constructor({
     app,
     rootPath = "",
     caption = "TreeFinder",
     id = "jupyterlab-tree-finder",
   }: TreeFinder.IOptions) {
+    const {commands, serviceManager: {contents}} = app;
 
     const node = document.createElement<JupyterContents.IJupyterContentRow>("tree-finder-panel");
     super({ node });
@@ -92,18 +87,18 @@ export class TreeFinder extends Widget {
     this.addClass("jp-tree-finder");
     this.addClass(id);
 
-    this.cm = new JupyterContents(app.serviceManager.contents, rootPath);
-    this.dr = app.docRegistry;
-    this.commands = app.commands;
-    this.toolbar = new Toolbar<Widget>();
+    this.cm = new JupyterContents(contents, rootPath);
+    this.commandIds = Object.fromEntries(Object.entries(TreeFinder.CommandIds).map(([k, v]) => [k, `${v}:${this.id}`])) as TreeFinder.ICommandIds;
 
-    this.toolbar.addClass("tree-finder-toolbar");
-    this.toolbar.addClass(id);
+    // this.dr = app.docRegistry;
 
-    const layout = new PanelLayout();
-    layout.addWidget(this.toolbar);
+    // this.toolbar = new Toolbar<Widget>();
+    // this.toolbar.addClass("tree-finder-toolbar");
+    // this.toolbar.addClass(id);
 
-    this.layout = layout;
+    // const layout = new PanelLayout();
+    // layout.addWidget(this.toolbar);
+    // this.layout = layout;
 
     rootPath = rootPath === "" ? rootPath : rootPath + ":";
     this.cm.get(rootPath).then(root => {
@@ -124,7 +119,7 @@ export class TreeFinder extends Widget {
     }).then(() => {
       this.model.openSub.subscribe(x => {
         if (x.kind !== "dir") {
-          app.commands.execute("docmanager:open", { path: Path.fromarray(x.path) });
+          commands.execute("docmanager:open", { path: Path.fromarray(x.path) });
         }
       });
     });
@@ -224,17 +219,32 @@ export class TreeFinder extends Widget {
   get selectionPathstrs() {
     return this.node.model.selection.map(c => Path.fromarray(c.row.path));
   }
+
+  cm: JupyterContents;
+  // dr: DocumentRegistry;
+  // toolbar: Toolbar;
+  table: HTMLTableElement;
+  tree: HTMLElement;
+
+  readonly commandIds: TreeFinder.ICommandIds;
+  readonly node: TreeFinderPanelElement<JupyterContents.IJupyterContentRow>;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace TreeFinder {
-  export const CommandIDs = {
+  const drive = new Drive();
+  const namespace = "jupyter-fs:TreeFinder"
+
+  export const CommandIds = {
     copy: "treefinder:copy",
     cut: "treefinder:cut",
+    delete: "treefinder:delete",
     open: "treefinder:open",
     paste: "treefinder:paste",
     select: "treefinder:rename",
   }
+
+  export type ICommandIds = typeof CommandIds;
 
   export interface IOptions {
     app: JupyterFrontEnd;
@@ -276,7 +286,12 @@ export namespace TreeFinder {
     id = "jupyterlab-tree-finder",
     side = "left",
   }: TreeFinder.ISidebarProps): IDisposable {
+    // // TODO: ugly as sin. Consider other ways to get/construct drive
+    // const drive = (app.serviceManager.contents as any as (Omit<ContentsManager, '_defaultDrive'> & {_defaultDrive: Contents.IDrive}))._defaultDrive;
+    const selector = `#${id}`;
+    const tracker = new WidgetTracker<TreeFinder>({ namespace });
     const widget = new TreeFinder({ app, rootPath, caption, id });
+    tracker.add(widget)
     restorer.add(widget, widget.id);
     app.shell.add(widget, side);
 
@@ -315,349 +330,74 @@ export namespace TreeFinder {
     // return a disposable containing all disposables associated
     // with this widget, ending with the widget itself
     return [
-      app.commands.addCommand(`${CommandIDs.open}:${widget.id}`, {
+      // globally accessible jupyter commands
+      app.commands.addCommand(widget.commandIds.copy, {
         execute: args => {
-          let dirRow = null;
-
-          for (const row of widget.selection.map(c => c.row)) {
-            if (row.kind === "dir") {
-              dirRow = row;
-            } else {
-              app.commands.execute('docmanager:open', { path: Path.fromarray(row.path) });
-            }
-          }
-
-          // if any of the selected content were dirs, open just the last one
-          // TODO: enable opening of n dirs at once as separate MainArea filebrowser widgets
-          widget.model.open(dirRow);
+          JupyterClipboard.global.copySelection(widget.model, drive);
         },
+        icon: copyIcon,
+        label: "Copy",
+      }),
+      app.commands.addCommand(widget.commandIds.cut, {
+        execute: args => {
+          JupyterClipboard.global.cutSelection(widget.model, drive);
+        },
+        icon: cutIcon,
+        label: "Cut",
+      }),
+      app.commands.addCommand(widget.commandIds.delete, {
+        execute: args => {
+          JupyterClipboard.global.deleteSelection(widget.model, drive);
+        },
+        icon: closeIcon.bindprops({ stylesheet: 'menuItem' }),
+        label: "Delete",
+      }),
+      app.commands.addCommand(widget.commandIds.open, {
+        execute: args => {
+          for (const row of widget.selection.map(c => c.row)) {
+            widget.model.openSub.next(row);
+          }
+        },
+        label: "Open",
         // mnemonic: 0
       }),
+      app.commands.addCommand(widget.commandIds.paste, {
+        execute: args => {
+          JupyterClipboard.global.pasteSelection(widget.model, drive);
+        },
+        icon: pasteIcon,
+        label: "Paste",
+      }),
 
-      // app.commands.addCommand((CommandIDs.toggle + ":" + widget.id), {
-      //   execute: args => {
-      //     const row = args.row as string;
-      //     const level = args.level as number;
+      // context menu items
+      app.contextMenu.addItem({
+        command: widget.commandIds.open,
+        selector,
+        rank: 1
+      }),
 
-      //     let row_element: HTMLElement = widget.node.querySelector("[id='" + u_btoa(row) + "']");
+      app.contextMenu.addItem({
+        command: widget.commandIds.copy,
+        selector,
+        rank: 2
+      }),
+      app.contextMenu.addItem({
+        command: widget.commandIds.cut,
+        selector,
+        rank: 3
+      }),
+      app.contextMenu.addItem({
+        command: widget.commandIds.paste,
+        selector,
+        rank: 4
+      }),
+      app.contextMenu.addItem({
+        command: widget.commandIds.delete,
+        selector,
+        rank: 5
+      }),
 
-      //     if (row_element.nextElementSibling && u_atob(row_element.nextElementSibling.id).startsWith(row + "/")) { // next element in folder, already constructed
-      //       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      //       const display = switchView((widget.node.querySelector("[id='" + row_element.nextElementSibling.id + "']") as HTMLElement).style.display);
-      //       widget.controller[row].open = !(widget.controller[row].open);
-      //       const open_flag = widget.controller[row].open;
-      //       // open folder
-      //       while (row_element.nextElementSibling && u_atob(row_element.nextElementSibling.id).startsWith(row + "/")) {
-      //         row_element = (widget.node.querySelector("[id='" + row_element.nextElementSibling.id + "']"));
-      //         // check if the parent folder is open
-      //         if (!(open_flag) || widget.controller[PathExt.dirname(u_atob(row_element.id))].open) {
-      //           row_element.style.display = display;
-      //         }
-      //       }
-      //     } else { // if children elements don't exist yet
-      //       const base = app.serviceManager.contents.get(widget.basepath + row);
-      //       base.then(res => {
-      //         widget.buildTableContents(res.content, level, row_element);
-      //         widget.controller[row] = { last_modified: res.last_modified, open: true };
-      //       });
-      //     }
-      //   },
-      // }),
-
-      // app.commands.addCommand((CommandIDs.navigate + ":" + widget.id), {
-      //   execute: args => {
-      //     // eslint-disable-next-line @typescript-eslint/prefer-regexp-exec
-      //     const treeMatch = router.current.path.match(Patterns.tree);
-      //     // eslint-disable-next-line @typescript-eslint/prefer-regexp-exec
-      //     const workspaceMatch = router.current.path.match(Patterns.workspace);
-      //     const match = treeMatch || workspaceMatch;
-      //     const path = decodeURI(match[1]);
-      //     // const { page, workspaces } = app.info.urls;
-      //     const workspace = PathExt.basename(resolver.name);
-      //     const url =
-      //       (workspaceMatch ? URLExt.join(paths.urls.workspaces, workspace) : paths.urls.app) +
-      //       router.current.search +
-      //       router.current.hash;
-
-      //     router.navigate(url);
-
-      //     try {
-      //       const tree_paths: string[] = [];
-      //       const temp: string[] = path.split("/");
-      //       let current = "";
-      //       for (const t in temp) {
-      //         current += (current === "") ? temp[t] : "/" + temp[t];
-      //         tree_paths.push(current);
-      //       }
-      //       const array: Array<Promise<any>> = [];
-      //       tree_paths.forEach(key => {
-      //         array.push(app.serviceManager.contents.get(key));
-      //       });
-      //       Promise.all(array).then(results => {
-      //         for (const r in results) {
-      //           if (results[r].type === "directory") {
-      //             const row_element = widget.node.querySelector("[id='" + u_btoa(results[r].path) + "']");
-      //             widget.buildTableContents(results[r].content, 1 + results[r].path.split("/").length, row_element);
-      //           }
-      //         }
-      //       });
-      //     } catch (error) {
-      //       // eslint-disable-next-line no-console
-      //       console.warn("Tree routing failed.", error);
-      //     }
-      //   },
-      // }),
-
-      // app.commands.addCommand((CommandIDs.refresh + ":" + widget.id), {
-      //   execute: () => {
-      //     Object.keys(widget.controller).forEach(key => {
-      //       const promise = app.serviceManager.contents.get(widget.basepath + key);
-      //       promise.then(res => {
-      //         if (res.last_modified > widget.controller[key].last_modified) {
-      //           widget.controller[key].last_modified = res.last_modified;
-      //         }
-      //       });
-      //       promise.catch(reason => {
-      //         // eslint-disable-next-line no-console
-      //         console.log(reason);
-      //         delete widget.controller[key];
-      //       });
-      //     });
-      //     widget.refresh();
-      //   },
-      // }),
-
-      // app.commands.addCommand((CommandIDs.set_context + ":" + widget.id), {
-      //   execute: args => {
-      //     if (widget.selected !== "") {
-      //       const element = (widget.node.querySelector("[id='" + u_btoa(widget.selected) + "']"));
-      //       if (element !== null) {
-      //         element.className = element.className.replace("selected", "");
-      //       }
-      //     }
-      //     widget.selected = args.path as string;
-      //     if (widget.selected !== "") {
-      //       const element = widget.node.querySelector("[id='" + u_btoa(widget.selected) + "']");
-      //       if (element !== null) {
-      //         element.className += " selected";
-      //       }
-      //     }
-      //   },
-      //   label: "Need some Context",
-      // }),
-
-      // app.commands.addCommand((CommandIDs.select + ":" + widget.id), {
-      //   execute: args => {
-      //     if (widget.selected !== "") {
-      //       // eslint-disable-next-line no-shadow
-      //       const element = (widget.node.querySelector("[id='" + u_btoa(widget.selected) + "']"));
-      //       if (element !== null) {
-      //         element.className = element.className.replace("selected", "");
-      //       }
-      //     }
-      //     if (args.path === "") {
-      //       return;
-      //     }
-      //     widget.selected = args.path as string;
-      //     const element = widget.node.querySelector("[id='" + u_btoa(widget.selected) + "']");
-      //     if (element !== null) {
-      //       element.className += " selected";
-      //     }
-      //   },
-      //   label: "Select",
-      // }),
-
-      // app.commands.addCommand((CommandIDs.rename + ":" + widget.id), {
-      //   execute: () => {
-      //     const td = widget.node.querySelector("[id='" + u_btoa(widget.selected) + "']").
-      //       getElementsByClassName("filetree-item-name")[0];
-      //     const text_area = td.getElementsByClassName("filetree-name-span")[0] as HTMLElement;
-
-      //     if (text_area === undefined) {
-      //       return;
-      //     }
-      //     const original = text_area.innerHTML;
-      //     const edit = document.createElement("input");
-      //     edit.value = original;
-      //     doRename(text_area, edit).then(newName => {
-      //       if (!newName || newName === original) {
-      //         return original;
-      //       }
-      //       if (!isValidFileName(newName)) {
-      //         showErrorMessage(
-      //           "Rename Error",
-      //           Error(
-      //             `"${newName}" is not a valid name for a file. ` +
-      //               "Names must have nonzero length, " +
-      //               "and cannot include \"/\", \"\\\", or \":\"",
-      //           ),
-      //         );
-      //         return original;
-      //       }
-      //       const current_id = widget.selected;
-      //       const new_path = PathExt.join(PathExt.dirname(widget.selected), newName);
-      //       renameFile(manager, widget.basepath + current_id, widget.basepath + new_path);
-      //       widget.updateController(current_id, new_path);
-      //       text_area.innerHTML = newName;
-      //       widget.refresh();
-      //     });
-      //   },
-      //   iconClass: "p-Menu-itemIcon jp-MaterialIcon jp-EditIcon",
-      //   label: "Rename",
-      // }),
-
-      // app.commands.addCommand((CommandIDs.create_folder + ":" + widget.id), {
-      //   execute: async args => {
-      //     await manager.newUntitled({
-      //       path: widget.basepath + (args.path as string || widget.selected),
-      //       type: "directory",
-      //     });
-      //     widget.refresh();
-      //   },
-      //   iconClass: "p-Menu-itemIcon jp-MaterialIcon jp-NewFolderIcon",
-      //   label: "New Folder",
-      // }),
-
-      // app.commands.addCommand((CommandIDs.create_file + ":" + widget.id), {
-      //   execute: () => {
-      //     showDialog({
-      //       body: new OpenDirectWidget(),
-      //       buttons: [Dialog.cancelButton(), Dialog.okButton({ label: "CREATE" })],
-      //       focusNodeSelector: "input",
-      //       title: "Create File",
-      //     }).then((result: any) => {
-      //       if (result.button.label === "CREATE") {
-      //         const new_file = PathExt.join(widget.selected, result.value);
-      //         manager.createNew(widget.basepath + new_file);
-      //         if (!(widget.selected in widget.controller) || widget.controller[widget.selected].open === false) {
-      //           app.commands.execute((CommandIDs.toggle + ":" + widget.id), { row: widget.selected, level: new_file.split("/").length });
-      //         }
-      //         widget.refresh();
-      //       }
-      //     });
-      //   },
-      //   iconClass: "p-Menu-itemIcon jp-MaterialIcon jp-AddIcon",
-      //   label: "New File",
-      // }),
-
-      // app.commands.addCommand((CommandIDs.delete_op + ":" + widget.id), {
-      //   execute: () => {
-      //     const message = `Are you sure you want to delete: ${widget.selected} ?`;
-      //     showDialog({
-      //       body: message,
-      //       buttons: [Dialog.cancelButton(), Dialog.warnButton({ label: "DELETE" })],
-      //       title: "Delete",
-      //     }).then(async (result: any) => {
-      //       if (result.button.accept) {
-      //         await manager.deleteFile(widget.basepath + widget.selected);
-      //         widget.updateController(widget.selected, "");
-      //         app.commands.execute((CommandIDs.set_context + ":" + widget.id), { path: "" });
-      //         widget.refresh();
-      //       }
-      //     });
-      //   },
-      //   iconClass: "p-Menu-itemIcon jp-MaterialIcon jp-CloseIcon",
-      //   label: "Delete",
-      // }),
-
-      // app.commands.addCommand((CommandIDs.download + ":" + widget.id), {
-      //   execute: args => {
-      //     widget.download(widget.selected, args.folder as boolean || false);
-      //   },
-      //   iconClass: "p-Menu-itemIcon jp-MaterialIcon jp-DownloadIcon",
-      //   label: "Download",
-      // }),
-
-      // app.commands.addCommand((CommandIDs.upload + ":" + widget.id), {
-      //   execute: () => {
-      //     uploader_button.contextClick(widget.selected);
-      //   },
-      //   iconClass: "p-Menu-itemIcon jp-MaterialIcon jp-FileUploadIcon",
-      //   label: "Upload",
-      // }),
-
-      // app.commands.addCommand((CommandIDs.move + ":" + widget.id), {
-      //   execute: args => {
-      //     const from = args.from as string;
-      //     const to = args.to as string;
-      //     const file_name = PathExt.basename(from);
-      //     const message = "Are you sure you want to move " + file_name + "?";
-      //     showDialog({
-      //       body: message,
-      //       buttons: [Dialog.cancelButton(), Dialog.warnButton({ label: "MOVE" })],
-      //       title: "Move",
-      //     }).then((result: any) => {
-      //       if (result.button.accept) {
-      //         const new_path = PathExt.join(to, file_name);
-      //         renameFile(manager, widget.basepath + from, widget.basepath + new_path);
-      //         widget.updateController(from, new_path);
-      //         widget.refresh();
-      //       }
-      //     });
-      //   },
-      //   label: "Move",
-      // }),
-
-      // app.commands.addCommand((CommandIDs.copy_path + ":" + widget.id), {
-      //   execute: () => {
-      //     Clipboard.copyToSystem(widget.selected);
-      //   },
-      //   iconClass: widget.dr.getFileType("text").iconClass,
-      //   label: "Copy Path",
-      // }),
-
-      // app.contextMenu.addItem({
-      //   command: (CommandIDs.rename + ":" + widget.id),
-      //   rank: 3,
-      //   selector: "div." + widget.id + " > table > *> .filetree-item",
-      // }),
-
-      // app.contextMenu.addItem({
-      //   command: (CommandIDs.delete_op + ":" + widget.id),
-      //   rank: 4,
-      //   selector: "div." + widget.id + " > table > *> .filetree-item",
-      // }),
-
-      // app.contextMenu.addItem({
-      //   command: (CommandIDs.copy_path + ":" + widget.id),
-      //   rank: 5,
-      //   selector: "div." + widget.id + " > table > *> .filetree-item",
-      // }),
-
-      // app.contextMenu.addItem({
-      //   command: (CommandIDs.download + ":" + widget.id),
-      //   rank: 1,
-      //   selector: "div." + widget.id + " > table > *> .filetree-file",
-      // }),
-
-      // app.contextMenu.addItem({
-      //   command: (CommandIDs.create_folder + ":" + widget.id),
-      //   rank: 2,
-      //   selector: "div." + widget.id + " > table > * > .filetree-folder",
-      // }),
-
-      // app.contextMenu.addItem({
-      //   command: (CommandIDs.create_file + ":" + widget.id),
-      //   rank: 1,
-      //   selector: "div." + widget.id + " > table > * > .filetree-folder",
-      // }),
-
-      // app.contextMenu.addItem({
-      //   command: (CommandIDs.upload + ":" + widget.id),
-      //   rank: 3,
-      //   selector: "div." + widget.id + " > table > * > .filetree-folder",
-      // }),
-
-      // app.contextMenu.addItem({
-      //   args: { folder: true },
-      //   command: (CommandIDs.download + ":" + widget.id),
-      //   rank: 1,
-      //   selector: "div." + widget.id + " > table > *> .filetree-folder",
-      // }),
-
-      // router.register({ command: (CommandIDs.navigate + ":" + widget.id), pattern: Patterns.tree }),
-      // router.register({ command: (CommandIDs.navigate + ":" + widget.id), pattern: Patterns.workspace }),
-
+      // the widget itself is a disposable
       widget,
     ].reduce((set: DisposableSet, d) => {
       set.add(d); return set;

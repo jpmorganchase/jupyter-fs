@@ -37,8 +37,7 @@ def _resolve_path(path, manager_dict):
 
         raise HTTPError(
             404,
-            "Couldn't resolve path [{path}] and "
-            "no root manager supplied!".format(path=path)
+            "Couldn't find manager {mgrName} for {path}".format(mgrName=parts[0], path=path)
         )
     else:
         # Try to find a sub-manager for the first subdirectory.
@@ -48,7 +47,7 @@ def _resolve_path(path, manager_dict):
 
         raise HTTPError(
             404,
-            "Couldn't resolve path [{path}]".format(path=path)
+            "Couldn't find manager {mgrName} for {path}".format(mgrName=parts[0], path=path)
         )
 
 
