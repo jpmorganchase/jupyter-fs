@@ -62,5 +62,5 @@ export class JupyterClipboard {
 }
 
 export namespace JupyterClipboard {
-  export const global = new JupyterClipboard();
+  export const defaultClipboard = new JupyterClipboard();
 }

@@ -88,7 +88,9 @@ export class TreeFinder extends Widget {
     this.addClass(id);
 
     this.cm = new JupyterContents(contents, rootPath);
-    this.commandIds = Object.fromEntries(Object.entries(TreeFinder.CommandIds).map(([k, v]) => [k, `${v}:${this.id}`])) as TreeFinder.ICommandIds;
+    // each separate widget gets its own unique commands, with each commandId prefixed with the widget's unique id
+    // TODO: check on edge cases where two widget's share id (ie when two widgets are both views onto the same ContentsManager on the backend)
+    this.commandIds = Object.fromEntries(TreeFinder.commandNames.map(name => [name, `${this.id}:treefinder:${name}`])) as TreeFinder.ICommandIds;
 
     // this.dr = app.docRegistry;
 
@@ -235,16 +237,17 @@ export namespace TreeFinder {
   const drive = new Drive();
   const namespace = "jupyter-fs:TreeFinder"
 
-  export const CommandIds = {
-    copy: "treefinder:copy",
-    cut: "treefinder:cut",
-    delete: "treefinder:delete",
-    open: "treefinder:open",
-    paste: "treefinder:paste",
-    select: "treefinder:rename",
-  }
-
-  export type ICommandIds = typeof CommandIds;
+  // define the command ids as a constant tuple
+  export const commandNames = [
+    "copy",
+    "cut",
+    "delete",
+    "open",
+    "paste",
+    "rename",
+  ] as const;
+  // use typescript-fu to convert commandIds to an interface
+  export type ICommandIds = {[k in typeof commandNames[number]]: string};
 
   export interface IOptions {
     app: JupyterFrontEnd;
@@ -333,21 +336,21 @@ export namespace TreeFinder {
       // globally accessible jupyter commands
       app.commands.addCommand(widget.commandIds.copy, {
         execute: args => {
-          JupyterClipboard.global.copySelection(widget.model, drive);
+          JupyterClipboard.defaultClipboard.copySelection(widget.model, drive);
         },
         icon: copyIcon,
         label: "Copy",
       }),
       app.commands.addCommand(widget.commandIds.cut, {
         execute: args => {
-          JupyterClipboard.global.cutSelection(widget.model, drive);
+          JupyterClipboard.defaultClipboard.cutSelection(widget.model, drive);
         },
         icon: cutIcon,
         label: "Cut",
       }),
       app.commands.addCommand(widget.commandIds.delete, {
         execute: args => {
-          JupyterClipboard.global.deleteSelection(widget.model, drive);
+          JupyterClipboard.defaultClipboard.deleteSelection(widget.model, drive);
         },
         icon: closeIcon.bindprops({ stylesheet: 'menuItem' }),
         label: "Delete",
@@ -363,7 +366,7 @@ export namespace TreeFinder {
       }),
       app.commands.addCommand(widget.commandIds.paste, {
         execute: args => {
-          JupyterClipboard.global.pasteSelection(widget.model, drive);
+          JupyterClipboard.defaultClipboard.pasteSelection(widget.model, drive);
         },
         icon: pasteIcon,
         label: "Paste",
