@@ -69,6 +69,34 @@ export namespace JupyterContents {
   }
 }
 
+export class TreeFinderTracker extends WidgetTracker<TreeFinder> {
+  async add(finder: TreeFinder) {
+    super.add(finder);
+
+    this._finders.set(finder.id, finder);
+    finder.disposed.connect(this._onWidgetDisposed, this);
+  }
+
+  remove(finder: TreeFinder) {
+    this._finders.delete(finder.id);
+    finder.disposed.disconnect(this._onWidgetDisposed, this);
+  }
+
+  findByDrive(drive: string) {
+    return this._finders.get(drive);
+  }
+
+  hasByDrive(drive: string) {
+    return this._finders.has(drive);
+  }
+
+  private _onWidgetDisposed(finder: TreeFinder) {
+    this.remove(finder);
+  }
+
+  private _finders = new Map<string, TreeFinder>();
+}
+
 export class TreeFinder extends Widget {
   constructor({
     app,
@@ -292,7 +320,7 @@ export namespace TreeFinder {
     // // TODO: ugly as sin. Consider other ways to get/construct drive
     // const drive = (app.serviceManager.contents as any as (Omit<ContentsManager, '_defaultDrive'> & {_defaultDrive: Contents.IDrive}))._defaultDrive;
     const selector = `#${id}`;
-    const tracker = new WidgetTracker<TreeFinder>({ namespace });
+    const tracker = new TreeFinderTracker({ namespace });
     const widget = new TreeFinder({ app, rootPath, caption, id });
     tracker.add(widget)
     restorer.add(widget, widget.id);
