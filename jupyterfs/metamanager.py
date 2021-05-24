@@ -15,7 +15,7 @@ from jupyter_server.services.contents.manager import ContentsManager
 from .auth import substituteAsk, substituteEnv, substituteNone
 from .config import Jupyterfs as JupyterfsConfig
 from .fsmanager import FSManager
-from .pathutils import path_first_arg, path_second_arg, path_kwarg, path_old_new
+from .pathutils import path_first_arg, path_second_arg, path_kwarg, path_old_new, stripDrive
 
 __all__ = ["MetaManager", "MetaManagerHandler"]
 
@@ -120,6 +120,10 @@ class MetaManager(ContentsManager):
     @property
     def root_dir(self):
         return self.root_manager.root_dir
+
+    def increment_filename(self, filename, path='', insert=''):
+        # called in super().copy(...), ensure that any drives are stripped from the resulting filename
+        return stripDrive(super().increment_filename(filename=filename, path=path, insert=insert))
 
     is_hidden = path_first_arg('is_hidden', False)
     dir_exists = path_first_arg('dir_exists', False)

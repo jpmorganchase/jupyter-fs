@@ -37,7 +37,7 @@ export class JupyterContents {
   }
 
   async get(path: string) {
-    path = JupyterContents.fullPath(path, this.drive);
+    path = JupyterContents.toFullPath(path, this.drive);
     return JupyterContents.toJupyterContentRow(await this.cm.get(path), this.cm, this.drive);
   }
 
@@ -48,14 +48,19 @@ export class JupyterContents {
 export namespace JupyterContents {
   export interface IJupyterContentRow extends Omit<Contents.IModel, "path" | "content" | "type">, IContentRow {}
 
-  export function fullPath(path: string, drive?: string): string {
+  export function toFullPath(path: string, drive?: string): string {
     return (!drive || path.startsWith(`${drive}:`)) ? path : [drive, path].join(":");
+  }
+
+  export function toLocalPath(path: string): string {
+    const [first, ...rest] = path.split("/");
+    return [first.split(":").pop(), ...rest].join("/");
   }
 
   export function toJupyterContentRow(row: Contents.IModel, cm: ContentsManager, drive: string): IJupyterContentRow {
     const { path, content, type, ...rest } = row;
 
-    const pathWithDrive = fullPath(path, drive);
+    const pathWithDrive = toFullPath(path, drive);
     const kind = type === "directory" ? "dir" : type;
 
     return {

@@ -7,6 +7,8 @@
 #
 from tornado.web import HTTPError
 
+__all__ = ["path_first_arg", "path_second_arg" "path_kwarg", "path_old_new", "stripDrive"]
+
 # A reference implementation
 # https://github.com/quantopian/pgcontents/blob/master/pgcontents/hybridmanager.py
 # Apache 2.0
@@ -145,3 +147,11 @@ def path_old_new(method_name, returns_model):
         )
         return result
     return _wrapper
+
+
+def stripDrive(path):
+    """Strips off leading "drive:foo" specification from path, if present
+    """
+    # strip any drives off the front of the filename
+    first, *rest = path.split("/")
+    return "/".join([first.split(":").pop(), *rest])
