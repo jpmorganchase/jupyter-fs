@@ -7,7 +7,7 @@
 #
 from tornado.web import HTTPError
 
-__all__ = ["path_first_arg", "path_second_arg" "path_kwarg", "path_old_new", "stripDrive"]
+__all__ = ["path_first_arg", "path_second_arg" "path_kwarg", "path_old_new", "getDrive", "isDrive", "stripDrive"]
 
 # A reference implementation
 # https://github.com/quantopian/pgcontents/blob/master/pgcontents/hybridmanager.py
@@ -21,6 +21,7 @@ __all__ = ["path_first_arg", "path_second_arg" "path_kwarg", "path_old_new", "st
 # modifications to support this.
 
 
+# dispatch utils
 def _resolve_path(path, manager_dict):
     """Resolve a path based on a dictionary of manager prefixes.
 
@@ -149,9 +150,19 @@ def path_old_new(method_name, returns_model):
     return _wrapper
 
 
+# handlers for drive specifications in path strings, as in "fooDrive:bar/baz.buzz"
+def getDrive(path):
+    first, *_ = path.strip("/").split("/")
+    return first.split(":")[0]
+
+
+def isDrive(path):
+    return "/" not in path and path.endswith(":")
+
+
 def stripDrive(path):
     """Strips off leading "drive:foo" specification from path, if present
     """
     # strip any drives off the front of the filename
-    first, *rest = path.split("/")
+    first, *rest = path.strip("/").split("/")
     return "/".join([first.split(":").pop(), *rest])
