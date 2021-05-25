@@ -1,3 +1,6 @@
+- `0.3.0`
+  - First jupyterlab 3.x compatible version
+  - replaced old filebrowser UI with branch new `TreeFinderWidget`
 - `0.0.4`
   - Full support for server side config
     - Can be used with/without frontend config and/or auth
