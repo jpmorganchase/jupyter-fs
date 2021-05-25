@@ -19,7 +19,7 @@ import {
   copyIcon,
   cutIcon,
   pasteIcon,
-} from '@jupyterlab/ui-components';
+} from "@jupyterlab/ui-components";
 // import JSZip from "jszip";
 import { DisposableSet, IDisposable } from "@lumino/disposable";
 import { Widget /*PanelLayout*/ } from "@lumino/widgets";
@@ -58,7 +58,7 @@ export namespace JupyterContents {
   }
 
   export function toJupyterContentRow(row: Contents.IModel, cm: ContentsManager, drive: string): IJupyterContentRow {
-    const { path, content, type, ...rest } = row;
+    const { path, type, ...rest } = row;
 
     const pathWithDrive = toFullPath(path, drive);
     const kind = type === "directory" ? "dir" : type;
@@ -68,7 +68,7 @@ export namespace JupyterContents {
       kind,
       ...rest,
       ...(kind === "dir" ? {
-        getChildren: async () => (await cm.get(pathWithDrive, {content: true})).content.map((c: Contents.IModel) => toJupyterContentRow(c, cm, drive)),
+        getChildren: async () => (await cm.get(pathWithDrive, { content: true })).content.map((c: Contents.IModel) => toJupyterContentRow(c, cm, drive)),
       }: {}),
     };
   }
@@ -79,11 +79,15 @@ export class TreeFinderTracker extends WidgetTracker<TreeFinder> {
     super.add(finder);
 
     this._finders.set(finder.id, finder);
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     finder.disposed.connect(this._onWidgetDisposed, this);
   }
 
   remove(finder: TreeFinder) {
     this._finders.delete(finder.id);
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     finder.disposed.disconnect(this._onWidgetDisposed, this);
   }
 
@@ -109,7 +113,7 @@ export class TreeFinder extends Widget {
     caption = "TreeFinder",
     id = "jupyterlab-tree-finder",
   }: TreeFinder.IOptions) {
-    const {commands, serviceManager: {contents}} = app;
+    const { commands, serviceManager: { contents } } = app;
 
     const node = document.createElement<JupyterContents.IJupyterContentRow>("tree-finder-panel");
     super({ node });
@@ -268,7 +272,7 @@ export class TreeFinder extends Widget {
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace TreeFinder {
   const drive = new Drive();
-  const namespace = "jupyter-fs:TreeFinder"
+  const namespace = "jupyter-fs:TreeFinder";
 
   // define the command ids as a constant tuple
   export const commandNames = [
@@ -327,7 +331,7 @@ export namespace TreeFinder {
     const selector = `#${id}`;
     const tracker = new TreeFinderTracker({ namespace });
     const widget = new TreeFinder({ app, rootPath, caption, id });
-    tracker.add(widget)
+    tracker.add(widget);
     restorer.add(widget, widget.id);
     app.shell.add(widget, side);
 
@@ -385,7 +389,7 @@ export namespace TreeFinder {
         execute: args => {
           JupyterClipboard.defaultClipboard.deleteSelection(widget.model, drive);
         },
-        icon: closeIcon.bindprops({ stylesheet: 'menuItem' }),
+        icon: closeIcon.bindprops({ stylesheet: "menuItem" }),
         label: "Delete",
       }),
       app.commands.addCommand(widget.commandIds.open, {
@@ -409,28 +413,28 @@ export namespace TreeFinder {
       app.contextMenu.addItem({
         command: widget.commandIds.open,
         selector,
-        rank: 1
+        rank: 1,
       }),
 
       app.contextMenu.addItem({
         command: widget.commandIds.copy,
         selector,
-        rank: 2
+        rank: 2,
       }),
       app.contextMenu.addItem({
         command: widget.commandIds.cut,
         selector,
-        rank: 3
+        rank: 3,
       }),
       app.contextMenu.addItem({
         command: widget.commandIds.paste,
         selector,
-        rank: 4
+        rank: 4,
       }),
       app.contextMenu.addItem({
         command: widget.commandIds.delete,
         selector,
-        rank: 5
+        rank: 5,
       }),
 
       // the widget itself is a disposable

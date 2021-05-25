@@ -7,7 +7,7 @@
 #
 from tornado.web import HTTPError
 
-__all__ = ["path_first_arg", "path_second_arg" "path_kwarg", "path_old_new", "getDrive", "isDrive", "stripDrive"]
+__all__ = ["path_first_arg", "path_second_arg", "path_kwarg", "path_old_new", "getDrive", "isDrive", "stripDrive"]
 
 # A reference implementation
 # https://github.com/quantopian/pgcontents/blob/master/pgcontents/hybridmanager.py

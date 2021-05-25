@@ -12,14 +12,13 @@ import { ClipboardModel, ContentsModel, IContentRow, Path } from "tree-finder";
 
 export class JupyterClipboard {
   constructor() {
-    this.clipboardModel.deleteSub.subscribe(async memo => {
-      await Promise.all(memo.map(s => this._onDelete(s)));
+    this.clipboardModel.deleteSub.subscribe(memo => {
+      Promise.all(memo.map(s => this._onDelete(s)));
     });
 
-    this.clipboardModel.pasteSub.subscribe(async ({destination, doCut, memo}) => {
+    this.clipboardModel.pasteSub.subscribe(({ destination, doCut, memo }) => {
       const destPathstr = Path.fromarray(destination.kind === "dir" ? destination.path : destination.path.slice(0, -1));
-
-      await Promise.all(memo.map(s => this._onPaste(s, destPathstr, doCut)));
+      Promise.all(memo.map(s => this._onPaste(s, destPathstr, doCut)));
     });
   }
 
