@@ -3474,9 +3474,9 @@ hoist-non-react-statics@^3.3.2:
     react-is "^16.7.0"
 
 hosted-git-info@^2.1.4:
-  version "2.8.8"
-  resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.8.8.tgz#7539bd4bc1e0e0a895815a2e0262420b12858488"
-  integrity sha512-f/wzC2QaWBs7t9IYqB4T3sR1xviIViXJRJTWBlx2Gf3g0Xi5vI7Yy4koXQ1c9OYDGHN9sBy1DQ2AB8fqZBWhUg==
+  version "2.8.9"
+  resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.8.9.tgz#dffc0bf9a21c02209090f2aa69429e1414daf3f9"
+  integrity sha512-mxIDAb9Lsm6DoOJ7xH+5+X4y1LU/4Hi50L9C5sIswK3JzULS4bwk1FvjdBgvYR4bzT4tuUQiC15FE2f5HbLvYw==
 
 html-encoding-sniffer@^2.0.1:
   version "2.0.1"
@@ -5498,10 +5498,10 @@ regjsparser@^0.6.4:
   dependencies:
     jsesc "~0.5.0"
 
-regular-table@^0.3.0:
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/regular-table/-/regular-table-0.3.0.tgz#86e770b436fe360027f12dcb8d70e129d861f046"
-  integrity sha512-qg1n2fesXmqxmVTeExWvlAlju4r/VrwBDpC53VpPI11cd9XGw8bK28PA/vjlEP+lV0rG68M6V18Ebv/GgEpSpQ==
+regular-table@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/regular-table/-/regular-table-0.4.0.tgz#41d769e9dcd6a3a6c4d2f4832132562d88a63515"
+  integrity sha512-O44E81FcEnGZjWE/hilOZPODo3dAzbT42cYU8xosicTiAindrwbpkCF6h9seg8Fw1L8eqziugCoODPe5UnarWA==
 
 remove-trailing-separator@^1.0.1:
   version "1.1.0"
@@ -6223,12 +6223,12 @@ tr46@^2.0.2:
   dependencies:
     punycode "^2.1.1"
 
-tree-finder@^0.0.11:
-  version "0.0.11"
-  resolved "https://registry.yarnpkg.com/tree-finder/-/tree-finder-0.0.11.tgz#fd9658dde47bab53af6656a0b8e0bf15fb0ba290"
-  integrity sha512-+p0pdW/CRdYCdKoZnUfkhQTYcyc8ZP+KRr+DmkdkQBz+NXbFjGXHW6KHSo9/9Bhp4wglFb/7IqySVhrijjNnzQ==
+tree-finder@^0.0.12:
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/tree-finder/-/tree-finder-0.0.12.tgz#59fe983ae67a5ecd120fd5f457f0e035126cca51"
+  integrity sha512-Trws7gmS7SbSazdRvNMfZz0KrKTp3f235CMmZQMvgsyGzriawdW5tNfkYwecbVeetXyRx96RWoE7QZp+V+bNHQ==
   dependencies:
-    regular-table "^0.3.0"
+    regular-table "^0.4.0"
     rxjs "^6.6.3"
 
 ts-jest@^26.5.4:
