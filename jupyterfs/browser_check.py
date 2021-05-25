@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # This file reproduces https://github.com/jupyterlab/jupyterlab/blob/master/jupyterlab/browser_check.py
-# but patch the global `here` to use the local chrome-test.js
+# but patch the global `here` to use the local browser-test.js
 import os
 from unittest.mock import patch
 

@@ -54,7 +54,7 @@ requires = [
     'fs-s3fs>=1.1.1',
     'fs.smbfs>=0.6.3',
     'jupyterlab>=3.0.0',
-    'jupyter_server>=1.6.0',
+    'jupyter_server>=1.8.0',
 ]
 
 test_requires = [

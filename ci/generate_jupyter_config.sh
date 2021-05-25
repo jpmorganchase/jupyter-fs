@@ -3,6 +3,7 @@
 WORKSPACE_FOLDER=${1:-"$( cd -P . >/dev/null 2>&1 && pwd )"}
 
 # jupyter env vars
+export JUPYTER_PREFER_ENV_PATH="true"
 export JUPYTER_CONFIG_DIR="${WORKSPACE_FOLDER}/.jupyter"
 # export JUPYTER_PATH="${WORKSPACE_FOLDER}/share/jupyter"
 # export JUPYTER_RUNTIME_DIR="${JUPYTER_PATH}/runtime"
