@@ -66,10 +66,10 @@ If you have any questions about the contribution process, please feel free to se
     make publish
     ```
 
-5. Push release branch to your fork
+5. Push release branch to upstream
 
     ```bash
-    git push -u origin release-v<major>.<minor>.<patch> --tags
+    git push -u upstream release-v<major>.<minor>.<patch> --tags
     ```
 
 6. Open a PR for the release branch on https://github.com/jpmorganchase/jupyter-fs
