@@ -7,6 +7,8 @@
 #
 from tornado.web import HTTPError
 
+__all__ = ["path_first_arg", "path_second_arg", "path_kwarg", "path_old_new", "getDrive", "isDrive", "stripDrive"]
+
 # A reference implementation
 # https://github.com/quantopian/pgcontents/blob/master/pgcontents/hybridmanager.py
 # Apache 2.0
@@ -19,6 +21,7 @@ from tornado.web import HTTPError
 # modifications to support this.
 
 
+# dispatch utils
 def _resolve_path(path, manager_dict):
     """Resolve a path based on a dictionary of manager prefixes.
 
@@ -37,8 +40,7 @@ def _resolve_path(path, manager_dict):
 
         raise HTTPError(
             404,
-            "Couldn't resolve path [{path}] and "
-            "no root manager supplied!".format(path=path)
+            "Couldn't find manager {mgrName} for {path}".format(mgrName=parts[0], path=path)
         )
     else:
         # Try to find a sub-manager for the first subdirectory.
@@ -48,7 +50,7 @@ def _resolve_path(path, manager_dict):
 
         raise HTTPError(
             404,
-            "Couldn't resolve path [{path}]".format(path=path)
+            "Couldn't find manager {mgrName} for {path}".format(mgrName=parts[0], path=path)
         )
 
 
@@ -146,3 +148,21 @@ def path_old_new(method_name, returns_model):
         )
         return result
     return _wrapper
+
+
+# handlers for drive specifications in path strings, as in "fooDrive:bar/baz.buzz"
+def getDrive(path):
+    first, *_ = path.strip("/").split("/")
+    return first.split(":")[0]
+
+
+def isDrive(path):
+    return "/" not in path and path.endswith(":")
+
+
+def stripDrive(path):
+    """Strips off leading "drive:foo" specification from path, if present
+    """
+    # strip any drives off the front of the filename
+    first, *rest = path.strip("/").split("/")
+    return "/".join([first.split(":").pop(), *rest])

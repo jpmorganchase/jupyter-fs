@@ -43,17 +43,22 @@ annotate_l: ## MyPy type annotation check - count only
 	${PYTHON} -m mypy -s jupyterfs | wc -l
 
 clean: ## clean the repository
+	# python tmp state
 	find . -name "__pycache__" | xargs  rm -rf
 	find . -name "*.pyc" | xargs rm -rf
 	find . -name ".ipynb_checkpoints" | xargs  rm -rf
+	# build state
 	rm -rf build coverage* dist *.egg-info *junit.xml .jupyter MANIFEST node_modules package-lock.json pip-wheel-metadata yarn.lock
 	rm -rf js/dist js/lib js/node_modules js/package-lock.json js/tsconfig.tsbuildinfo js/yarn.lock
 	rm -rf jupyterfs/labdist
 	# make -C ./docs clean
+	# binder/repo2docker mess
+	rm -rf .*-log.txt .local/ binder/.* binder/*.ipynb
 
 dev_install: dev_serverextension dev_labextension ## set up the repo for active development
 	# verify
 	${PYTHON} -m jupyter serverextension list
+	${PYTHON} -m jupyter server extension list
 	${PYTHON} -m jupyter labextension list
 
 dev_labextension: js  ## build and install labextension for active development
@@ -61,7 +66,7 @@ dev_labextension: js  ## build and install labextension for active development
 
 dev_serverextension:  ## install and enable serverextension for active development
 	${PIP} install -e .[dev]
-	${PYTHON} -m jupyter serverextension enable --py jupyterfs.extension
+	${PYTHON} -m jupyter server extension enable --py jupyterfs.extension
 
 docs:  ## make documentation
 	make -C ./docs html

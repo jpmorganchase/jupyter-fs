@@ -1,0 +1,71 @@
+#!/bin/bash
+WORKSPACE_FOLDER="/home/jovyan"
+
+export JUPYTER_CONFIG_DIR="${WORKSPACE_FOLDER}/.jupyter"
+export JUPYTERLAB_SETTINGS_DIR="${WORKSPACE_FOLDER}/.jupyter/lab"
+export JUPYTERLAB_WORKSPACES_DIR="${WORKSPACE_FOLDER}/.jupyter/lab"
+
+
+# set a custom server settings path
+NOTEBOOK_SETTINGS="${JUPYTER_CONFIG_DIR}/jupyter_notebook_config.json"
+SERVER_SETTINGS="${JUPYTER_CONFIG_DIR}/jupyter_server_config.json"
+
+# # enable the serverextension and the MetaManager contents manager
+# mkdir -p $(dirname "$NOTEBOOK_SETTINGS")
+# cat <<EOT > "${NOTEBOOK_SETTINGS}"
+# {
+#   "NotebookApp": {
+#     "contents_manager_class": "jupyterfs.metamanager.MetaManager",
+#     "nbserver_extensions": {
+#       "jupyterfs.extension": true
+#     }
+#   }
+# }
+# EOT
+
+mkdir -p $(dirname "$SERVER_SETTINGS")
+cat <<EOT > "${SERVER_SETTINGS}"
+{
+  "ServerApp": {
+    "contents_manager_class": "jupyterfs.metamanager.MetaManager",
+    "jpserver_extensions": {
+      "jupyterfs.extension": true
+    }
+  }
+}
+EOT
+
+
+# set a custom user-settings path
+PLUGIN_SETTINGS="${JUPYTERLAB_SETTINGS_DIR}/jupyter-fs/plugin.jupyterlab-settings"
+
+# create appropriate user settings for jupyter-fs
+mkdir -p $(dirname $PLUGIN_SETTINGS)
+cat <<EOT > "${PLUGIN_SETTINGS}"
+{
+  "resources": [
+    {
+      "name": "osfs-here",
+      "url": "osfs://${WORKSPACE_FOLDER}"
+    }
+  ],
+  "options": {
+    "verbose": true
+  },
+}
+EOT
+
+
+# set a custom user-settings directory
+THEME_SETTINGS="${JUPYTERLAB_SETTINGS_DIR}/@jupyterlab/apputils-extension/themes.jupyterlab-settings"
+
+# enable the theme in user-settings
+mkdir -p $(dirname $THEME_SETTINGS)
+printf "%s\n" "{" "    \"theme\": \"Darcula\"" "}" > $THEME_SETTINGS
+
+# print some vars
+echo "WORKSPACE_FOLDER: ${WORKSPACE_FOLDER}"
+echo "SERVER_SETTINGS: ${SERVER_SETTINGS}"
+echo "PLUGIN_SETTINGS: ${PLUGIN_SETTINGS}"
+
+$(echo "$@" | sed 's/notebook/lab/g')

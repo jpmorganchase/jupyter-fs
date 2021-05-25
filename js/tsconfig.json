@@ -16,7 +16,7 @@
     "resolveJsonModule": true,
     "sourceMap": true,
     // "strictNullChecks": true,
-    "target": "es2018",
+    "target": "es2019",
     // "types": ["jest"],
 
     "outDir": "lib",

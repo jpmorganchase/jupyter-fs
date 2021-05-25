@@ -7,6 +7,7 @@
 #
 from hashlib import md5
 import json
+import re
 from tornado import web
 
 from jupyter_server.base.handlers import APIHandler
@@ -15,12 +16,14 @@ from jupyter_server.services.contents.manager import ContentsManager
 from .auth import substituteAsk, substituteEnv, substituteNone
 from .config import Jupyterfs as JupyterfsConfig
 from .fsmanager import FSManager
-from .pathutils import path_first_arg, path_second_arg, path_kwarg, path_old_new
+from .pathutils import path_first_arg, path_second_arg, path_kwarg, path_old_new, getDrive, isDrive, stripDrive
 
 __all__ = ["MetaManager", "MetaManagerHandler"]
 
 
 class MetaManager(ContentsManager):
+    copy_pat = re.compile(r'\-Copy\d*\.')
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._jupyterfsConfig = JupyterfsConfig(config=self.config)
@@ -120,6 +123,54 @@ class MetaManager(ContentsManager):
     @property
     def root_dir(self):
         return self.root_manager.root_dir
+
+    def copy(self, from_path, to_path=None):
+        """Copy an existing file and return its new model.
+
+        If to_path not specified, it will be the parent directory of from_path.
+        If to_path is a directory, filename will increment `from_path-Copy#.ext`.
+        Considering multi-part extensions, the Copy# part will be placed before the first dot for all the extensions except `ipynb`.
+        For easier manual searching in case of notebooks, the Copy# part will be placed before the last dot.
+
+        from_path must be a full path to a file.
+        """
+        path = from_path.strip('/')
+        if to_path is not None:
+            to_path = to_path.strip('/')
+
+        if '/' in path:
+            from_dir, from_name = path.rsplit('/', 1)
+        else:
+            from_dir = ''
+            from_name = path
+
+        model = self.get(path)
+        model.pop('path', None)
+        model.pop('name', None)
+        if model['type'] == 'directory':
+            raise web.HTTPError(400, "Can't copy directories")
+        if to_path is None:
+            to_path = from_dir
+        if self.dir_exists(to_path):
+            name = self.copy_pat.sub(u'.', from_name)
+            # ensure that any drives are stripped from the resulting filename
+            to_name = stripDrive(self.increment_filename(name, to_path, insert='-Copy'))
+            # separate path and filename with a slash if to_path is not just a drive string
+            to_path = (u'{0}{1}' if isDrive(to_path) else u'{0}/{1}').format(to_path, to_name)
+
+        model = self.save(model, to_path)
+        return model
+
+    def _getManagerForPath(self, path):
+        drive = getDrive(path)
+        mgr = self._managers.get(drive)
+        if mgr is None:
+            raise web.HTTPError(
+                404,
+                "Couldn't find manager {mgrName} for {path}".format(mgrName=drive, path=path)
+            )
+
+        return mgr, stripDrive(path)
 
     is_hidden = path_first_arg('is_hidden', False)
     dir_exists = path_first_arg('dir_exists', False)
