@@ -53,30 +53,26 @@ If you have any questions about the contribution process, please feel free to se
 3. Bump version
 
     ```bash
-    # example: bump2version patch --new-version "0, 0, 5, 'final', 0"
-    bump2version patch --new-version "<major>, <minor>, <patch>, 'final', 0"
+    # example: bump2version patch --allow-dirty --new-version "0.0.6final0"
+    bump2version patch --allow-dirty --new-version "<major>.<minor>.<patch>final0"
     ```
 
 4. Do release
 
     ```bash
+    # dry run
+    # make publishdry
+
     make publish
     ```
 
-5. Tag and push
+5. Push release branch to your fork
 
     ```bash
-    git tag v<major>.<minor>.<patch>
-    git push upstream v<major>.<minor>.<patch>
+    git push -u origin release-v<major>.<minor>.<patch> --tags
     ```
 
-6. Push release branch to your fork
-
-    ```bash
-    git push -u origin release-v<major>.<minor>.<patch>
-    ```
-
-7. Open a PR for the release branch on https://github.com/jpmorganchase/jupyter-fs
+6. Open a PR for the release branch on https://github.com/jpmorganchase/jupyter-fs
 
 ## Guidelines
 
