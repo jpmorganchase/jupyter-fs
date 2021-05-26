@@ -27,7 +27,7 @@
     "prepack": "shx cp ../README.md .",
     "prepublishOnly": "yarn run build",
     "test": "jest --coverage --collectCoverageFrom=src/*.{ts,tsx}",
-    "test:browser": "../ci/generate_jupyter_config.sh && ../ci/browser_check.sh",
+    "test:browser": "../ci/browser_check.sh",
     "watch": "tsc -w"
   },
   "files": [

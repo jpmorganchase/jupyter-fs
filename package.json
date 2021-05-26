@@ -1,4 +1,8 @@
 {
-    "private": true,
-    "workspaces": ["js"]
+  "private": true,
+  "license": "BSD-3-Clause",
+  "workspaces": ["js"],
+  "scripts": {
+    "test:browser": "yarn --cwd ./js test:browser"
+  }
 }

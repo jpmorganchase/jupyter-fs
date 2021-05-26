@@ -1,0 +1,5 @@
+{
+  "ServerApp": {
+    "contents_manager_class": "jupyterfs.metamanager.MetaManager"
+  }
+}

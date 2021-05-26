@@ -37,8 +37,12 @@ with open('README.md', encoding='utf-8') as f:
 data_files_spec = [
     # lab extension installed by default:
     ('share/jupyter/lab/extensions', str(py_pkg / 'labdist'), '*.tgz'),
-    # config to enable server extension by default:
-    ("etc/jupyter/jupyter_server_config.d", "jupyter-config", "jupyterfs.json"),
+    # config to enable server extension "for free" on normal pip install:
+    (
+        "etc/jupyter/jupyter_server_config.d",
+        "jupyter-config/jupyter_server_config.d",
+        "jupyterfs.json",
+    ),
 ]
 
 cmdclass = create_cmdclass('jsdeps', data_files_spec=data_files_spec)
@@ -54,7 +58,7 @@ requires = [
     'fs-s3fs>=1.1.1',
     'fs.smbfs>=0.6.3',
     'jupyterlab>=3.0.0',
-    'jupyter_server>=1.6.0',
+    'jupyter_server>=1.8.0',
 ]
 
 test_requires = [
