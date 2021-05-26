@@ -1,12 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-## func for getting the real pth to a script
-## (regardless of aliases). Takes $BASH_SOURCE as first arg, eg:
-##
-##   SOURCE=$(thispath $BASH_SOURCE)
-##
-## ref: https://stackoverflow.com/a/246128/425458
+## func for getting the real pth to a script. Any links will be resolved
 thispath()
 {
     SOURCE_LIST=$1
@@ -22,11 +17,7 @@ thispath()
     echo "$(ls -d "$_THIS_DIR"/"$_THIS_NAME")"
 }
 
-## func for getting the real pth to a script's
-## dir (regardless of aliases). Takes $BASH_SOURCE as first arg, eg:
-##
-##   HERE=$(thisdir $BASH_SOURCE)
-##
+## func for getting the real pth to a script's dir
 thisdir()
 {
     SOURCE="$(thispath "$1")"
@@ -44,10 +35,10 @@ source "$HERE/generate_jupyter_config.sh" "$@"
 export PYTHONUNBUFFERED="true"
 
 # run the normal jupyterlab browser check. Rerun once if it fails
-python -m jupyterlab.browser_check || python -m jupyterlab.browser_check
+python -m jupyterlab.browser_check --notebook-dir=${WORKSPACE_FOLDER}
 
 # run the jupyterfs-specific browser check. Rerun once if it fails
-python -m jupyterfs.browser_check || python -m jupyterfs.browser_check
+python -m jupyterfs.browser_check --notebook-dir=${WORKSPACE_FOLDER}
 
 # clean up all of the jupyter config files that were created for this check
 # rm -rf $JUPYTER_CONFIG_DIR

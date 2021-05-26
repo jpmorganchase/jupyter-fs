@@ -1,4 +1,11 @@
 {
-    "private": true,
-    "workspaces": ["js"]
+  "private": true,
+  "license": "BSD-3-Clause",
+  "workspaces": ["./js"],
+  "scripts": {
+    "test:browser": "lerna run test:browser"
+  },
+  "devDependencies": {
+    "lerna": "^4.0.0"
+  }
 }
