@@ -8,7 +8,7 @@ include pyproject.toml
 include .bumpversion.cfg
 include Makefile
 
-include jupyterfs/chrome-test.js
+include jupyterfs/browser-test.js
 
 # Webapp files
 graft js
