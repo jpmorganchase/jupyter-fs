@@ -160,7 +160,7 @@ class RootDirUtil:
 
 
 if __name__ == "__main__":
-    smb_container, _ = startServer(name_port=3669)
+    container, _ = startServer(name_port=3669)
 
     def sigHandler(signo, frame):
         sys.exit(0)
@@ -171,7 +171,7 @@ if __name__ == "__main__":
 
     old_log = ''
     while True:
-        new_log = smb_container.logs()
+        new_log = container.logs()
         if old_log != new_log:
             print(new_log)
             old_log = new_log

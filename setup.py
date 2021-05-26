@@ -5,9 +5,6 @@
 # This file is part of the jupyter-fs library, distributed under the terms of
 # the Apache License 2.0.  The full license can be found in the LICENSE file.
 
-from codecs import open
-from pathlib import Path
-
 from jupyter_packaging import (
     combine_commands,
     create_cmdclass,
@@ -15,43 +12,49 @@ from jupyter_packaging import (
     ensure_targets,
     get_version,
     install_npm,
+    skip_if_exists
 )
-from setuptools import find_packages, setup
+from pathlib import Path
+import setuptools
 
-# the name of the project
-name = 'jupyter-fs'
+ensure_python(('>=3.6',))
 
-# the Path to the python pkg dir
-py_pkg = Path('jupyterfs')
-
-# the Path to the javascript pkg dir
-js_pkg = Path('js')
-
-ensure_python(('2.7', '>=3.6'))
-
+# project name is also name of labextension npm package
+name = labext_name = 'jupyter-fs'
+# relative paths to python pkg dir and labextension pkg dir
+js_pkg, py_pkg = Path('js'), Path('jupyterfs')
+# relative path to labextension dist that gets built at the root of the python package
+labext_dist = py_pkg/'labextension'
+# Representative files that should exist after a successful build
+jstargets = [labext_dist/"package.json"]
 version = get_version(str(py_pkg / '_version.py'))
+# POSIX_PREFIX/APP_SUFFIX determines the install location of the labextension dist
+APP_SUFFIX = Path('share/jupyter/labextensions/')
+# POSIX_PREFIX/CON_SUFFIX determines the install location of the labextension dist
+APP_SUFFIX = Path('share/jupyter/labextensions/')
 
 with open('README.md', encoding='utf-8') as f:
     long_description = f.read()
 
 data_files_spec = [
-    # lab extension installed by default:
-    ('share/jupyter/lab/extensions', str(py_pkg / 'labdist'), '*.tgz'),
-    # config to enable server extension "for free" on normal pip install:
-    (
-        "etc/jupyter/jupyter_server_config.d",
-        "jupyter-config/jupyter_server_config.d",
-        "jupyterfs.json",
-    ),
+    # distribute the labextension dist via the data_files of the python package
+    (str(SUFFIX/labext_name), str(labext_dist), '**'),
+    # include a record of installation method (ie pip) in the labextension install
+    (str(SUFFIX/labext_name), '.', 'install.json')
+    # config to enable server extension 'for free' on normal pip install:
+    ('etc/jupyter', 'jupyter-config/**/*', '*'),
 ]
+package_data_spec = {name: ["*"]}
 
-cmdclass = create_cmdclass('jsdeps', data_files_spec=data_files_spec)
-cmdclass['jsdeps'] = combine_commands(
-    install_npm(js_pkg, build_cmd='build:labdist', npm=['jlpm']),
-    ensure_targets([js_pkg / 'lib' / 'index.js', js_pkg / 'style' / 'index.css']),
+cmdclass = create_cmdclass("jsdeps",
+    package_data_spec=package_data_spec,
+    data_files_spec=data_files_spec
 )
-
-cmdclass.pop("develop")
+js_command = combine_commands(
+    install_npm(js_pkg, build_cmd='build:labextension', npm=['jlpm']),
+    ensure_targets(jstargets),
+)
+cmdclass["jsdeps"] = js_command if Path(".git").exists() else skip_if_exists(jstargets, js_command)
 
 requires = [
     'fs>=2.4.11',
@@ -84,7 +87,10 @@ dev_requires = test_requires + [
 ]
 
 
-setup(
+with open('README.md', 'r') as fh:
+    long_description = fh.read()
+
+setup_args = dict(
     name=name,
     version=version,
     description='A Filesystem-like mult-contents manager backend for Jupyter',
@@ -94,9 +100,8 @@ setup(
     author='jupyter-fs authors',
     license='Apache 2.0',
     classifiers=[
-        'Development Status :: 3 - Alpha',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
+        'License :: OSI Approved :: BSD License',
+        'Programming Language :: Python',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
@@ -105,9 +110,12 @@ setup(
     ],
     cmdclass=cmdclass,
     keywords='jupyter jupyterlab',
-    packages=find_packages(exclude=('js', 'js.*')),
+    packages=setuptools.find_packages(exclude=('js', 'js.*')),
     install_requires=requires,
-    extras_require={'dev': dev_requires},
+    extras_require={'dev': dev_requires, 'test': test_requires},
     include_package_data=True,
     zip_safe=False,
 )
+
+if __name__ == '__main__':
+    setuptools.setup(**setup_args)

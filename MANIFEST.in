@@ -1,8 +1,11 @@
-include LICENSE
-include README.md
+include .bumpversion.cfg
 include CONTRIBUTING.md
-
-include requirements.txt
+include jupyter-config/jupyterfs.json
+include jupyterfs/chrome-test.js
+include LICENSE
+include Makefile
+include pyproject.toml
+include README.md
 include setup.cfg
 include pyproject.toml
 include .bumpversion.cfg
@@ -11,11 +14,12 @@ include Makefile
 include jupyterfs/browser-test.js
 
 # Webapp files
-graft js
+graft js/src
+graft js/style
 prune js/build
 prune js/dist
 prune js/lib
-prune js/node_modules
+prune **/node_modules
 
 # Patterns to exclude from any directory
 global-exclude *~

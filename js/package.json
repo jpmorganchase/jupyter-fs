@@ -13,22 +13,27 @@
     "jupyterlab-extension"
   ],
   "scripts": {
-    "build": "tsc -b",
-    "build:integrity": "yarn install && yarn deduplicate && yarn install && yarn build",
-    "build:labdist": "yarn clean:labdist && yarn build:integrity && mkdirp ../jupyterfs/labdist && cd ../jupyterfs/labdist && npm pack ../../js",
-    "clean": "rimraf lib tsconfig.tsbuildinfo *junit.xml coverage* .jupyter",
-    "clean:more": "yarn clean && rimraf build dist MANIFEST",
-    "clean:labdist": "rimraf ../jupyterfs/labdist",
-    "clean:slate": "yarn clean:more && yarn clean:labdist && rimraf node_modules",
-    "deduplicate": "yarn yarn-deduplicate -s fewer ../yarn.lock || yarn yarn-deduplicate -s fewer",
-    "fix": "yarn lint --fix",
+    "build": "jlpm build:lib && jlpm build:labextension",
+    "build:labextension": "jupyter labextension build --development=True --source-map=True .",
+    "build:prod": "jlpm build:lib && jlpm build:labextension:prod",
+    "build:labextension:prod": "jupyter labextension build --source-map=True .",
+    "build:lib": "tsc -b",
+    "clean": "rimraf *junit.xml .jupyter coverage* dist lib tsconfig.tsbuildinfo",
+    "clean:labextension": "rimraf ../jupyterfs/labextension",
+    "clean:slate": "jlpm clean && jlpm clean:labextension && rimraf node_modules",
+    "deduplicate": "jlpm yarn-deduplicate -s fewer ../yarn.lock || jlpm yarn-deduplicate -s fewer",
+    "fix": "jlpm lint --fix",
+    "install:extension": "jupyter labextension develop --overwrite .",
+    "integrity": "jlpm install && jlpm deduplicate && jlpm install",
     "lint": "eslint -c .eslintrc.js --ext .js,.ts,.tsx src/ tests/",
     "postpack": "shx rm README.md",
     "prepack": "shx cp ../README.md .",
-    "prepublishOnly": "yarn run build",
+    "prepublishOnly": "jlpm clean && jlpm clean:labextension && jlpm integrity && jlpm build:prod",
     "test": "jest --coverage --collectCoverageFrom=src/*.{ts,tsx}",
     "test:browser": "../ci/browser_check.sh",
-    "watch": "tsc -w"
+    "watch": "run-p watch:lib watch:labextension",
+    "watch:lib": "tsc -b -w",
+    "watch:labextension": "jupyter labextension watch ."
   },
   "files": [
     "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
@@ -36,23 +41,6 @@
     "src/**/*",
     "style/**/*.{css,eot,gif,html,jpg,json,png,svg,woff2,ttf}"
   ],
-  "sideEffects": [
-    "style/**/*"
-  ],
-  "jupyterlab": {
-    "discovery": {
-      "server": {
-        "base": {
-          "name": "jupyter-fs"
-        },
-        "managers": [
-          "pip"
-        ]
-      }
-    },
-    "extension": true,
-    "schemaDir": "schema"
-  },
   "dependencies": {
     "@jupyterlab/application": "^3.0.0",
     "@jupyterlab/apputils": "^3.0.0",
@@ -77,6 +65,7 @@
   "devDependencies": {
     "@babel/core": "^7.0.0",
     "@babel/preset-env": "^7.7.6",
+    "@jupyterlab/builder": "^3.0.0",
     "@types/jest": "^26.0.22",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
@@ -97,5 +86,28 @@
     "ts-jest": "^26.5.4",
     "typescript": "^4.2.4",
     "yarn-deduplicate": "^3.1.0"
+  },
+  "resolutions": {
+		"**/@types/react": "^17.0.0"
+  },
+  "sideEffects": [
+    "style/**/*.css",
+    "style/index.js"
+  ],
+  "styleModule": "style/index.js",
+  "jupyterlab": {
+    "discovery": {
+        "server": {
+          "managers": [
+            "pip"
+          ],
+          "base": {
+            "name": "jupyter-fs"
+          }
+        }
+    },
+    "extension": true,
+    "outputDir": "../jupyterfs/labextension",
+    "schemaDir": "schema"
   }
 }
