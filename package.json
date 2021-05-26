@@ -1,11 +1,8 @@
 {
   "private": true,
   "license": "BSD-3-Clause",
-  "workspaces": ["./js"],
+  "workspaces": ["js"],
   "scripts": {
-    "test:browser": "lerna run test:browser"
-  },
-  "devDependencies": {
-    "lerna": "^4.0.0"
+    "test:browser": "yarn --cwd ./js test:browser"
   }
 }
