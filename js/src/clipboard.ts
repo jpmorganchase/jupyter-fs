@@ -13,26 +13,26 @@ import { Widget } from "@lumino/widgets";
 import { ClipboardModel, ContentsModel, IContentRow, Path } from "tree-finder";
 
 // "forward" declare the TreeFinderWidget
-type ITreeFinderWidget<T extends IContentRow> = Widget & {model: ContentsModel<T>};
+type ITreeFinderWidget = Widget & {treefinder: {model: ContentsModel<any>}};
 
-export class JupyterClipboard<T extends IContentRow> {
-  constructor(tracker: WidgetTracker<ITreeFinderWidget<T>>) {
+export class JupyterClipboard {
+  constructor(tracker: WidgetTracker<ITreeFinderWidget>) {
     this._tracker = tracker;
 
     this._model.deleteSub.subscribe(async memo => {
       await Promise.all(memo.map(s => this._onDelete(s)));
-      this.refresh(undefined, memo);
+      this.model.refresh(this._tracker.currentWidget.treefinder.model, memo);
     });
 
     this._model.pasteSub.subscribe(async ({ destination, doCut, memo }) => {
       const destPathstr = Path.fromarray(destination.kind === "dir" ? destination.path : destination.path.slice(0, -1));
       await Promise.all(memo.map(s => this._onPaste(s, destPathstr, doCut)));
-      this.refresh(undefined, [destination, ...memo]);
+      this.model.refresh(this._tracker.currentWidget.treefinder.model, [destination, ...memo]);
     });
   }
 
   refresh<T extends IContentRow>(tm?: ContentsModel<T>, memo?: T[]) {
-    tm ??= this._tracker.currentWidget.model as any as ContentsModel<T>;
+    tm ??= this._tracker.currentWidget.treefinder.model as any as ContentsModel<T>;
     this.model.refresh(tm, memo);
   }
 
@@ -59,7 +59,7 @@ export class JupyterClipboard<T extends IContentRow> {
   }
 
   protected _model = new ClipboardModel();
-  protected _tracker: WidgetTracker<ITreeFinderWidget<T>>;
+  protected _tracker: WidgetTracker<ITreeFinderWidget>;
 
   private _drive = new Drive();
 }

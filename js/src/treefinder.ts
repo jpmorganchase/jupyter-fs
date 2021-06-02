@@ -7,11 +7,14 @@
  *
  */
 import { ILayoutRestorer, IRouter, JupyterFrontEnd } from "@jupyterlab/application";
-import { WidgetTracker /*Clipboard, Dialog, IWindowResolver, showDialog, showErrorMessage, Toolbar, ToolbarButton*/ } from "@jupyterlab/apputils";
-import { IWindowResolver /*Toolbar*/ } from "@jupyterlab/apputils";
+import {
+  IWindowResolver,
+  Toolbar,
+  ToolbarButton,
+  WidgetTracker, /*Clipboard, Dialog, IWindowResolver, showDialog, showErrorMessage*/
+} from "@jupyterlab/apputils";
 // import { PathExt, URLExt } from "@jupyterlab/coreutils";
-// import { IDocumentManager, isValidFileName, renameFile } from "@jupyterlab/docmanager";
-import { IDocumentManager } from "@jupyterlab/docmanager";
+import { IDocumentManager /*isValidFileName, renameFile*/} from "@jupyterlab/docmanager";
 // import { DocumentRegistry } from "@jupyterlab/docregistry";
 import { Contents, ContentsManager } from "@jupyterlab/services";
 import {
@@ -23,7 +26,7 @@ import {
 } from "@jupyterlab/ui-components";
 // import JSZip from "jszip";
 import { DisposableSet, IDisposable } from "@lumino/disposable";
-import { Widget /*PanelLayout*/ } from "@lumino/widgets";
+import { PanelLayout, Widget } from "@lumino/widgets";
 import { Format, IContentRow, Path, TreeFinderPanelElement } from "tree-finder";
 
 import { JupyterClipboard } from "./clipboard";
@@ -75,8 +78,8 @@ export namespace JupyterContents {
   }
 }
 
-export class TreeFinderTracker extends WidgetTracker<TreeFinderWidget> {
-  async add(finder: TreeFinderWidget) {
+export class TreeFinderTracker extends WidgetTracker<TreeFinderSidebar> {
+  async add(finder: TreeFinderSidebar) {
     super.add(finder);
 
     this._finders.set(finder.id, finder);
@@ -85,7 +88,7 @@ export class TreeFinderTracker extends WidgetTracker<TreeFinderWidget> {
     finder.disposed.connect(this._onWidgetDisposed, this);
   }
 
-  remove(finder: TreeFinderWidget) {
+  remove(finder: TreeFinderSidebar) {
     this._finders.delete(finder.id);
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -100,45 +103,25 @@ export class TreeFinderTracker extends WidgetTracker<TreeFinderWidget> {
     return this._finders.has(drive);
   }
 
-  private _onWidgetDisposed(finder: TreeFinderWidget) {
+  private _onWidgetDisposed(finder: TreeFinderSidebar) {
     this.remove(finder);
   }
 
-  private _finders = new Map<string, TreeFinderWidget>();
+  private _finders = new Map<string, TreeFinderSidebar>();
 }
 
 export class TreeFinderWidget extends Widget {
   constructor({
     app,
     rootPath = "",
-    caption = "TreeFinder",
-    id = "jupyterlab-tree-finder",
-  }: TreeFinderWidget.IOptions) {
+  }: TreeFinderSidebar.IOptions) {
     const { commands, serviceManager: { contents } } = app;
 
     const node = document.createElement<JupyterContents.IJupyterContentRow>("tree-finder-panel");
     super({ node });
-    this.id = id;
-    this.title.icon = fileTreeIcon;
-    this.title.caption = caption;
-    this.title.closable = true;
     this.addClass("jp-tree-finder");
-    this.addClass(id);
 
     this.cm = new JupyterContents(contents, rootPath);
-    // each separate widget gets its own unique commands, with each commandId prefixed with the widget's unique id
-    // TODO: check on edge cases where two widget's share id (ie when two widgets are both views onto the same ContentsManager on the backend)
-    this.commandIDs = Object.fromEntries(TreeFinderWidget.commandNames.map(name => [name, `${this.id}:treefinder:${name}`])) as TreeFinderWidget.ICommandIDs;
-
-    // this.dr = app.docRegistry;
-
-    // this.toolbar = new Toolbar<Widget>();
-    // this.toolbar.addClass("tree-finder-toolbar");
-    // this.toolbar.addClass(id);
-
-    // const layout = new PanelLayout();
-    // layout.addWidget(this.toolbar);
-    // this.layout = layout;
 
     rootPath = rootPath === "" ? rootPath : rootPath + ":";
     this.cm.get(rootPath).then(root => {
@@ -165,19 +148,64 @@ export class TreeFinderWidget extends Widget {
     });
   }
 
-  reload() { // rebuild tree
-    // this.table.removeChild(this.tree);
-    // const tbody = this.table.createTBody();
-    // tbody.id = "filetree-body";
-    // this.tree = tbody;
-    // const base = this.cm.get(this.basepath);
-    // base.then(res => {
-    //   this.buildTableContents(res.content, 1, "");
-    // });
-    // this.table.appendChild(tbody);
+  draw() {
+    this.node.draw();
+  }
+
+  refresh() {
+    this.model.refreshSub.next();
+  }
+
+  get model() {
+    return this.node.model;
+  }
+
+  get selection() {
+    return this.node.model.selection;
+  }
+
+  get selectionPathstrs() {
+    return this.node.model.selection.map(c => Path.fromarray(c.row.path));
+  }
+
+  cm: JupyterContents;
+  readonly node: TreeFinderPanelElement<JupyterContents.IJupyterContentRow>;
+}
+
+export class TreeFinderSidebar extends Widget {
+  constructor({
+    app,
+    rootPath = "",
+    caption = "TreeFinder",
+    id = "jupyterlab-tree-finder",
+  }: TreeFinderSidebar.IOptions) {
+    super();
+    this.id = id;
+    this.title.icon = fileTreeIcon;
+    this.title.caption = caption;
+    this.title.closable = true;
+    this.addClass("jp-tree-finder-sidebar");
+
+    // each separate widget gets its own unique commands, with each commandId prefixed with the widget's unique id
+    // TODO: check on edge cases where two widget's share id (ie when two widgets are both views onto the same ContentsManager on the backend)
+    this.commandIDs = Object.fromEntries(TreeFinderSidebar.commandNames.map(name => [name, `${this.id}:treefinder:${name}`])) as TreeFinderSidebar.ICommandIDs;
+
+    // this.dr = app.docRegistry;
+
+
+    this.toolbar = new Toolbar();
+    this.toolbar.addClass("jp-tree-finder-toolbar");
+    // this.toolbar.addClass(id);
+
+    this.treefinder = new TreeFinderWidget({app, rootPath});
+
+    this.layout = new PanelLayout();
+    this.layout.addWidget(this.toolbar);
+    this.layout.addWidget(this.treefinder);
   }
 
   restore() { // restore expansion prior to rebuild
+    this.treefinder.refresh();
     // const array: Array<Promise<any>> = [];
     // Object.keys(this.controller).forEach(key => {
     //   if (this.controller[key].open && (key !== "")) {
@@ -198,11 +226,6 @@ export class TreeFinderWidget extends Widget {
     //   // eslint-disable-next-line no-console
     //   console.log(reasons);
     // });
-  }
-
-  refresh() {
-    this.reload();
-    this.restore();
   }
 
   // async download(path: string, folder: boolean): Promise<any> {
@@ -241,37 +264,25 @@ export class TreeFinderWidget extends Widget {
   // }
 
   protected onBeforeShow(msg: any): void {
-    this.node.draw();
+    this.treefinder.refresh();
+    this.treefinder.draw();
   }
 
   protected onResize(msg: any): void {
-    this.node.draw();
-  }
-
-  get model() {
-    return this.node.model;
-  }
-
-  get selection() {
-    return this.node.model.selection;
-  }
-
-  get selectionPathstrs() {
-    return this.node.model.selection.map(c => Path.fromarray(c.row.path));
+    this.treefinder.draw();
   }
 
   cm: JupyterContents;
   // dr: DocumentRegistry;
-  // toolbar: Toolbar;
-  table: HTMLTableElement;
-  tree: HTMLElement;
+  toolbar: Toolbar;
+  treefinder: TreeFinderWidget;
 
-  readonly commandIDs: TreeFinderWidget.ICommandIDs;
-  readonly node: TreeFinderPanelElement<JupyterContents.IJupyterContentRow>;
+  readonly commandIDs: TreeFinderSidebar.ICommandIDs;
+  readonly layout: PanelLayout;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace TreeFinderWidget {
+export namespace TreeFinderSidebar {
   const namespace = "jupyter-fs:TreeFinder";
 
   // define the command ids as a constant tuple
@@ -308,7 +319,7 @@ export namespace TreeFinderWidget {
     side?: string;
   }
 
-  export function sidebarFromResource(resource: IFSResource, props: TreeFinderWidget.ISidebarProps): IDisposable {
+  export function sidebarFromResource(resource: IFSResource, props: TreeFinderSidebar.ISidebarProps): IDisposable {
     return sidebar({
       ...props,
       rootPath: resource.drive,
@@ -329,9 +340,9 @@ export namespace TreeFinderWidget {
     caption = "TreeFinder",
     id = "jupyterlab-tree-finder",
     side = "left",
-  }: TreeFinderWidget.ISidebarProps): IDisposable {
+  }: TreeFinderSidebar.ISidebarProps): IDisposable {
     const selector = `#${id}`;
-    const widget = new TreeFinderWidget({ app, rootPath, caption, id });
+    const widget = new TreeFinderSidebar({ app, rootPath, caption, id });
     tracker.add(widget);
     restorer.add(widget, widget.id);
     app.shell.add(widget, side);
@@ -344,17 +355,17 @@ export namespace TreeFinderWidget {
     //   },
     //   tooltip: "New Folder",
     // });
-    // const refresh_button = new ToolbarButton({
-    //   icon: refreshIcon,
-    //   onClick: () => {
-    //     app.commands.execute((CommandIDs.refresh + ":" + widget.id));
-    //   },
-    //   tooltip: "Refresh",
-    // });
+    const refresh_button = new ToolbarButton({
+      icon: refreshIcon,
+      onClick: () => {
+        app.commands.execute(widget.commandIDs.refresh);
+      },
+      tooltip: "Refresh",
+    });
 
     // widget.toolbar.addItem("upload", uploader_button);
     // widget.toolbar.addItem("new file", new_file_button);
-    // widget.toolbar.addItem("refresh", refresh_button);
+    widget.toolbar.addItem("refresh", refresh_button);
 
     // // remove context highlight on context menu exit
     // document.ondblclick = () => {
@@ -373,31 +384,31 @@ export namespace TreeFinderWidget {
     return [
       // globally accessible jupyter commands
       app.commands.addCommand(widget.commandIDs.copy, {
-        execute: args => clipboard.model.copySelection(widget.model),
+        execute: args => clipboard.model.copySelection(widget.treefinder.model),
         icon: copyIcon,
         label: "Copy",
       }),
       app.commands.addCommand(widget.commandIDs.cut, {
-        execute: args => clipboard.model.cutSelection(widget.model),
+        execute: args => clipboard.model.cutSelection(widget.treefinder.model),
         icon: cutIcon,
         label: "Cut",
       }),
       app.commands.addCommand(widget.commandIDs.delete, {
-        execute: args => clipboard.model.deleteSelection(widget.model),
+        execute: args => clipboard.model.deleteSelection(widget.treefinder.model),
         icon: closeIcon.bindprops({ stylesheet: "menuItem" }),
         label: "Delete",
       }),
       app.commands.addCommand(widget.commandIDs.open, {
-        execute: args => widget.model.openSub.next(widget.selection.map(c => c.row)),
+        execute: args => widget.treefinder.model.openSub.next(widget.treefinder.selection.map(c => c.row)),
         label: "Open",
       }),
       app.commands.addCommand(widget.commandIDs.paste, {
-        execute: args => clipboard.model.pasteSelection(widget.model),
+        execute: args => clipboard.model.pasteSelection(widget.treefinder.model),
         icon: pasteIcon,
         label: "Paste",
       }),
       app.commands.addCommand(widget.commandIDs.refresh, {
-        execute: args => args["selection"] ? clipboard.refreshSelection(widget.model) : clipboard.refresh(widget.model),
+        execute: args => args["selection"] ? clipboard.refreshSelection(widget.treefinder.model) : clipboard.refresh(widget.treefinder.model),
         icon: refreshIcon,
         label: args => args["selection"] ? "Refresh Selection" : "Refresh",
       }),
