@@ -6105,10 +6105,10 @@ tr46@^2.0.2:
   dependencies:
     punycode "^2.1.1"
 
-tree-finder@^0.0.12:
-  version "0.0.12"
-  resolved "https://registry.yarnpkg.com/tree-finder/-/tree-finder-0.0.12.tgz#59fe983ae67a5ecd120fd5f457f0e035126cca51"
-  integrity sha512-Trws7gmS7SbSazdRvNMfZz0KrKTp3f235CMmZQMvgsyGzriawdW5tNfkYwecbVeetXyRx96RWoE7QZp+V+bNHQ==
+tree-finder@^0.0.13:
+  version "0.0.13"
+  resolved "https://registry.yarnpkg.com/tree-finder/-/tree-finder-0.0.13.tgz#72fe38e2e624d3de1719d10bfbc6a68f82e277e9"
+  integrity sha512-RlHvecx0UWAUfkjkJfnhd8jMadUYVQ02A0XSLp/QEH3zt8yKnJh3FqzquVvEEKVOkh5Y6gIUcNlt8jnNVwIsRQ==
   dependencies:
     regular-table "^0.4.0"
     rxjs "^6.6.3"

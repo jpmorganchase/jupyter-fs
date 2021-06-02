@@ -13,12 +13,13 @@ import { IWindowResolver /*Toolbar*/ } from "@jupyterlab/apputils";
 // import { IDocumentManager, isValidFileName, renameFile } from "@jupyterlab/docmanager";
 import { IDocumentManager } from "@jupyterlab/docmanager";
 // import { DocumentRegistry } from "@jupyterlab/docregistry";
-import { Contents, ContentsManager, Drive } from "@jupyterlab/services";
+import { Contents, ContentsManager } from "@jupyterlab/services";
 import {
   closeIcon,
   copyIcon,
   cutIcon,
   pasteIcon,
+  refreshIcon,
 } from "@jupyterlab/ui-components";
 // import JSZip from "jszip";
 import { DisposableSet, IDisposable } from "@lumino/disposable";
@@ -74,8 +75,8 @@ export namespace JupyterContents {
   }
 }
 
-export class TreeFinderTracker extends WidgetTracker<TreeFinder> {
-  async add(finder: TreeFinder) {
+export class TreeFinderTracker extends WidgetTracker<TreeFinderWidget> {
+  async add(finder: TreeFinderWidget) {
     super.add(finder);
 
     this._finders.set(finder.id, finder);
@@ -84,7 +85,7 @@ export class TreeFinderTracker extends WidgetTracker<TreeFinder> {
     finder.disposed.connect(this._onWidgetDisposed, this);
   }
 
-  remove(finder: TreeFinder) {
+  remove(finder: TreeFinderWidget) {
     this._finders.delete(finder.id);
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -99,20 +100,20 @@ export class TreeFinderTracker extends WidgetTracker<TreeFinder> {
     return this._finders.has(drive);
   }
 
-  private _onWidgetDisposed(finder: TreeFinder) {
+  private _onWidgetDisposed(finder: TreeFinderWidget) {
     this.remove(finder);
   }
 
-  private _finders = new Map<string, TreeFinder>();
+  private _finders = new Map<string, TreeFinderWidget>();
 }
 
-export class TreeFinder extends Widget {
+export class TreeFinderWidget extends Widget {
   constructor({
     app,
     rootPath = "",
     caption = "TreeFinder",
     id = "jupyterlab-tree-finder",
-  }: TreeFinder.IOptions) {
+  }: TreeFinderWidget.IOptions) {
     const { commands, serviceManager: { contents } } = app;
 
     const node = document.createElement<JupyterContents.IJupyterContentRow>("tree-finder-panel");
@@ -127,7 +128,7 @@ export class TreeFinder extends Widget {
     this.cm = new JupyterContents(contents, rootPath);
     // each separate widget gets its own unique commands, with each commandId prefixed with the widget's unique id
     // TODO: check on edge cases where two widget's share id (ie when two widgets are both views onto the same ContentsManager on the backend)
-    this.commandIds = Object.fromEntries(TreeFinder.commandNames.map(name => [name, `${this.id}:treefinder:${name}`])) as TreeFinder.ICommandIds;
+    this.commandIDs = Object.fromEntries(TreeFinderWidget.commandNames.map(name => [name, `${this.id}:treefinder:${name}`])) as TreeFinderWidget.ICommandIDs;
 
     // this.dr = app.docRegistry;
 
@@ -156,11 +157,11 @@ export class TreeFinder extends Widget {
         },
       });
     }).then(() => {
-      this.model.openSub.subscribe(x => {
-        if (x.kind !== "dir") {
-          commands.execute("docmanager:open", { path: Path.fromarray(x.path) });
+      this.model.openSub.subscribe(rows => rows.map(row => {
+        if (row.kind !== "dir") {
+          commands.execute("docmanager:open", { path: Path.fromarray(row.path) });
         }
-      });
+      }));
     });
   }
 
@@ -265,13 +266,12 @@ export class TreeFinder extends Widget {
   table: HTMLTableElement;
   tree: HTMLElement;
 
-  readonly commandIds: TreeFinder.ICommandIds;
+  readonly commandIDs: TreeFinderWidget.ICommandIDs;
   readonly node: TreeFinderPanelElement<JupyterContents.IJupyterContentRow>;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace TreeFinder {
-  const drive = new Drive();
+export namespace TreeFinderWidget {
   const namespace = "jupyter-fs:TreeFinder";
 
   // define the command ids as a constant tuple
@@ -281,10 +281,14 @@ export namespace TreeFinder {
     "delete",
     "open",
     "paste",
+    "refresh",
     "rename",
   ] as const;
   // use typescript-fu to convert commandIds to an interface
-  export type ICommandIds = {[k in typeof commandNames[number]]: string};
+  export type ICommandIDs = {[k in typeof commandNames[number]]: string};
+
+  export const tracker = new TreeFinderTracker({ namespace });
+  export const clipboard = new JupyterClipboard(tracker);
 
   export interface IOptions {
     app: JupyterFrontEnd;
@@ -304,7 +308,7 @@ export namespace TreeFinder {
     side?: string;
   }
 
-  export function sidebarFromResource(resource: IFSResource, props: TreeFinder.ISidebarProps): IDisposable {
+  export function sidebarFromResource(resource: IFSResource, props: TreeFinderWidget.ISidebarProps): IDisposable {
     return sidebar({
       ...props,
       rootPath: resource.drive,
@@ -325,12 +329,9 @@ export namespace TreeFinder {
     caption = "TreeFinder",
     id = "jupyterlab-tree-finder",
     side = "left",
-  }: TreeFinder.ISidebarProps): IDisposable {
-    // // TODO: ugly as sin. Consider other ways to get/construct drive
-    // const drive = (app.serviceManager.contents as any as (Omit<ContentsManager, '_defaultDrive'> & {_defaultDrive: Contents.IDrive}))._defaultDrive;
+  }: TreeFinderWidget.ISidebarProps): IDisposable {
     const selector = `#${id}`;
-    const tracker = new TreeFinderTracker({ namespace });
-    const widget = new TreeFinder({ app, rootPath, caption, id });
+    const widget = new TreeFinderWidget({ app, rootPath, caption, id });
     tracker.add(widget);
     restorer.add(widget, widget.id);
     app.shell.add(widget, side);
@@ -371,70 +372,69 @@ export namespace TreeFinder {
     // with this widget, ending with the widget itself
     return [
       // globally accessible jupyter commands
-      app.commands.addCommand(widget.commandIds.copy, {
-        execute: args => {
-          JupyterClipboard.defaultClipboard.copySelection(widget.model, drive);
-        },
+      app.commands.addCommand(widget.commandIDs.copy, {
+        execute: args => clipboard.model.copySelection(widget.model),
         icon: copyIcon,
         label: "Copy",
       }),
-      app.commands.addCommand(widget.commandIds.cut, {
-        execute: args => {
-          JupyterClipboard.defaultClipboard.cutSelection(widget.model, drive);
-        },
+      app.commands.addCommand(widget.commandIDs.cut, {
+        execute: args => clipboard.model.cutSelection(widget.model),
         icon: cutIcon,
         label: "Cut",
       }),
-      app.commands.addCommand(widget.commandIds.delete, {
-        execute: args => {
-          JupyterClipboard.defaultClipboard.deleteSelection(widget.model, drive);
-        },
+      app.commands.addCommand(widget.commandIDs.delete, {
+        execute: args => clipboard.model.deleteSelection(widget.model),
         icon: closeIcon.bindprops({ stylesheet: "menuItem" }),
         label: "Delete",
       }),
-      app.commands.addCommand(widget.commandIds.open, {
-        execute: args => {
-          for (const row of widget.selection.map(c => c.row)) {
-            widget.model.openSub.next(row);
-          }
-        },
+      app.commands.addCommand(widget.commandIDs.open, {
+        execute: args => widget.model.openSub.next(widget.selection.map(c => c.row)),
         label: "Open",
-        // mnemonic: 0
       }),
-      app.commands.addCommand(widget.commandIds.paste, {
-        execute: args => {
-          JupyterClipboard.defaultClipboard.pasteSelection(widget.model, drive);
-        },
+      app.commands.addCommand(widget.commandIDs.paste, {
+        execute: args => clipboard.model.pasteSelection(widget.model),
         icon: pasteIcon,
         label: "Paste",
+      }),
+      app.commands.addCommand(widget.commandIDs.refresh, {
+        execute: args => args["selection"] ? clipboard.refreshSelection(widget.model) : clipboard.refresh(widget.model),
+        icon: refreshIcon,
+        label: args => args["selection"] ? "Refresh Selection" : "Refresh",
       }),
 
       // context menu items
       app.contextMenu.addItem({
-        command: widget.commandIds.open,
+        command: widget.commandIDs.open,
         selector,
         rank: 1,
       }),
 
       app.contextMenu.addItem({
-        command: widget.commandIds.copy,
+        command: widget.commandIDs.copy,
         selector,
         rank: 2,
       }),
       app.contextMenu.addItem({
-        command: widget.commandIds.cut,
+        command: widget.commandIDs.cut,
         selector,
         rank: 3,
       }),
       app.contextMenu.addItem({
-        command: widget.commandIds.paste,
+        command: widget.commandIDs.paste,
         selector,
         rank: 4,
       }),
       app.contextMenu.addItem({
-        command: widget.commandIds.delete,
+        command: widget.commandIDs.delete,
         selector,
         rank: 5,
+      }),
+
+      app.contextMenu.addItem({
+        args: {selection: true},
+        command: widget.commandIDs.refresh,
+        selector,
+        rank: 10,
       }),
 
       // the widget itself is a disposable

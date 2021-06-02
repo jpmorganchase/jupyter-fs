@@ -72,7 +72,7 @@
     "jszip": "^3.6.0",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
-    "tree-finder": "^0.0.12"
+    "tree-finder": "^0.0.13"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",

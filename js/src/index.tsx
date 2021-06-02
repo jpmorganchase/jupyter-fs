@@ -17,7 +17,7 @@ import * as ReactDOM from "react-dom";
 
 import { AskDialog, askRequired } from "./auth";
 import { FSComm, IFSOptions, IFSResource } from "./filesystem";
-import { TreeFinder } from "./treefinder";
+import { TreeFinderWidget } from "./treefinder";
 
 // tslint:disable: variable-name
 
@@ -46,7 +46,7 @@ async function activate(
 ) {
   const comm = new FSComm();
   let disposable = new DisposableSet();
-  const sidebarProps: TreeFinder.ISidebarProps = {
+  const sidebarProps: TreeFinderWidget.ISidebarProps = {
     app,
     manager,
     paths,
@@ -73,7 +73,7 @@ async function activate(
     // create the fs resource frontends (ie FileTree instances)
     for (const r of resources) {
       // make one composite disposable for all fs resource frontends
-      disposable.add(TreeFinder.sidebarFromResource(r, sidebarProps));
+      disposable.add(TreeFinderWidget.sidebarFromResource(r, sidebarProps));
     }
   }
 
