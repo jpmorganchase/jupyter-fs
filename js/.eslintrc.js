@@ -1,5 +1,5 @@
 module.exports = {
-  ignorePatterns: ["lib/**", "node_modules/**"],
+  ignorePatterns: ["lib/**", "node_modules/**", "filetree.ts", "utils.ts"],
   env: {
     browser: true,
     es6: true,
@@ -88,11 +88,12 @@ module.exports = {
         "@typescript-eslint/consistent-type-definitions": ["error", "interface"],
         "@typescript-eslint/explicit-function-return-type": "off",
         "@typescript-eslint/explicit-member-accessibility": ["error", { accessibility: "no-public" }],
-        "@typescript-eslint/interface-name-prefix": ["error", { prefixWithI: "always" }],
+        // "@typescript-eslint/interface-name-prefix": ["error", { prefixWithI: "always" }],
         "@typescript-eslint/no-empty-interface": "off",
         "@typescript-eslint/no-explicit-any": "off",
         "@typescript-eslint/no-namespace": "off",
         "@typescript-eslint/require-await": "warn",
+        "@typescript-eslint/restrict-template-expressions": "off",
         "@typescript-eslint/unified-signatures": "error",
 
         // typescript rules that extend core eslint rules
@@ -108,6 +109,12 @@ module.exports = {
         "no-unused-vars": "off",
         "quotes": "off",
         "semi": "off",
+
+        // new rules added by recent update to @typescript-eslint plugin that aren't compatible with current codebase (consider turning on later)
+        "@typescript-eslint/no-unsafe-assignment": "off",
+        "@typescript-eslint/no-unsafe-call": "off",
+        "@typescript-eslint/no-unsafe-member-access": "off",
+        "@typescript-eslint/no-unsafe-return": "off",
       },
     },
   ],

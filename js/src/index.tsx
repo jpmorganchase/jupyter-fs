@@ -133,7 +133,7 @@ async function activate(
 
   if (settings) {
     // initial setup
-    refresh();
+    void refresh();
 
     // rerun setup whenever relevant settings change
     // eslint-disable-next-line @typescript-eslint/no-misused-promises

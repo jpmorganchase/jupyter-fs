@@ -9,7 +9,6 @@
 import { WidgetTracker } from "@jupyterlab/apputils";
 import { Drive } from "@jupyterlab/services";
 import { Widget } from "@lumino/widgets";
-
 import { ClipboardModel, ContentsModel, IContentRow, Path } from "tree-finder";
 
 // "forward" declare the TreeFinderWidget
@@ -19,11 +18,13 @@ export class JupyterClipboard {
   constructor(tracker: WidgetTracker<ITreeFinderWidget>) {
     this._tracker = tracker;
 
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     this._model.deleteSub.subscribe(async memo => {
       await Promise.all(memo.map(s => this._onDelete(s)));
       this.model.refresh(this._tracker.currentWidget.treefinder.model, memo);
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     this._model.pasteSub.subscribe(async ({ destination, doCut, memo }) => {
       const destPathstr = Path.fromarray(destination.kind === "dir" ? destination.path : destination.path.slice(0, -1));
       await Promise.all(memo.map(s => this._onPaste(s, destPathstr, doCut)));

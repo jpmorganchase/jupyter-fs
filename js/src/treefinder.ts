@@ -14,7 +14,7 @@ import {
   WidgetTracker, /*Clipboard, Dialog, IWindowResolver, showDialog, showErrorMessage*/
 } from "@jupyterlab/apputils";
 // import { PathExt, URLExt } from "@jupyterlab/coreutils";
-import { IDocumentManager /*isValidFileName, renameFile*/} from "@jupyterlab/docmanager";
+import { IDocumentManager /*isValidFileName, renameFile*/ } from "@jupyterlab/docmanager";
 // import { DocumentRegistry } from "@jupyterlab/docregistry";
 import { Contents, ContentsManager } from "@jupyterlab/services";
 import {
@@ -80,12 +80,12 @@ export namespace JupyterContents {
 
 export class TreeFinderTracker extends WidgetTracker<TreeFinderSidebar> {
   async add(finder: TreeFinderSidebar) {
-    super.add(finder);
-
     this._finders.set(finder.id, finder);
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
     finder.disposed.connect(this._onWidgetDisposed, this);
+
+    return super.add(finder);
   }
 
   remove(finder: TreeFinderSidebar) {
@@ -124,32 +124,30 @@ export class TreeFinderWidget extends Widget {
     this.cm = new JupyterContents(contents, rootPath);
 
     rootPath = rootPath === "" ? rootPath : rootPath + ":";
-    this.cm.get(rootPath).then(root => {
-      this.node.init({
-        root,
-        gridOptions: {
-          columnFormatters: {
-            last_modified: (x => Format.timeSince(x as any as Date)),
-            size: (x => Format.bytesToHumanReadable(x)),
-          },
-          doWindowResize: true,
-          showFilter: true,
+    void this.cm.get(rootPath).then(root => this.node.init({
+      root,
+      gridOptions: {
+        columnFormatters: {
+          last_modified: (x => Format.timeSince(x as any as Date)),
+          size: (x => Format.bytesToHumanReadable(x)),
         },
-        modelOptions: {
-          columnNames: ["size", "mimetype", "last_modified"],
-        },
-      });
-    }).then(() => {
-      this.model.openSub.subscribe(rows => rows.map(row => {
-        if (row.kind !== "dir") {
-          commands.execute("docmanager:open", { path: Path.fromarray(row.path) });
+        doWindowResize: true,
+        showFilter: true,
+      },
+      modelOptions: {
+        columnNames: ["size", "mimetype", "last_modified"],
+      },
+    })).then(() => {
+      this.model.openSub.subscribe(rows => rows.forEach(row => {
+        if (!row.getChildren) {
+          void commands.execute("docmanager:open", { path: Path.fromarray(row.path) });
         }
       }));
     });
   }
 
   draw() {
-    this.node.draw();
+    this.model.requestDraw();
   }
 
   refresh() {
@@ -161,11 +159,11 @@ export class TreeFinderWidget extends Widget {
   }
 
   get selection() {
-    return this.node.model.selection;
+    return this.model.selection;
   }
 
   get selectionPathstrs() {
-    return this.node.model.selection.map(c => Path.fromarray(c.row.path));
+    return this.model.selection.map(c => Path.fromarray(c.row.path));
   }
 
   cm: JupyterContents;
@@ -197,7 +195,7 @@ export class TreeFinderSidebar extends Widget {
     this.toolbar.addClass("jp-tree-finder-toolbar");
     // this.toolbar.addClass(id);
 
-    this.treefinder = new TreeFinderWidget({app, rootPath});
+    this.treefinder = new TreeFinderWidget({ app, rootPath });
 
     this.layout = new PanelLayout();
     this.layout.addWidget(this.toolbar);
@@ -343,7 +341,7 @@ export namespace TreeFinderSidebar {
   }: TreeFinderSidebar.ISidebarProps): IDisposable {
     const selector = `#${id}`;
     const widget = new TreeFinderSidebar({ app, rootPath, caption, id });
-    tracker.add(widget);
+    void tracker.add(widget);
     restorer.add(widget, widget.id);
     app.shell.add(widget, side);
 
@@ -358,7 +356,7 @@ export namespace TreeFinderSidebar {
     const refresh_button = new ToolbarButton({
       icon: refreshIcon,
       onClick: () => {
-        app.commands.execute(widget.commandIDs.refresh);
+        void app.commands.execute(widget.commandIDs.refresh);
       },
       tooltip: "Refresh",
     });
@@ -442,7 +440,7 @@ export namespace TreeFinderSidebar {
       }),
 
       app.contextMenu.addItem({
-        args: {selection: true},
+        args: { selection: true },
         command: widget.commandIDs.refresh,
         selector,
         rank: 10,
