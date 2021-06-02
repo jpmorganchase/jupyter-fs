@@ -7,11 +7,49 @@
  *
  */
 
-tree-finder-panel {
+.jp-tree-finder-sidebar {
+  flex-direction: column;
+  display: flex;
+  flex: 1 1 auto;
+  color: var(--jp-ui-font-color1);
   background: var(--jp-layout-color1);
+  /* This is needed so that all font sizing of children done in ems is
+   * relative to this base size */
+  font-size: var(--jp-ui-font-size1);
+}
+
+tree-finder-panel {
+  flex-direction: column;
+  display: flex;
+  flex: 1 1 auto;
+}
+
+tree-finder-panel tree-finder-grid {
+  flex-direction: column;
+  display: flex;
+  flex: 1 1 auto;
+}
+
+tree-finder-panel tree-finder-grid table {
   color: var(--jp-ui-font-color1);
 }
 
-tree-finder-grid table {
-  color: var(--jp-ui-font-color1);
+.jp-tree-finder-toolbar {
+  padding: 0px;
+  border-bottom: none;
+  height: auto;
+  padding: 0px;
+  margin: 8px 12px 0px 12px;
+  box-shadow: none;
+  justify-content: flex-start;
+}
+
+.jp-tree-finder-toolbar.jp-Toolbar .jp-Toolbar-item {
+  flex: 0 0 auto;
+  padding-left: 0px;
+  padding-right: 2px;
+}
+
+.jp-tree-finder-toolbar.jp-Toolbar .jp-ToolbarButtonComponent {
+  width: 40px;
 }

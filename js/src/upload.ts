@@ -117,7 +117,7 @@ export class Uploader extends ToolbarButton {
     const pending = files.map(file => this.upload(file, this.context));
     this.context = "";
     Promise.all(pending).catch(error => {
-      showErrorMessage("Upload Error", error);
+      void showErrorMessage("Upload Error", error);
     });
   };
 
@@ -166,7 +166,7 @@ export class Uploader extends ToolbarButton {
       await new Promise((resolve, reject) => {
         reader.onload = resolve;
         reader.onerror = event =>
-          reject(`Failed to upload "${file.name}":` + event);
+          reject(`Failed to upload "${file.name}": ${event}`);
       });
       await this._uploadCheckDisposed();
 

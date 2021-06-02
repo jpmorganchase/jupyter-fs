@@ -6,60 +6,61 @@
  * the Apache License 2.0.  The full license can be found in the LICENSE file.
  *
  */
-import { Contents } from "@jupyterlab/services";
-
+import { WidgetTracker } from "@jupyterlab/apputils";
+import { Drive } from "@jupyterlab/services";
+import { Widget } from "@lumino/widgets";
 import { ClipboardModel, ContentsModel, IContentRow, Path } from "tree-finder";
 
+// "forward" declare the TreeFinderWidget
+type ITreeFinderWidget = Widget & {treefinder: {model: ContentsModel<any>}};
+
 export class JupyterClipboard {
-  constructor() {
-    this.clipboardModel.deleteSub.subscribe(memo => {
-      Promise.all(memo.map(s => this._onDelete(s)));
+  constructor(tracker: WidgetTracker<ITreeFinderWidget>) {
+    this._tracker = tracker;
+
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    this._model.deleteSub.subscribe(async memo => {
+      await Promise.all(memo.map(s => this._onDelete(s)));
+      this.model.refresh(this._tracker.currentWidget.treefinder.model, memo);
     });
 
-    this.clipboardModel.pasteSub.subscribe(({ destination, doCut, memo }) => {
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    this._model.pasteSub.subscribe(async ({ destination, doCut, memo }) => {
       const destPathstr = Path.fromarray(destination.kind === "dir" ? destination.path : destination.path.slice(0, -1));
-      Promise.all(memo.map(s => this._onPaste(s, destPathstr, doCut)));
+      await Promise.all(memo.map(s => this._onPaste(s, destPathstr, doCut)));
+      this.model.refresh(this._tracker.currentWidget.treefinder.model, [destination, ...memo]);
     });
   }
 
-  copySelection<T extends IContentRow>(contentsModel: ContentsModel<T>, drive: Contents.IDrive) {
-    this.srcDrive = drive;
-    this.clipboardModel.copySelection(contentsModel);
+  refresh<T extends IContentRow>(tm?: ContentsModel<T>, memo?: T[]) {
+    tm ??= this._tracker.currentWidget.treefinder.model as any as ContentsModel<T>;
+    this.model.refresh(tm, memo);
   }
 
-  cutSelection<T extends IContentRow>(contentsModel: ContentsModel<T>, drive: Contents.IDrive) {
-    this.srcDrive = drive;
-    this.clipboardModel.cutSelection(contentsModel);
+  // TODO: remove in favor of this.model.refreshSelection once tree-finder v0.0.14 is out
+  refreshSelection<T extends IContentRow>(tm: ContentsModel<T>) {
+    this.refresh(tm, tm.selection.map(x => x.row));
   }
 
-  deleteSelection<T extends IContentRow>(contentsModel: ContentsModel<T>, drive: Contents.IDrive) {
-    this.srcDrive = drive;
-    this.clipboardModel.deleteSelection(contentsModel);
-  }
-
-  pasteSelection<T extends IContentRow>(contentsModel: ContentsModel<T>, drive: Contents.IDrive) {
-    this.destDrive = drive;
-    this.clipboardModel.pasteSelection(contentsModel);
+  get model() {
+    return this._model;
   }
 
   protected async _onDelete<T extends IContentRow>(src: T) {
     const srcPathstr = Path.fromarray(src.path);
-    await this.srcDrive.delete(srcPathstr);
+    await this._drive.delete(srcPathstr);
   }
 
   protected async _onPaste<T extends IContentRow>(src: T, destPathstr: string, doCut: boolean) {
     const srcPathstr = Path.fromarray(src.path);
-    await this.destDrive.copy(srcPathstr, destPathstr);
+    await this._drive.copy(srcPathstr, destPathstr);
     if (doCut) {
-      await this.srcDrive.delete(srcPathstr);
+      await this._drive.delete(srcPathstr);
     }
   }
 
-  protected clipboardModel = new ClipboardModel();
-  protected srcDrive: Contents.IDrive | null = null;
-  protected destDrive: Contents.IDrive | null = null;
-}
+  protected _model = new ClipboardModel();
+  protected _tracker: WidgetTracker<ITreeFinderWidget>;
 
-export namespace JupyterClipboard {
-  export const defaultClipboard = new JupyterClipboard();
+  private _drive = new Drive();
 }
