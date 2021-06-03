@@ -3,6 +3,7 @@
   "license": "BSD-3-Clause",
   "workspaces": ["js"],
   "scripts": {
+    "develop": "jupyter labextension develop --overwrite .",
     "test:browser": "yarn --cwd ./js test:browser"
   }
 }

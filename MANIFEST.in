@@ -12,11 +12,12 @@ include jupyterfs/browser-test.js
 include pyproject.toml
 include setup.cfg
 
+graft labextension
+
 # javascript pkg files
 include js/package.json
 include js/ts*.json
 
-graft js/labextension
 graft js/src
 graft js/style
 prune js/build

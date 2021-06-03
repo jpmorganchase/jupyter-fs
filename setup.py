@@ -24,13 +24,12 @@ name = labext_name = 'jupyter-fs'
 # relative paths to python pkg dir and labextension pkg dir
 js_pkg, py_pkg = Path('js'), Path('jupyterfs')
 # relative path to labextension dist that gets built at the root of the python package
-labext_dist = js_pkg/'labextension'
+labext_dist = py_pkg/'labextension'
 # Representative files that should exist after a successful build
 jstargets = [labext_dist/"package.json"]
 version = get_version(str(py_pkg / '_version.py'))
-# POSIX_PREFIX/APP_SUFFIX determines the install location of the labextension dist
+# POSIX_PREFIX/(APP_SUFFIX, CONFIG_SUFFIX) determines the install location of the (labextension dist, extension config)
 APP_SUFFIX = Path('share/jupyter/labextensions/')
-# POSIX_PREFIX/CONFIG_SUFFIX determines the install location of the extension config
 CONFIG_SUFFIX = Path('etc/jupyter/')
 
 with open('README.md', encoding='utf-8') as f:

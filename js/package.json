@@ -23,7 +23,6 @@
     "clean:slate": "jlpm clean && jlpm clean:labextension && rimraf node_modules",
     "deduplicate": "jlpm yarn-deduplicate -s fewer ../yarn.lock || jlpm yarn-deduplicate -s fewer",
     "fix": "jlpm lint --fix",
-    "install:extension": "jupyter labextension develop --overwrite .",
     "integrity": "jlpm install && jlpm deduplicate && jlpm install",
     "lint": "eslint -c .eslintrc.js --ext .js,.ts,.tsx src/ tests/",
     "postpack": "shx rm README.md",
@@ -107,7 +106,7 @@
         }
     },
     "extension": true,
-    "outputDir": "labextension",
+    "outputDir": "../jupyterfs/labextension",
     "schemaDir": "schema"
   }
 }

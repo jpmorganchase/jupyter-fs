@@ -197,10 +197,10 @@ ENV/
 
 .DS_Store
 
+*/labextension
 .autoversion
 .jupyter
 docs/api
 docs/index.md
-js/labextension
 python_junit.xml
 

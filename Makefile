@@ -51,7 +51,7 @@ clean: ## clean the repository
 	rm -rf binder/.[!.]* binder/*.ipynb
 	## build state
 	cd js; ${YARN} clean:slate
-	rm -rf *.egg-info *junit.xml .*-log.txt .jupyter/ .local/ .pytest_cache/ build/ coverage* dist/ MANIFEST node_modules/ pip-wheel-metadata
+	rm -rf *.egg-info *junit.xml .*-log.txt .jupyter/ .local/ .pytest_cache/ build/ coverage* dist/ MANIFEST node_modules/ pip-wheel-metadata jupyterfs/labextension
 	# make -C ./docs clean
 	## package lock files
 	# rm -rf package-lock.json yarn-lock.json js/package-lock.json js/yarn-lock.json
