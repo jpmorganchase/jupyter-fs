@@ -24,13 +24,11 @@ name = labext_name = 'jupyter-fs'
 # relative paths to python pkg dir and labextension pkg dir
 js_pkg, py_pkg = Path('js'), Path('jupyterfs')
 # relative path to labextension dist that gets built at the root of the python package
-labext_dist = py_pkg/'labextension'
+labext_dist = js_pkg/'labextension'
 # Representative files that should exist after a successful build
 jstargets = [labext_dist/"package.json"]
 version = get_version(str(py_pkg / '_version.py'))
 # POSIX_PREFIX/APP_SUFFIX determines the install location of the labextension dist
-APP_SUFFIX = Path('share/jupyter/labextensions/')
-# POSIX_PREFIX/CON_SUFFIX determines the install location of the labextension dist
 APP_SUFFIX = Path('share/jupyter/labextensions/')
 
 with open('README.md', encoding='utf-8') as f:
@@ -38,9 +36,9 @@ with open('README.md', encoding='utf-8') as f:
 
 data_files_spec = [
     # distribute the labextension dist via the data_files of the python package
-    (str(SUFFIX/labext_name), str(labext_dist), '**'),
+    (str(APP_SUFFIX/labext_name), str(labext_dist), '**'),
     # include a record of installation method (ie pip) in the labextension install
-    (str(SUFFIX/labext_name), '.', 'install.json')
+    (str(APP_SUFFIX/labext_name), '.', 'install.json')
     # config to enable server extension 'for free' on normal pip install:
     ('etc/jupyter', 'jupyter-config/**/*', '*'),
 ]
@@ -51,7 +49,7 @@ cmdclass = create_cmdclass("jsdeps",
     data_files_spec=data_files_spec
 )
 js_command = combine_commands(
-    install_npm(js_pkg, build_cmd='build:labextension', npm=['jlpm']),
+    install_npm(js_pkg, build_cmd='build:prod', npm=['jlpm']),
     ensure_targets(jstargets),
 )
 cmdclass["jsdeps"] = js_command if Path(".git").exists() else skip_if_exists(jstargets, js_command)

@@ -107,7 +107,7 @@
         }
     },
     "extension": true,
-    "outputDir": "../jupyterfs/labextension",
+    "outputDir": "labextension",
     "schemaDir": "schema"
   }
 }

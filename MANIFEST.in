@@ -1,19 +1,22 @@
+# general project files
 include .bumpversion.cfg
 include CONTRIBUTING.md
-include jupyter-config/jupyterfs.json
-include jupyterfs/chrome-test.js
+include install.json
 include LICENSE
 include Makefile
-include pyproject.toml
 include README.md
-include setup.cfg
-include pyproject.toml
-include .bumpversion.cfg
-include Makefile
 
+# python pkg files
+include jupyter-config/jupyter_server_config.d/jupyterfs.json
 include jupyterfs/browser-test.js
+include pyproject.toml
+include setup.cfg
 
-# Webapp files
+# javascript pkg files
+include js/package.json
+include js/ts*.json
+
+graft js/labextension
 graft js/src
 graft js/style
 prune js/build
