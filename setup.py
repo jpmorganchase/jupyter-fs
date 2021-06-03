@@ -32,9 +32,6 @@ version = get_version(str(py_pkg / '_version.py'))
 APP_SUFFIX = Path('share/jupyter/labextensions/')
 CONFIG_SUFFIX = Path('etc/jupyter/')
 
-with open('README.md', encoding='utf-8') as f:
-    long_description = f.read()
-
 data_files_spec = [
     # distribute the labextension dist via the data_files of the python package
     (str(APP_SUFFIX/labext_name), str(labext_dist), '**'),
@@ -104,12 +101,13 @@ setup_args = dict(
     author='jupyter-fs authors',
     license='Apache 2.0',
     classifiers=[
-        'License :: OSI Approved :: BSD License',
+        'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'Framework :: Jupyter',
     ],
     cmdclass=cmdclass,
