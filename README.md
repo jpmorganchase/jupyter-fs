@@ -149,7 +149,7 @@ ALternatively, you can add resource specifications alongside the basic jupyter-f
       {
         "name": "local_test",
         "url": "osfs:///Users/foo/test"
-      },
+      }
     ]
   }
 }
