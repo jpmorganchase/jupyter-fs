@@ -77,7 +77,8 @@ install:  ## do standard install of both server/labextension to site-packages
 	${PIP} install .
 
 js:  ## build javascript
-	cd js; ${YARN} build:integrity
+	cd js; ${YARN} integrity
+	cd js; ${YARN} build
 
 dist: clean ## create dists
 	${PYTHON} setup.py sdist bdist_wheel
