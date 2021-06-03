@@ -62,8 +62,8 @@ dev_install: dev_serverextension dev_labextension ## set up the repo for active 
 	${PYTHON} -m jupyter server extension list
 	${PYTHON} -m jupyter labextension list
 
-dev_labextension: js  ## build and install labextension for active development
-	cd js; ${PYTHON} -m jupyter labextension install .
+dev_labextension:  ## build and install labextension for active development
+	${PYTHON} -m jupyter labextension develop --overwrite .
 
 dev_serverextension:  ## install and enable serverextension for active development
 	${PIP} install -e .[dev]

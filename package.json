@@ -4,6 +4,6 @@
   "workspaces": ["js"],
   "scripts": {
     "develop": "jupyter labextension develop --overwrite .",
-    "test:browser": "yarn --cwd ./js test:browser"
+    "test:browser": "jlpm --cwd ./js test:browser"
   }
 }

@@ -27,7 +27,7 @@ def _jupyter_server_extension_paths():
     return [{"module": "jupyterfs.extension"}]
 
 
-def load_jupyter_server_extension(serverapp):
+def _load_jupyter_server_extension(serverapp):
     """
     Called when the extension is loaded.
 

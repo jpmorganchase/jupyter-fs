@@ -10,7 +10,7 @@
 from mock import MagicMock
 import tornado.web
 
-from jupyterfs.extension import load_jupyter_server_extension
+from jupyterfs.extension import _load_jupyter_server_extension
 from jupyterfs.metamanager import MetaManagerHandler
 
 
@@ -21,7 +21,7 @@ class TestExtension:
 
         m.web_app.settings = {}
         m.web_app.settings['base_url'] = '/test'
-        load_jupyter_server_extension(m)
+        _load_jupyter_server_extension(m)
 
     def test_get_handler(self):
         app = tornado.web.Application()
