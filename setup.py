@@ -30,6 +30,8 @@ jstargets = [labext_dist/"package.json"]
 version = get_version(str(py_pkg / '_version.py'))
 # POSIX_PREFIX/APP_SUFFIX determines the install location of the labextension dist
 APP_SUFFIX = Path('share/jupyter/labextensions/')
+# POSIX_PREFIX/CONFIG_SUFFIX determines the install location of the extension config
+CONFIG_SUFFIX = Path('etc/jupyter/')
 
 with open('README.md', encoding='utf-8') as f:
     long_description = f.read()
@@ -38,9 +40,13 @@ data_files_spec = [
     # distribute the labextension dist via the data_files of the python package
     (str(APP_SUFFIX/labext_name), str(labext_dist), '**'),
     # include a record of installation method (ie pip) in the labextension install
-    (str(APP_SUFFIX/labext_name), '.', 'install.json')
+    (str(APP_SUFFIX/labext_name), '.', 'install.json'),
     # config to enable server extension 'for free' on normal pip install:
-    ('etc/jupyter', 'jupyter-config/**/*', '*'),
+    (
+        str(CONFIG_SUFFIX/"jupyter_server_config.d"),
+        "jupyter-config/jupyter_server_config.d",
+        "jupyterfs.json",
+    ),
 ]
 package_data_spec = {name: ["*"]}
 
