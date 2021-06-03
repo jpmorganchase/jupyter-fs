@@ -47,15 +47,14 @@ clean: ## clean the repository
 	find . -name "__pycache__" | xargs  rm -rf
 	find . -name "*.pyc" | xargs rm -rf
 	find . -name ".ipynb_checkpoints" | xargs  rm -rf
+	## binder/repo2docker mess
+	rm -rf binder/.[!.]* binder/*.ipynb
 	## build state
-	rm -rf build coverage* dist *.egg-info *junit.xml .jupyter MANIFEST node_modules pip-wheel-metadata
-	rm -rf js/dist js/lib js/node_modules js/tsconfig.tsbuildinfo
-	rm -rf jupyterfs/labdist
+	cd js; ${YARN} clean:slate
+	rm -rf *.egg-info *junit.xml .*-log.txt .jupyter/ .local/ .pytest_cache/ build/ coverage* dist/ MANIFEST node_modules/ pip-wheel-metadata jupyterfs/labextension
 	# make -C ./docs clean
 	## package lock files
 	# rm -rf package-lock.json yarn-lock.json js/package-lock.json js/yarn-lock.json
-	## binder/repo2docker mess
-	rm -rf .*-log.txt .local/ binder/.[!.]* binder/*.ipynb
 
 dev_install: dev_serverextension dev_labextension ## set up the repo for active development
 	# verify
@@ -63,8 +62,8 @@ dev_install: dev_serverextension dev_labextension ## set up the repo for active 
 	${PYTHON} -m jupyter server extension list
 	${PYTHON} -m jupyter labextension list
 
-dev_labextension: js  ## build and install labextension for active development
-	cd js; ${PYTHON} -m jupyter labextension install .
+dev_labextension:  ## build and install labextension for active development
+	${PYTHON} -m jupyter labextension develop --overwrite .
 
 dev_serverextension:  ## install and enable serverextension for active development
 	${PIP} install -e .[dev]
@@ -78,10 +77,10 @@ install:  ## do standard install of both server/labextension to site-packages
 	${PIP} install .
 
 js:  ## build javascript
-	cd js; ${YARN} build:integrity
+	cd js; ${YARN} integrity
+	cd js; ${YARN} build
 
 dist: clean ## create dists
-	cd js; ${YARN} install
 	${PYTHON} setup.py sdist bdist_wheel
 
 publish: dist  ## dist to pypi and npm

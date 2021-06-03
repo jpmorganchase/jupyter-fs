@@ -1,3 +1,10 @@
 [build-system]
-# Minimum requirements for the build system to execute.
-requires = ["setuptools", "wheel", "jupyter-packaging", "jupyterlab"]
+requires = ["jupyter_packaging~=0.7.9", "jupyterlab>=3.0.0rc13,==3.*", "setuptools>=40.8.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.pyright]
+exclude = ["**/node_modules",
+    "**/__pycache__"
+]
+
+venv = "jup-test"

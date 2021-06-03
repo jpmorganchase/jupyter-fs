@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # *****************************************************************************
 #
 # Copyright (c) 2019, the jupyter-fs authors.
@@ -9,6 +10,8 @@ import atexit
 import boto3
 import botocore
 import docker
+import signal
+import sys
 import time
 
 __all__ = ['aws_access_key_id', 'aws_secret_access_key', 'RootDirUtil']
@@ -125,3 +128,23 @@ class RootDirUtil:
 
         self._container = None
         self._container_exit_handler = None
+
+
+if __name__ == "__main__":
+    container, _ = startServer(s3_port=9000)
+
+    def sigHandler(signo, frame):
+        sys.exit(0)
+
+    # make sure the atexit-based docker cleanup runs on ctrl-c
+    signal.signal(signal.SIGINT, sigHandler)
+    signal.signal(signal.SIGTERM, sigHandler)
+
+    old_log = ''
+    while True:
+        new_log = container.logs()
+        if old_log != new_log:
+            print(new_log)
+            old_log = new_log
+
+        time.sleep(1)

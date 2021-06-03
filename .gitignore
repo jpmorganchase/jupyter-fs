@@ -197,6 +197,7 @@ ENV/
 
 .DS_Store
 
+*/labextension
 .autoversion
 .jupyter
 docs/api

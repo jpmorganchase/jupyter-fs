@@ -1,21 +1,29 @@
-include LICENSE
-include README.md
-include CONTRIBUTING.md
-
-include requirements.txt
-include setup.cfg
-include pyproject.toml
+# general project files
 include .bumpversion.cfg
+include CONTRIBUTING.md
+include install.json
+include LICENSE
 include Makefile
+include README.md
 
+# python pkg files
+include jupyter-config/jupyter_server_config.d/jupyterfs.json
 include jupyterfs/browser-test.js
+include pyproject.toml
+include setup.cfg
 
-# Webapp files
-graft js
+graft labextension
+
+# javascript pkg files
+include js/package.json
+include js/ts*.json
+
+graft js/src
+graft js/style
 prune js/build
 prune js/dist
 prune js/lib
-prune js/node_modules
+prune **/node_modules
 
 # Patterns to exclude from any directory
 global-exclude *~

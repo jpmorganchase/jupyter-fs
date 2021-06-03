@@ -146,7 +146,6 @@ parameters:
         set -ex
         python -m pip install --pre -U jupyterlab
         python -m pip install -U . -v
-        jupyter lab build --debug
       displayName: 'Standard jupyter-fs install'
 
     - bash: |

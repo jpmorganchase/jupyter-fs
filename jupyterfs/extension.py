@@ -24,24 +24,24 @@ to your Notebook Server config."""
 
 
 def _jupyter_server_extension_paths():
-    return [{'module': 'jupyterfs.extension'}]
+    return [{"module": "jupyterfs.extension"}]
 
 
-def load_jupyter_server_extension(nb_server_app):
+def _load_jupyter_server_extension(serverapp):
     """
     Called when the extension is loaded.
 
     Args:
         nb_server_app (NotebookWebApplication): handle to the Notebook webserver instance.
     """
-    web_app = nb_server_app.web_app
-    base_url = web_app.settings['base_url']
-    host_pattern = '.*$'
+    web_app = serverapp.web_app
+    base_url = web_app.settings["base_url"]
+    host_pattern = ".*$"
 
-    if not isinstance(nb_server_app.contents_manager, MetaManager):
+    if not isinstance(serverapp.contents_manager, MetaManager):
         warnings.warn(_mm_config_warning_msg)
         return
 
-    resources_url = 'jupyterfs/resources'
-    print('Installing jupyter-fs resources handler on path %s' % url_path_join(base_url, resources_url))
+    resources_url = "jupyterfs/resources"
+    print("Installing jupyter-fs resources handler on path %s" % url_path_join(base_url, resources_url))
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, resources_url), MetaManagerHandler)])
