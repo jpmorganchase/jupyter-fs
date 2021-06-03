@@ -36,12 +36,6 @@ fix:  ## run autopep8/tslint fix
 	make fixjs
 	make fixpy
 
-annotate: ## MyPy type annotation check
-	${PYTHON} -m mypy -s jupyterfs
-
-annotate_l: ## MyPy type annotation check - count only
-	${PYTHON} -m mypy -s jupyterfs | wc -l
-
 clean: ## clean the repository
 	## python tmp state
 	find . -name "__pycache__" | xargs  rm -rf
