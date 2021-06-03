@@ -49,9 +49,10 @@ data_files_spec = [
 ]
 package_data_spec = {name: ["*"]}
 
-cmdclass = create_cmdclass("jsdeps",
+cmdclass = create_cmdclass(
+    "jsdeps",
     package_data_spec=package_data_spec,
-    data_files_spec=data_files_spec
+    data_files_spec=data_files_spec,
 )
 js_command = combine_commands(
     install_npm(js_pkg, build_cmd='build:prod', npm=['jlpm']),

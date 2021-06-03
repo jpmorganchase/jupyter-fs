@@ -129,6 +129,7 @@ class RootDirUtil:
         self._container = None
         self._container_exit_handler = None
 
+
 if __name__ == "__main__":
     container, _ = startServer(s3_port=9000)
 
