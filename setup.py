@@ -8,7 +8,6 @@
 from jupyter_packaging import (
     combine_commands,
     create_cmdclass,
-    ensure_python,
     ensure_targets,
     get_version,
     install_npm,
@@ -16,8 +15,6 @@ from jupyter_packaging import (
 )
 from pathlib import Path
 import setuptools
-
-ensure_python(('>=3.6',))
 
 # project name is also name of labextension npm package
 name = labext_name = 'jupyter-fs'
@@ -104,10 +101,10 @@ setup_args = dict(
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        "Programming Language :: Python :: 3.10",
         'Framework :: Jupyter',
     ],
     cmdclass=cmdclass,
@@ -117,6 +114,7 @@ setup_args = dict(
     extras_require={'dev': dev_requires, 'test': test_requires},
     include_package_data=True,
     zip_safe=False,
+    python_requires=">=3.7",
 )
 
 if __name__ == '__main__':
