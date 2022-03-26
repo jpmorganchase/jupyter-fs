@@ -133,7 +133,7 @@ async function activate(
 
   if (settings) {
     // initial setup when DOM attachment of custom elements is complete.
-    app.started.then(refresh);
+    void app.started.then(refresh);
 
     // rerun setup whenever relevant settings change
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
