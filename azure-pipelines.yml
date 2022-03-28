@@ -207,7 +207,7 @@ jobs:
 
 - job: 'python__mac'
   pool:
-    vmImage: 'macos-10.14'
+    vmImage: 'macOS-latest'
   variables:
     python.version: '3.7'
 
@@ -235,7 +235,7 @@ jobs:
 # TODO: delete this duplicate job, once the required test has been renamed on github: "Mac Python37" => "python__mac"
 - job: 'Mac'
   pool:
-    vmImage: 'macos-10.14'
+    vmImage: 'macOS-latest'
   strategy:
     matrix:
       Python37:
