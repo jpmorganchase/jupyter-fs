@@ -92,7 +92,7 @@ class RootDirUtil:
         smb_port=None
     ):
         self.host = socket.gethostbyname(socket.gethostname()) if host is None else host
-        self.hostname = socket.getfqdn() if hostname is None else hostname
+        self.hostname = socket.gethostname() if hostname is None else hostname
 
         self.dir_name = dir_name
         self.direct_tcp = direct_tcp
