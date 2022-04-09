@@ -406,7 +406,7 @@ class FSManager(FileContentsManager):
             raise web.HTTPError(400, u'No file content provided')
 
         self.log.debug("Saving %s", path)
-        self.run_pre_save_hook(model=model, path=path)
+        self.run_pre_save_hooks(model=model, path=path)
 
         try:
             if model['type'] == 'notebook':
@@ -440,7 +440,7 @@ class FSManager(FileContentsManager):
         if validation_message:
             model['message'] = validation_message
 
-        self.run_post_save_hook(model=model, os_path=path)
+        self.run_post_save_hooks(model=model, os_path=path)
 
         return model
 

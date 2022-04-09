@@ -7,7 +7,7 @@
 #
 from jupyter_server.services.contents.largefilemanager import LargeFileManager
 from jupyter_server.services.contents.manager import ContentsManager
-from jupyter_server.transutils import _
+from jupyter_server.transutils import _i18n
 from traitlets import List, Type
 from traitlets.config import Configurable
 
@@ -17,13 +17,13 @@ class Jupyterfs(Configurable):
     root_manager_class = Type(
         config=True,
         default_value=LargeFileManager,
-        help=_("the root contents manager class to use. Used by the Jupyterlab default filebrowser and elsewhere"),
+        help=_i18n("the root contents manager class to use. Used by the Jupyterlab default filebrowser and elsewhere"),
         klass=ContentsManager,
     )
 
     resources = List(
         config=True,
         default_value=[],
-        help=_("server-side definitions of fsspec resources for jupyter-fs"),
+        help=_i18n("server-side definitions of fsspec resources for jupyter-fs"),
         # trait=Dict(traits={"name": Unicode, "url": Unicode}),
     )
