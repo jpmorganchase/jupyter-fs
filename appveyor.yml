@@ -40,6 +40,24 @@ install:
 - bash -c "sleep 5"
 - curl http://127.0.0.1:9000/
 
+# install rust and winpty for pywinpty (one of python deps)
+# refs: https://pypi.org/project/pywinpty/
+# install rust
+- appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
+- rustup-init -y --default-toolchain stable --default-host i686-pc-windows-msvc
+- set PATH=%PATH%;%USERPROFILE%\.cargo\bin
+# install winpty
+- curl -#Lo winpty-native.zip "https://github.com/rprichard/winpty/releases/download/0.4.2/winpty-0.4.2-msvc2015.zip"
+- call 7z e -y -o"winpty\x86\bin" winpty-native.zip "ia32\bin\winpty.dll" > nul
+- call 7z e -y -o"winpty\x86\bin" winpty-native.zip "ia32\bin\winpty-agent.exe" > nul
+- call 7z e -y -o"winpty\x86\bin" winpty-native.zip "ia32\bin\winpty-debugserver.exe" > nul
+- call 7z e -y -o"winpty\x86\lib" winpty-native.zip "ia32\lib\winpty.lib" > nul
+- call 7z e -y -o"winpty\include" winpty-native.zip "include\winpty.h" > nul
+- call 7z e -y -o"winpty\include" winpty-native.zip "include\winpty_constants.h" > nul
+- set PATH=%CD%\winpty\x86\bin;%PATH%
+- set LIB=%CD%\winpty\x86\lib;%LIB%
+- set INCLUDE=%CD%\winpty\include;%INCLUDE%
+
 # install python deps
 - pip install --upgrade -e .[dev] -v
 

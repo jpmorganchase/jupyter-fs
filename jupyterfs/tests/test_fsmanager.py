@@ -222,7 +222,7 @@ class Test_FSManager_smb_os_share(_TestBase):
         kwargs = dict(
             direct_tcp=test_direct_tcp_smb_os_share,
             host=test_host_smb_os_share,
-            hostname=socket.getfqdn(),
+            hostname=socket.gethostname(),
             passwd=samba.smb_passwd,
             share=test_dir,
             username=samba.smb_user,
