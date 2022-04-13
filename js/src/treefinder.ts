@@ -21,6 +21,7 @@ import {
   closeIcon,
   copyIcon,
   cutIcon,
+  editIcon,
   pasteIcon,
   refreshIcon,
 } from "@jupyterlab/ui-components";
@@ -405,6 +406,11 @@ export namespace TreeFinderSidebar {
         icon: pasteIcon,
         label: "Paste",
       }),
+      app.commands.addCommand(widget.commandIDs.rename, {
+        execute: () => {},
+        icon: editIcon,
+        label: "Rename",
+      }),
       app.commands.addCommand(widget.commandIDs.refresh, {
         execute: args => args["selection"] ? clipboard.refreshSelection(widget.treefinder.model) : clipboard.refresh(widget.treefinder.model),
         icon: refreshIcon,
@@ -437,6 +443,11 @@ export namespace TreeFinderSidebar {
         command: widget.commandIDs.delete,
         selector,
         rank: 5,
+      }),
+      app.contextMenu.addItem({
+        command: widget.commandIDs.rename,
+        selector,
+        rank: 6,
       }),
 
       app.contextMenu.addItem({
