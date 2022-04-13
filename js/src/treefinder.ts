@@ -419,7 +419,7 @@ export namespace TreeFinderSidebar {
           const oldContent = widget.treefinder.selection[0];
           void _doRename(widget, oldContent).then(newContent => {
             widget.treefinder.model.renamerSub.next( { name: newContent.name, target: oldContent } );
-            // TODO
+            // TODO: Model state of TreeFinderWidget should be updated by renamerSub process.
             oldContent.row = newContent;
           });
         },
