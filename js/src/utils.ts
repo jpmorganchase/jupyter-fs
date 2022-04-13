@@ -66,17 +66,21 @@ export function createOpenNode(): HTMLElement {
   return body;
 }
 
-export function doRename(text: HTMLElement, edit: HTMLInputElement) {
-  const parent = text.parentElement;
+export function doRename(
+  text: HTMLElement,
+  edit: HTMLInputElement,
+  original: string
+): Promise<string> {
+  const parent = text.parentElement as HTMLElement;
   parent.replaceChild(edit, text);
   edit.focus();
-  const index = edit.value.lastIndexOf(".");
+  const index = edit.value.lastIndexOf('.');
   if (index === -1) {
     edit.setSelectionRange(0, edit.value.length);
   } else {
     edit.setSelectionRange(0, index);
   }
-  // handle enter
+
   return new Promise<string>((resolve, reject) => {
     edit.onblur = () => {
       parent.replaceChild(text, edit);
@@ -92,6 +96,7 @@ export function doRename(text: HTMLElement, edit: HTMLInputElement) {
         case 27: // Escape
           event.stopPropagation();
           event.preventDefault();
+          edit.value = original;
           edit.blur();
           break;
         case 38: // Up arrow
