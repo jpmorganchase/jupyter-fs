@@ -9,29 +9,32 @@
 import { ILayoutRestorer, IRouter, JupyterFrontEnd } from "@jupyterlab/application";
 import {
   IWindowResolver,
+  showErrorMessage,
   Toolbar,
   ToolbarButton,
-  WidgetTracker, /*Clipboard, Dialog, IWindowResolver, showDialog, showErrorMessage*/
+  WidgetTracker, /*Clipboard, Dialog, IWindowResolver, showDialog*/
 } from "@jupyterlab/apputils";
 // import { PathExt, URLExt } from "@jupyterlab/coreutils";
-import { IDocumentManager /*isValidFileName, renameFile*/ } from "@jupyterlab/docmanager";
+import { IDocumentManager, isValidFileName /*renameFile*/ } from "@jupyterlab/docmanager";
 // import { DocumentRegistry } from "@jupyterlab/docregistry";
 import { Contents, ContentsManager } from "@jupyterlab/services";
 import {
   closeIcon,
   copyIcon,
   cutIcon,
+  editIcon,
   pasteIcon,
   refreshIcon,
 } from "@jupyterlab/ui-components";
 // import JSZip from "jszip";
 import { DisposableSet, IDisposable } from "@lumino/disposable";
 import { PanelLayout, Widget } from "@lumino/widgets";
-import { Format, IContentRow, Path, TreeFinderPanelElement } from "tree-finder";
+import { Content, Format, IContentRow, Path, TreeFinderPanelElement } from "tree-finder";
 
 import { JupyterClipboard } from "./clipboard";
 import { IFSResource } from "./filesystem";
 import { fileTreeIcon } from "./icons";
+import { doRename } from "./utils";
 // import { Uploader } from "./upload";
 
 export class JupyterContents {
@@ -43,6 +46,12 @@ export class JupyterContents {
   async get(path: string) {
     path = JupyterContents.toFullPath(path, this.drive);
     return JupyterContents.toJupyterContentRow(await this.cm.get(path), this.cm, this.drive);
+  }
+
+  async rename(path: string, newPath: string) {
+    path = JupyterContents.toFullPath(path, this.drive);
+    newPath = JupyterContents.toFullPath(newPath, this.drive);
+    return JupyterContents.toJupyterContentRow(await this.cm.rename(path, newPath), this.cm, this.drive);
   }
 
   readonly cm: ContentsManager;
@@ -405,6 +414,18 @@ export namespace TreeFinderSidebar {
         icon: pasteIcon,
         label: "Paste",
       }),
+      app.commands.addCommand(widget.commandIDs.rename, {
+        execute: args => {
+          const oldContent = widget.treefinder.selection[0];
+          void _doRename(widget, oldContent).then(newContent => {
+            widget.treefinder.model.renamerSub.next( { name: newContent.name, target: oldContent } );
+            // TODO: Model state of TreeFinderWidget should be updated by renamerSub process.
+            oldContent.row = newContent;
+          });
+        },
+        icon: editIcon,
+        label: "Rename",
+      }),
       app.commands.addCommand(widget.commandIDs.refresh, {
         execute: args => args["selection"] ? clipboard.refreshSelection(widget.treefinder.model) : clipboard.refresh(widget.treefinder.model),
         icon: refreshIcon,
@@ -438,6 +459,11 @@ export namespace TreeFinderSidebar {
         selector,
         rank: 5,
       }),
+      app.contextMenu.addItem({
+        command: widget.commandIDs.rename,
+        selector,
+        rank: 6,
+      }),
 
       app.contextMenu.addItem({
         args: { selection: true },
@@ -451,5 +477,43 @@ export namespace TreeFinderSidebar {
     ].reduce((set: DisposableSet, d) => {
       set.add(d); return set;
     }, new DisposableSet());
+  }
+
+  export function _doRename(widget: TreeFinderSidebar, oldContent: Content<JupyterContents.IJupyterContentRow>): Promise<JupyterContents.IJupyterContentRow> {
+    const textNode = document.querySelector(".tf-mod-select .rt-tree-container .rt-group-name").firstChild as HTMLElement;
+    const original = textNode.textContent;
+    const editNode = document.createElement("input");
+    editNode.value = original;
+    return doRename(textNode, editNode, original).then(
+      newName => {
+        if (!newName || newName === oldContent.name) {
+          return oldContent.row;
+        }
+        if (!isValidFileName(newName)) {
+          void showErrorMessage(
+            "Rename Error",
+            Error(newName +' is not a valid name for a file. Names must have nonzero length, and cannot include "/", "\\", or ":"')
+          );
+          return oldContent.row;
+        }
+        const oldPath = oldContent.getPathAtDepth(1).join("/");
+        const newPath = oldPath.slice(0, -1 * original.length) + newName;
+        const promise = widget.treefinder.cm.rename(oldPath, newPath);
+        return promise
+          .catch(error => {
+            if (error !== "File not renamed") {
+              void showErrorMessage(
+                "Rename Error",
+                error
+              );
+            }
+            return oldContent.row;
+          })
+          .then(newContent => {
+            textNode.textContent = newName;
+            return newContent;
+          });
+      }
+    );
   }
 }
