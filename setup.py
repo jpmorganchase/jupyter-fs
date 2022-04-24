@@ -9,7 +9,6 @@ from jupyter_packaging import (
     combine_commands,
     create_cmdclass,
     ensure_targets,
-    get_version,
     install_npm,
     skip_if_exists
 )
@@ -24,7 +23,7 @@ js_pkg, py_pkg = Path('js'), Path('jupyterfs')
 labext_dist = py_pkg/'labextension'
 # Representative files that should exist after a successful build
 jstargets = [labext_dist/"package.json"]
-version = get_version(str(py_pkg / '_version.py'))
+
 # POSIX_PREFIX/(APP_SUFFIX, CONFIG_SUFFIX) determines the install location of the (labextension dist, extension config)
 APP_SUFFIX = Path('share/jupyter/labextensions/')
 CONFIG_SUFFIX = Path('etc/jupyter/')
@@ -90,7 +89,7 @@ with open('README.md', 'r') as fh:
 
 setup_args = dict(
     name=name,
-    version=version,
+    version="",
     description='A Filesystem-like mult-contents manager backend for Jupyter',
     long_description=long_description,
     long_description_content_type='text/markdown',
