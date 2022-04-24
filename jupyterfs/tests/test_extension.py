@@ -7,7 +7,7 @@
 #
 
 # for Coverage
-from mock import MagicMock
+from unittest.mock import MagicMock
 import tornado.web
 
 from jupyterfs.extension import _load_jupyter_server_extension

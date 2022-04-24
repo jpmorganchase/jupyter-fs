@@ -74,10 +74,10 @@ test_requires = [
 ]
 
 dev_requires = test_requires + [
-    "autopep8>=1.5",
+    "black>=20.0*",
     "bump2version>=1.0.0",
     "flake8>=3.7.8",
-    "mock",
+    "flake8-black>=0.2.1",
     "pytest",
     "pytest-cov>=2.6.1",
     "pytest-xdist",
