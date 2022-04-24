@@ -7,7 +7,15 @@
 #
 from tornado.web import HTTPError
 
-__all__ = ["path_first_arg", "path_second_arg", "path_kwarg", "path_old_new", "getDrive", "isDrive", "stripDrive"]
+__all__ = [
+    "path_first_arg",
+    "path_second_arg",
+    "path_kwarg",
+    "path_old_new",
+    "getDrive",
+    "isDrive",
+    "stripDrive",
+]
 
 # A reference implementation
 # https://github.com/quantopian/pgcontents/blob/master/pgcontents/hybridmanager.py
@@ -31,26 +39,30 @@ def _resolve_path(path, manager_dict):
     Returns:
         tuple: prefix of contents manager, instance of contents manager, relative path to request from contents manager
     """
-    parts = path.strip('/').split(":")
+    parts = path.strip("/").split(":")
     if len(parts) == 1:
         # Try to find use the root manager, if one was supplied.
-        mgr = manager_dict.get('')
+        mgr = manager_dict.get("")
         if mgr is not None:
-            return '', mgr, path
+            return "", mgr, path
 
         raise HTTPError(
             404,
-            "Couldn't find manager {mgrName} for {path}".format(mgrName=parts[0], path=path)
+            "Couldn't find manager {mgrName} for {path}".format(
+                mgrName=parts[0], path=path
+            ),
         )
     else:
         # Try to find a sub-manager for the first subdirectory.
         mgr = manager_dict.get(parts[0])
         if mgr is not None:
-            return parts[0], mgr, '/'.join(parts[1:])
+            return parts[0], mgr, "/".join(parts[1:])
 
         raise HTTPError(
             404,
-            "Couldn't find manager {mgrName} for {path}".format(mgrName=parts[0], path=path)
+            "Couldn't find manager {mgrName} for {path}".format(
+                mgrName=parts[0], path=path
+            ),
         )
 
 
@@ -82,7 +94,7 @@ def path_first_arg(method_name, returns_model):
     e.g. manager.get(path, ...)"""
 
     def _wrapper(self, *args, **kwargs):
-        path, args = _get_arg('path', args, kwargs)
+        path, args = _get_arg("path", args, kwargs)
         _, mgr, mgr_path = _resolve_path(path, self._managers)
         result = getattr(mgr, method_name)(mgr_path, *args, **kwargs)
         return result
@@ -96,10 +108,11 @@ def path_second_arg(method_name, first_argname, returns_model):
 
     def _wrapper(self, *args, **kwargs):
         other, args = _get_arg(first_argname, args, kwargs)
-        path, args = _get_arg('path', args, kwargs)
+        path, args = _get_arg("path", args, kwargs)
         _, mgr, mgr_path = _resolve_path(path, self._managers)
         result = getattr(mgr, method_name)(other, mgr_path, *args, **kwargs)
         return result
+
     return _wrapper
 
 
@@ -114,6 +127,7 @@ def path_kwarg(method_name, path_default, returns_model):
         _, mgr, mgr_path = _resolve_path(path, self._managers)
         result = getattr(mgr, method_name)(path=mgr_path, **kwargs)
         return result
+
     return _wrapper
 
 
@@ -124,11 +138,10 @@ def path_old_new(method_name, returns_model):
     """
 
     def _wrapper(self, old_path, new_path, *args, **kwargs):
-        old_prefix, old_mgr, old_mgr_path = _resolve_path(
-            old_path, self._managers
-        )
+        old_prefix, old_mgr, old_mgr_path = _resolve_path(old_path, self._managers)
         new_prefix, new_mgr, new_mgr_path = _resolve_path(
-            new_path, self._managers,
+            new_path,
+            self._managers,
         )
         if old_mgr is not new_mgr:
             # TODO: Consider supporting this via get+delete+save.
@@ -137,16 +150,14 @@ def path_old_new(method_name, returns_model):
                 "Can't move files between backends yet ({old} -> {new})".format(
                     old=old_path,
                     new=new_path,
-                )
+                ),
             )
         assert new_prefix == old_prefix
         result = getattr(new_mgr, method_name)(
-            old_mgr_path,
-            new_mgr_path,
-            *args,
-            **kwargs
+            old_mgr_path, new_mgr_path, *args, **kwargs
         )
         return result
+
     return _wrapper
 
 
@@ -161,8 +172,7 @@ def isDrive(path):
 
 
 def stripDrive(path):
-    """Strips off leading "drive:foo" specification from path, if present
-    """
+    """Strips off leading "drive:foo" specification from path, if present"""
     # strip any drives off the front of the filename
     first, *rest = path.strip("/").split("/")
     return "/".join([first.split(":").pop(), *rest])

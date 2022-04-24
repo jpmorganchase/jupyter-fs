@@ -13,11 +13,14 @@ from traitlets.config import Configurable
 
 __all__ = ["Jupyterfs"]
 
+
 class Jupyterfs(Configurable):
     root_manager_class = Type(
         config=True,
         default_value=LargeFileManager,
-        help=_i18n("the root contents manager class to use. Used by the Jupyterlab default filebrowser and elsewhere"),
+        help=_i18n(
+            "the root contents manager class to use. Used by the Jupyterlab default filebrowser and elsewhere"
+        ),
         klass=ContentsManager,
     )
 
