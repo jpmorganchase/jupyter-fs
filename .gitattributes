@@ -1,2 +1,4 @@
 examples/* linguist-documentation
 docs/* linguist-documentation
+
+* text=auto eol=lf

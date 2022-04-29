@@ -43,5 +43,10 @@ def _load_jupyter_server_extension(serverapp):
         return
 
     resources_url = "jupyterfs/resources"
-    print("Installing jupyter-fs resources handler on path %s" % url_path_join(base_url, resources_url))
-    web_app.add_handlers(host_pattern, [(url_path_join(base_url, resources_url), MetaManagerHandler)])
+    print(
+        "Installing jupyter-fs resources handler on path %s"
+        % url_path_join(base_url, resources_url)
+    )
+    web_app.add_handlers(
+        host_pattern, [(url_path_join(base_url, resources_url), MetaManagerHandler)]
+    )

@@ -5,16 +5,13 @@ import os
 import jupyterlab.browser_check
 from unittest.mock import patch
 
+
 class JupyterfsBrowserApp(jupyterlab.browser_check.BrowserApp):
     name = __name__
 
+
 def _jupyter_server_extension_points():
-    return [
-        {
-            'module': __name__,
-            'app': JupyterfsBrowserApp
-        }
-    ]
+    return [{"module": __name__, "app": JupyterfsBrowserApp}]
 
 
 # TODO: remove handling of --notebook arg and the following two
@@ -29,15 +26,11 @@ def load_jupyter_server_extension(serverapp):
 
 
 def _jupyter_server_extension_paths():
-    return [
-        {
-            'module': 'jupyterlab.browser_check'
-        }
-    ]
+    return [{"module": "jupyterlab.browser_check"}]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     here = os.path.abspath(os.path.dirname(__file__))
 
-    with patch('jupyterlab.browser_check.here', here):
+    with patch("jupyterlab.browser_check.here", here):
         JupyterfsBrowserApp.launch_instance()

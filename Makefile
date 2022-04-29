@@ -20,19 +20,20 @@ lintjs: ## run linter
 	cd js; ${YARN} lint
 
 lintpy: ## run linter
-	${PYTHON} -m flake8 jupyterfs setup.py
+	${PYTHON} -m black jupyterfs setup.py docs/conf.py --check
+	${PYTHON} -m flake8 jupyterfs setup.py docs/conf.py
 
 lint: ## run linter
 	make lintjs
 	make lintpy
 
-fixjs:  ## run autopep8/tslint fix
+fixjs:  ## run tslint fix
 	cd js; ${YARN} fix
 
-fixpy:  ## run autopep8
-	${PYTHON} -m autopep8 --in-place -r -a -a jupyterfs/ setup.py
+fixpy:  ## run black
+	${PYTHON} -m black jupyterfs/ setup.py docs/conf.py
 
-fix:  ## run autopep8/tslint fix
+fix:  ## run black/tslint fix
 	make fixjs
 	make fixpy
 

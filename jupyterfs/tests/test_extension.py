@@ -7,7 +7,7 @@
 #
 
 # for Coverage
-from mock import MagicMock
+from unittest.mock import MagicMock
 import tornado.web
 
 from jupyterfs.extension import _load_jupyter_server_extension
@@ -20,7 +20,7 @@ class TestExtension:
         m = MagicMock()
 
         m.web_app.settings = {}
-        m.web_app.settings['base_url'] = '/test'
+        m.web_app.settings["base_url"] = "/test"
         _load_jupyter_server_extension(m)
 
     def test_get_handler(self):
