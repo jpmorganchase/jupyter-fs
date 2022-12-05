@@ -10,7 +10,7 @@ from datetime import datetime
 from fs import errors, open_fs
 from fs.base import FS
 import mimetypes
-import os.path
+import fs.path
 from tornado import web
 
 import nbformat
@@ -239,7 +239,7 @@ class FSManager(FileContentsManager):
         if content:
             model["content"] = contents = []
             for name in self._pyfilesystem_instance.listdir(path):
-                os_path = os.path.join(path, name)
+                os_path = fs.path.join(path, name)
                 if (
                     not self._pyfilesystem_instance.islink(os_path)
                     and not self._pyfilesystem_instance.isfile(os_path)
