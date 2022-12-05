@@ -205,48 +205,17 @@ jobs:
     - ${{ parameters.initSteps }}
     - ${{ parameters.testPythonSteps }}
 
-- job: 'python__mac'
-  pool:
-    vmImage: 'macOS-latest'
-  variables:
-    python.version: '3.7'
+# - job: 'python__mac'
+#   pool:
+#     vmImage: 'macOS-latest'
+#   variables:
+#     python.version: '3.7'
 
-  steps:
-    - ${{ parameters.initDockerMacSteps }}
-    - ${{ parameters.pullContainersSteps }}
-    - ${{ parameters.initSteps }}
-    - ${{ parameters.testPythonSteps }}
-
-# TODO: delete this duplicate job, once the required test has been renamed on github: "Linux Python37" => "python__linux"
-- job: 'Linux'
-  pool:
-    vmImage: 'ubuntu-latest'
-  strategy:
-    matrix:
-      Python37:
-        python.version: '3.7'
-
-  steps:
-    - ${{ parameters.initDockerSteps }}
-    - ${{ parameters.pullContainersSteps }}
-    - ${{ parameters.initSteps }}
-    - ${{ parameters.testPythonSteps }}
-
-# TODO: delete this duplicate job, once the required test has been renamed on github: "Mac Python37" => "python__mac"
-- job: 'Mac'
-  pool:
-    vmImage: 'macOS-latest'
-  strategy:
-    matrix:
-      Python37:
-        python.version: '3.7'
-
-  steps:
-    - ${{ parameters.initDockerMacSteps }}
-    - ${{ parameters.pullContainersSteps }}
-    - ${{ parameters.initSteps }}
-    - ${{ parameters.testPythonSteps }}
-
+#   steps:
+#     - ${{ parameters.initDockerMacSteps }}
+#     - ${{ parameters.pullContainersSteps }}
+#     - ${{ parameters.initSteps }}
+#     - ${{ parameters.testPythonSteps }}
 
 # - job: 'Windows'
 #   pool:
