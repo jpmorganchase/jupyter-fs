@@ -12,7 +12,7 @@ module.exports = {
     "\\.jsx?$": "babel-jest",
   },
   transformIgnorePatterns: [
-    "node_modules/(?!@jupyterlab|tree-finder)"
+    "node_modules/(?!@jupyterlab|lib0|y\\-protocols|tree-finder)"
   ],
   globals: {
     "ts-jest": {
