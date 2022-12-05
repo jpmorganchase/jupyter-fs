@@ -63,31 +63,31 @@
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
-    "@babel/preset-env": "^7.7.6",
+    "@babel/preset-env": "^7.20.2",
     "@jupyterlab/builder": "^3.0.0",
     "@types/jest": "^26.0.22",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
-    "@typescript-eslint/eslint-plugin": "^4.26.0",
-    "@typescript-eslint/parser": "^4.26.0",
-    "eslint": "^7.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.45.0",
+    "@typescript-eslint/parser": "^5.45.0",
+    "eslint": "^8.29.0",
     "eslint-plugin-import": "^2.23.4",
-    "eslint-plugin-jsdoc": "^35.1.2",
+    "eslint-plugin-jsdoc": "^39.6.4",
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "eslint-plugin-react": "^7.24.0",
-    "eslint-plugin-unicorn": "^33.0.0",
-    "isomorphic-fetch": "^2.2.1",
-    "jest": "^26.6.3",
+    "eslint-plugin-unicorn": "^45.0.1",
+    "isomorphic-fetch": "^3.0.0",
+    "jest": "^26",
     "jest-raw-loader": "^1.0.1",
-    "mkdirp": "^0.5.1",
-    "rimraf": "^2.7.1",
+    "mkdirp": "^1.0.4",
+    "rimraf": "^3.0.2",
     "shx": "^0.3.3",
     "ts-jest": "^26.5.4",
     "typescript": "^4.2.4",
-    "yarn-deduplicate": "^3.1.0"
+    "yarn-deduplicate": "^6.0.0"
   },
   "resolutions": {
-		"**/@types/react": "^17.0.0"
+    "**/@types/react": "^17.0.0"
   },
   "sideEffects": [
     "style/**/*.css",
@@ -96,14 +96,14 @@
   "styleModule": "style/index.js",
   "jupyterlab": {
     "discovery": {
-        "server": {
-          "managers": [
-            "pip"
-          ],
-          "base": {
-            "name": "jupyter-fs"
-          }
+      "server": {
+        "managers": [
+          "pip"
+        ],
+        "base": {
+          "name": "jupyter-fs"
         }
+      }
     },
     "extension": true,
     "outputDir": "../jupyterfs/labextension",
