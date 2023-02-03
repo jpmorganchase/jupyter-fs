@@ -74,7 +74,7 @@ test_requires = [
 ]
 
 dev_requires = test_requires + [
-    "black>=20.0*",
+    "black>=20.0",
     "bump2version>=1.0.0",
     "flake8>=3.7.8",
     "flake8-black>=0.2.1",
