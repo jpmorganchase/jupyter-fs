@@ -9,8 +9,8 @@ from base64 import encodebytes, decodebytes
 from datetime import datetime
 from fs import errors, open_fs
 from fs.base import FS
-import mimetypes
 import fs.path
+import mimetypes
 from tornado import web
 
 import nbformat
