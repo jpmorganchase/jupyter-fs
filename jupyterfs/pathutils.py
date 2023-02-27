@@ -39,7 +39,7 @@ def _resolve_path(path, manager_dict):
     Returns:
         tuple: prefix of contents manager, instance of contents manager, relative path to request from contents manager
     """
-    parts = path.strip("/").split(":")
+    parts = path.strip("/").split(":", 1)
     if len(parts) == 1:
         # Try to find use the root manager, if one was supplied.
         mgr = manager_dict.get("")
@@ -56,7 +56,7 @@ def _resolve_path(path, manager_dict):
         # Try to find a sub-manager for the first subdirectory.
         mgr = manager_dict.get(parts[0])
         if mgr is not None:
-            return parts[0], mgr, "/".join(parts[1:])
+            return parts[0], mgr, parts[1]
 
         raise HTTPError(
             404,
