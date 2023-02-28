@@ -8,9 +8,10 @@
  */
 
 import { ILayoutRestorer, IRouter, JupyterFrontEnd, JupyterFrontEndPlugin } from "@jupyterlab/application";
-import { IWindowResolver } from "@jupyterlab/apputils";
+import { IThemeManager, IWindowResolver } from "@jupyterlab/apputils";
 import { IDocumentManager } from "@jupyterlab/docmanager";
 import { ISettingRegistry } from "@jupyterlab/settingregistry";
+import { folderIcon, fileIcon } from "@jupyterlab/ui-components";
 import { DisposableSet } from "@lumino/disposable";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
@@ -32,6 +33,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     ILayoutRestorer,
     IRouter,
     ISettingRegistry,
+    IThemeManager,
   ],
 };
 
@@ -43,6 +45,7 @@ async function activate(
   restorer: ILayoutRestorer,
   router: IRouter,
   settingRegistry: ISettingRegistry,
+  themeManager: IThemeManager,
 ) {
   const comm = new FSComm();
   let disposable = new DisposableSet();
@@ -139,6 +142,33 @@ async function activate(
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     settings.changed.connect(refresh);
   }
+
+  // Inject lab icons
+  const style = document.createElement("style");
+  style.setAttribute('id', 'jupyter-fs-icon-inject');
+
+  // Hackish, but needed since free-finder insists on pseudo elements for icons.
+  function iconStyleContent(folderStr: string, fileStr: string) {
+    // Note: We aren't able to style the hover/select colors with this.
+    return `
+    .jp-tree-finder {
+      --tf-dir-icon: url('data:image/svg+xml,${encodeURIComponent(folderStr)}');
+      --tf-file-icon: url('data:image/svg+xml,${encodeURIComponent(fileStr)}');
+    }
+    `
+  }
+
+  themeManager.themeChanged.connect(() => {
+    const primary = getComputedStyle(document.documentElement).getPropertyValue('--jp-ui-font-color1');
+    style.textContent = iconStyleContent(
+      folderIcon.svgstr.replace(/fill="([^"]{0,7})"/, `fill="${primary}"`),
+      fileIcon.svgstr.replace(/fill="([^"]{0,7})"/, `fill="${primary}"`)
+    );
+  })
+
+  style.textContent = iconStyleContent(folderIcon.svgstr, fileIcon.svgstr);
+
+  document.head.appendChild(style);
 }
 
 export default plugin;
