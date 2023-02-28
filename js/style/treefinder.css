@@ -53,3 +53,38 @@ tree-finder-panel tree-finder-grid table {
 .jp-tree-finder-toolbar.jp-Toolbar .jp-ToolbarButtonComponent {
   width: 40px;
 }
+
+.jp-tree-finder {
+  --tf-background: var(--jp-layout-color1);
+  --tf-font-color: var(--jp-ui-font-color1);
+
+  --tf-breadcrumb-hover-color: var(--jp-layout-color2);
+
+  --tf-row-hover-background: var(--jp-layout-color2);
+  --tf-row-hover-color: var(--jp-ui-font-color1);
+
+  --tf-select-background: var(--jp-brand-color1);
+  --tf-select-color: var(--jp-ui-inverse-font-color1);
+
+  --tf-font-size: var(--jp-ui-font-size1);
+  --tf-font-family: var(--jp-ui-font-family);
+}
+
+.jp-tree-finder tree-finder-grid {
+  font-family: var(--jp-ui-font-family);
+}
+
+.jp-tree-finder tbody th {
+  font-weight: normal;
+}
+
+.jp-tree-finder thead th {
+  font-weight: 500;
+}
+
+.jp-tree-finder .tf-filter-input {
+  background-color: transparent;
+  color: var(--jp-ui-font-color1);
+  box-shadow: inset 0 0 0 var(--jp-border-width) var(--jp-input-border-color);
+  border: none;
+}
