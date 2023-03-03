@@ -6,6 +6,8 @@ import sys
 PLATFORM_INFO = {"darwin": "mac", "linux": "linux", "win32": "windows"}
 PLATFORMS = set(PLATFORM_INFO.keys())
 
+pytest_plugins = ["pytest_jupyter.jupyter_server"]
+
 
 def pytest_configure(config):
     # register the platform markers
