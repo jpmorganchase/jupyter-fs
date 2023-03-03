@@ -5,11 +5,16 @@
 # This file is part of the jupyter-fs library, distributed under the terms of
 # the Apache License 2.0.  The full license can be found in the LICENSE file.
 
-from pathlib import Path
+from contextlib import nullcontext
+import json
+from pathlib import Path, PurePosixPath
 import pytest
 import os
 import shutil
 import socket
+
+from jupyter_core.utils import ensure_async
+import tornado.web
 
 from jupyterfs.fsmanager import FSManager
 from .utils import s3, samba
@@ -42,36 +47,122 @@ _test_file_model = {
     "writable": True,
 }
 
+configs = [
+    {
+        "ServerApp": {
+            "jpserver_extensions": {
+                "jupyterfs.extension": True
+            },
+            "contents_manager_class": "jupyterfs.metamanager.MetaManager"
+        },
+        "ContentsManager": {
+            "allow_hidden": True
+        }
+    },
+    {
+        "ServerApp": {
+            "jpserver_extensions": {
+                "jupyterfs.extension": True
+            },
+            "contents_manager_class": "jupyterfs.metamanager.MetaManager"
+        },
+        "ContentsManager": {
+            "allow_hidden": False
+        }
+    },
+]
+
+class ContentsClient:
+    def __init__(self, jp_fetch):
+        self.fetch = jp_fetch
+
+    async def set_resources(self, resources):
+        rep = await self.fetch(
+            "/jupyterfs/resources",
+            method='POST',
+            body=json.dumps({
+                'options': {},
+                'resources': resources,
+            })
+        )
+        return json.loads(rep.body)
+
+    async def mkdir(self, path, parents=False):
+        if parents:
+            pp = PurePosixPath(path)
+            for i, p in enumerate(pp.parts):
+                await self.mkdir("/".join(pp.parts[:i]))
+            return
+        rep = await self.fetch(
+            f"/api/contents/{path.strip('/')}",
+            method='PUT',
+            body=json.dumps({'type': 'directory'}),
+        )
+        return json.loads(rep.body)
+
+    async def save(self, path, model):
+        rep = await self.fetch(
+            f"/api/contents/{path}",
+            method='PUT',
+            body=json.dumps(model),
+        )
+        return json.loads(rep.body)
+
+    async def get(self, path):
+        rep = await self.fetch(f"/api/contents/{path}", raise_error=True)
+        return json.loads(rep.body)
+
 
 class _TestBase:
     """Contains tests universal to all PyFilesystemContentsManager flavors"""
 
-    def _createContentsManager(self):
+    @pytest.fixture
+    def resource_uri(self):
         raise NotImplementedError
 
-    def testWriteRead(self):
-        cm = self._createContentsManager()
+    @pytest.mark.parametrize("jp_server_config", configs)
+    async def test_write_read(self, jp_fetch, resource_uri, jp_server_config):
+        allow_hidden = jp_server_config['ContentsManager']['allow_hidden']
+
+        cc = ContentsClient(jp_fetch)
+
+        resources = await cc.set_resources([{'url': resource_uri}])
+        drive = resources[0]['drive']
 
         fpaths = [
-            "" + test_fname,
-            "root0/" + test_fname,
-            "root1/leaf1/" + test_fname,
+            f"{drive}:{test_fname}",
+            f"{drive}:root0/{test_fname}",
+            f"{drive}:root1/leaf1/{test_fname}",
+        ]
+
+        hidden_paths = [
+            f"{drive}:root1/leaf1/.hidden.txt",
+            f"{drive}:root1/.leaf1/also_hidden.txt",
         ]
 
         # set up dir structure
-        cm._save_directory("root0", None)
-        cm._save_directory("root1", None)
-        cm._save_directory("root1/leaf1", None)
+        await cc.mkdir(f"{drive}:root0")
+        await cc.mkdir(f"{drive}:root1")
+        await cc.mkdir(f"{drive}:root1/leaf1")
+        if allow_hidden:
+            await cc.mkdir(f"{drive}:root1/.leaf1")
 
-        # save to root and tips
-        cm.save(_test_file_model, fpaths[0])
-        cm.save(_test_file_model, fpaths[1])
-        cm.save(_test_file_model, fpaths[2])
+        for p in fpaths:
+            # save to root and tips
+            await cc.save(p, _test_file_model)
+            # read and check
+            assert test_content == (await cc.get(p))["content"]
 
-        # read and check
-        assert test_content == cm.get(fpaths[0])["content"]
-        assert test_content == cm.get(fpaths[1])["content"]
-        assert test_content == cm.get(fpaths[2])["content"]
+        for p in hidden_paths:
+            ctx = nullcontext() if allow_hidden else pytest.raises(tornado.httpclient.HTTPClientError)
+            with ctx as c:
+                # save to root and tips
+                await cc.save(p, _test_file_model)
+                # read and check
+                assert test_content == (await cc.get(p))["content"]
+
+            if not allow_hidden:
+                assert c.value.code == 400
 
 
 class Test_FSManager_osfs(_TestBase):
@@ -90,10 +181,9 @@ class Test_FSManager_osfs(_TestBase):
     def teardown_method(self, method):
         shutil.rmtree(self._test_dir, ignore_errors=True)
 
-    def _createContentsManager(self):
-        uri = "osfs://{local_dir}".format(local_dir=self._test_dir)
-
-        return FSManager.open_fs(uri)
+    @pytest.fixture
+    def resource_uri(self, tmp_path):
+        yield f"osfs://{tmp_path}"
 
 
 class Test_FSManager_s3(_TestBase):
@@ -120,7 +210,8 @@ class Test_FSManager_s3(_TestBase):
     def teardown_method(self, method):
         self._rootDirUtil.delete()
 
-    def _createContentsManager(self):
+    @pytest.fixture
+    def resource_uri(self):
         uri = "s3://{id}:{key}@{bucket}?endpoint_url={url}:{port}".format(
             id=s3.aws_access_key_id,
             key=s3.aws_secret_access_key,
@@ -128,8 +219,7 @@ class Test_FSManager_s3(_TestBase):
             url=test_url_s3.strip("/"),
             port=test_port_s3,
         )
-
-        return FSManager.open_fs(uri)
+        yield uri
 
 
 @pytest.mark.darwin
@@ -179,7 +269,8 @@ class Test_FSManager_smb_docker_share(_TestBase):
         # delete any existing root
         self._rootDirUtil.delete()
 
-    def _createContentsManager(self):
+    @pytest.fixture
+    def resource_uri(self):
         uri = "smb://{username}:{passwd}@{host}:{smb_port}/{share}?name-port={name_port}".format(
             username=samba.smb_user,
             passwd=samba.smb_passwd,
@@ -188,10 +279,7 @@ class Test_FSManager_smb_docker_share(_TestBase):
             smb_port=test_name_port_smb_docker_share,
             name_port=test_name_port_smb_docker_nameport,
         )
-
-        cm = FSManager.open_fs(uri)
-        assert cm.dir_exists(".")
-        return cm
+        yield uri
 
 
 # @pytest.mark.darwin
@@ -220,7 +308,8 @@ class Test_FSManager_smb_docker_share(_TestBase):
 #         # delete any existing root
 #         self._rootDirUtil.delete()
 
-#     def _createContentsManager(self):
+#    @pytest.fixture
+#    def resource_uri(self):
 #         kwargs = dict(
 #             direct_tcp=test_direct_tcp_smb_os_share,
 #             host=test_host_smb_os_share,
@@ -239,7 +328,4 @@ class Test_FSManager_smb_docker_share(_TestBase):
 #                 **kwargs
 #             )
 
-#         cm = FSManager.open_fs(uri)
-
-#         assert cm.dir_exists(".")
-#         return cm
+#        yield uri

@@ -94,7 +94,10 @@ class MetaManager(ContentsManager):
                     # create new cm
                     default_writable = resource.get("defaultWritable", True)
                     managers[_hash] = FSManager(
-                        urlSubbed, default_writable=default_writable, **self._pyfs_kw
+                        urlSubbed,
+                        default_writable=default_writable,
+                        parent=self,
+                        **self._pyfs_kw
                     )
                     init = True
 

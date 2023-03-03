@@ -139,12 +139,9 @@ def path_old_new(method_name, returns_model):
 
     def _wrapper(self, old_path, new_path, *args, **kwargs):
         old_prefix, old_mgr, old_mgr_path = _resolve_path(old_path, self._managers)
-        new_prefix, new_mgr, new_mgr_path = _resolve_path(
-            new_path,
-            self._managers,
-        )
+        new_prefix, new_mgr, new_mgr_path = _resolve_path(new_path, self._managers)
         if old_mgr is not new_mgr:
-            # TODO: Consider supporting this via get+delete+save.
+            # TODO: Consider supporting this via get+save+delete.
             raise HTTPError(
                 400,
                 "Can't move files between backends yet ({old} -> {new})".format(
