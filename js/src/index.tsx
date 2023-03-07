@@ -12,7 +12,7 @@ import { IThemeManager, IWindowResolver } from "@jupyterlab/apputils";
 import { IDocumentManager } from "@jupyterlab/docmanager";
 import { ISettingRegistry } from "@jupyterlab/settingregistry";
 import { folderIcon, fileIcon } from "@jupyterlab/ui-components";
-import { DisposableSet } from "@lumino/disposable";
+import { IDisposable } from "@lumino/disposable";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
@@ -48,7 +48,7 @@ async function activate(
   themeManager: IThemeManager,
 ) {
   const comm = new FSComm();
-  let disposable = new DisposableSet();
+  let widgetMap : {[key: string]: IDisposable} = {};
   const sidebarProps: TreeFinderSidebar.ISidebarProps = {
     app,
     manager,
@@ -76,61 +76,75 @@ async function activate(
     // create the fs resource frontends (ie FileTree instances)
     for (const r of resources) {
       // make one composite disposable for all fs resource frontends
-      disposable.add(TreeFinderSidebar.sidebarFromResource(r, sidebarProps));
+      let w = widgetMap[r.drive!];
+      if (!w || w.isDisposed) {
+        const w = TreeFinderSidebar.sidebarFromResource(r, sidebarProps);
+        widgetMap[r.drive!] = w;
+      }
     }
   }
 
   async function refresh() {
-    // each disposable can only be disposed once
-    disposable.dispose();
-    disposable = new DisposableSet();
-
     // get user settings from json file
     let resources: IFSResource[] = settings.composite.resources as any;
     const options: IFSOptions = settings.composite.options as any;
 
-    // send user specs to backend; await return containing resources
-    // defined by user settings + resources defined by server config
-    resources = await comm.initResourceRequest({
-      resources,
-      options: {
-        ...options,
-        _addServerside: true,
-      },
-    });
+    function cleanup() {
+      let keys = resources.map(r => r.drive);
+      for (let key of Object.keys(widgetMap)) {
+        if (keys.indexOf(key) === -1) {
+          widgetMap[key].dispose();
+          delete widgetMap[key];
+        }
+      }
+    }
 
-    if (askRequired(resources)) {
-      // ask for url template values, if required
-      const dialogElem = document.createElement("div");
-      document.body.appendChild(dialogElem);
+    try {
+      // send user specs to backend; await return containing resources
+      // defined by user settings + resources defined by server config
+      resources = await comm.initResourceRequest({
+        resources,
+        options: {
+          ...options,
+          _addServerside: true,
+        },
+      });
 
-      const handleClose = () => {
-        ReactDOM.unmountComponentAtNode(dialogElem);
-        dialogElem.remove();
-      };
+      if (askRequired(resources)) {
+        // ask for url template values, if required
+        const dialogElem = document.createElement("div");
+        document.body.appendChild(dialogElem);
 
-      const handleSubmit = async (values: {[url: string]: {[key: string]: string}}) => {
-        await refreshWidgets({
-          resources: await comm.initResourceRequest({
+        const handleClose = () => {
+          ReactDOM.unmountComponentAtNode(dialogElem);
+          dialogElem.remove();
+        };
+
+        const handleSubmit = async (values: {[url: string]: {[key: string]: string}}) => {
+          resources = await comm.initResourceRequest({
             resources: resources.map(r => ({ ...r, tokenDict: values[r.url] })),
             options,
-          }),
-          options,
-        });
-      };
+          });
+          await refreshWidgets({ resources, options });
+          cleanup();
+        };
 
-      ReactDOM.render(
-        <AskDialog
-          handleClose={handleClose}
-          handleSubmit={handleSubmit}
-          options={options}
-          resources={resources}
-        />,
-        dialogElem,
-      );
-    } else {
-      // otherwise, just go ahead and refresh the widgets
-      await refreshWidgets({ options, resources });
+        ReactDOM.render(
+          <AskDialog
+            handleClose={handleClose}
+            handleSubmit={handleSubmit}
+            options={options}
+            resources={resources}
+          />,
+          dialogElem,
+        );
+      } else {
+        // otherwise, just go ahead and refresh the widgets
+        await refreshWidgets({ options, resources });
+        cleanup();
+      }
+    } catch {
+      cleanup();
     }
   }
 
