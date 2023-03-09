@@ -14,6 +14,7 @@ import {
   ToolbarButton,
   WidgetTracker, /*Clipboard, Dialog, IWindowResolver, showDialog*/
 } from "@jupyterlab/apputils";
+import { CommandRegistry } from '@lumino/commands';
 // import { PathExt, URLExt } from "@jupyterlab/coreutils";
 import { IDocumentManager, isValidFileName /*renameFile*/ } from "@jupyterlab/docmanager";
 // import { DocumentRegistry } from "@jupyterlab/docregistry";
@@ -23,12 +24,13 @@ import {
   copyIcon,
   cutIcon,
   editIcon,
+  filterListIcon,
   pasteIcon,
   refreshIcon,
 } from "@jupyterlab/ui-components";
 // import JSZip from "jszip";
 import { DisposableSet, IDisposable } from "@lumino/disposable";
-import { PanelLayout, Widget } from "@lumino/widgets";
+import { Menu, PanelLayout, Widget } from "@lumino/widgets";
 import { Content, Format, IContentRow, Path, TreeFinderPanelElement } from "tree-finder";
 
 import { JupyterClipboard } from "./clipboard";
@@ -132,6 +134,9 @@ export class TreeFinderWidget extends Widget {
 
     this.cm = new JupyterContents(contents, rootPath);
 
+    this.columnsToShow = ['size','mimetype','last_modified'];
+    console.log('The columns to show are: ', this.columnsToShow);
+
     rootPath = rootPath === "" ? rootPath : rootPath + ":";
     void this.cm.get(rootPath).then(root => this.node.init({
       root,
@@ -144,7 +149,7 @@ export class TreeFinderWidget extends Widget {
         showFilter: true,
       },
       modelOptions: {
-        columnNames: ["size", "mimetype", "last_modified"],
+        columnNames: this.columnsToShow,
       },
     })).then(() => {
       this.model.openSub.subscribe(rows => rows.forEach(row => {
@@ -163,6 +168,41 @@ export class TreeFinderWidget extends Widget {
     this.model.refreshSub.next();
   }
 
+  toggleColumn(col: (keyof JupyterContents.IJupyterContentRow)) {
+    let idx = this.columnsToShow.indexOf(col, 0);
+    if (idx != -1) {
+      console.log('column is in columnsToShow');
+      this.columnsToShow.splice(idx, 1);
+      console.log('Updated columns to show are:', this.columnsToShow);
+    }
+    else {
+      let pos = 0;
+      if (col == 'mimetype') {
+        let lm_idx = this.columnsToShow.indexOf('last_modified', 0);
+        let size_idx = this.columnsToShow.indexOf('size', 0);
+        if (lm_idx != -1 && size_idx == -1) { pos = lm_idx - 1; }
+        else { pos = 1 }
+      }
+      else if (col == 'last_modified') {
+        pos = 2;
+      }
+      console.log('column is NOT in columnsToShow');
+      this.columnsToShow.splice(pos, 0, col);
+      console.log('Updated columns to show are:', this.columnsToShow);
+    }
+
+    let m = this.node.model;
+    m.options = {
+      ...m.options, 
+      columnNames: this.columnsToShow, 
+      // needsWidths: true,
+    };
+
+    m.initColumns();
+    m.requestDraw();
+    this.refresh(); // Minimally set width columns
+  }
+
   get model() {
     return this.node.model;
   }
@@ -174,8 +214,9 @@ export class TreeFinderWidget extends Widget {
   get selectionPathstrs() {
     return this.model.selection.map(c => Path.fromarray(c.row.path));
   }
-
+  
   cm: JupyterContents;
+  columnsToShow: (keyof JupyterContents.IJupyterContentRow)[];
   readonly node: TreeFinderPanelElement<JupyterContents.IJupyterContentRow>;
 }
 
@@ -205,6 +246,7 @@ export class TreeFinderSidebar extends Widget {
     // this.toolbar.addClass(id);
 
     this.treefinder = new TreeFinderWidget({ app, rootPath });
+    console.log('New TreeFinderWidget created!')
 
     this.layout = new PanelLayout();
     this.layout.addWidget(this.toolbar);
@@ -301,6 +343,10 @@ export namespace TreeFinderSidebar {
     "paste",
     "refresh",
     "rename",
+    "togglePath",
+    "toggleSizeCol",
+    "toggleMimetypeCol",
+    "toggleLastModifiedCol"
   ] as const;
   // use typescript-fu to convert commandIds to an interface
   export type ICommandIDs = {[k in typeof commandNames[number]]: string};
@@ -369,6 +415,85 @@ export namespace TreeFinderSidebar {
       },
       tooltip: "Refresh",
     });
+
+    // Add the commands to hide columns into new command registry
+    const commands  = new CommandRegistry();
+
+    let size_col_state = true;
+    let mimetype_col_state = true;
+    let lastModified_col_state = true;
+    
+    commands.addCommand(widget.commandIDs.togglePath, {
+      execute: args => {},
+      label: 'path',
+      isEnabled: () => false,
+      isToggled: () => true,
+    });
+    commands.addCommand(widget.commandIDs.toggleSizeCol, {
+      execute: args => {
+        const widget = tracker.currentWidget;
+        if (widget) {
+          size_col_state = !size_col_state;
+          // widget.colVisibilities[0] = size_col_state;
+          console.log('-----------');
+          // console.log('Updated visibilities: ', widget.colVisibilities);
+          console.log('This will toggle size col!');
+          console.log('-----------');
+
+          widget.treefinder.toggleColumn('size'); // TODO dont hardcode the cols name
+          console.log('Columns toggled!')
+          
+          // widget.treefinder = new TreeFinderWidget({ app, rootPath }, widget.colVisibilities);
+          // console.log('Update treefinder!')
+        }
+      },
+      label: 'size',
+      isToggleable: true,
+      isToggled: () => size_col_state, // Here add logic to accordingly set state of Size column
+    });
+    commands.addCommand(widget.commandIDs.toggleMimetypeCol, {
+      execute: args => {
+        const widget = tracker.currentWidget;
+        if (widget) {
+          mimetype_col_state = !mimetype_col_state;
+          console.log('-----------');
+          console.log('This will toggle mimetype col!');
+          console.log('-----------');
+
+          widget.treefinder.toggleColumn('mimetype');
+          console.log('Columns toggled!')
+        }
+      },
+      label: 'mimetype',
+      isToggleable: true,
+      isToggled: () => mimetype_col_state,
+    });
+    commands.addCommand(widget.commandIDs.toggleLastModifiedCol, {
+      execute: args => {
+        const widget = tracker.currentWidget;
+        if (widget) {
+          lastModified_col_state = !lastModified_col_state;
+          console.log('-----------');
+          console.log('This will toggle last_modified col!');
+          console.log('-----------');
+          
+          widget.treefinder.toggleColumn('last_modified');
+          console.log('Columns toggled!')
+        }
+      },
+      label: 'last_modified',
+      isToggleable: true,
+      isToggled: () => lastModified_col_state,
+    });
+
+    // Create submenu for show/hide cols and add commands
+    let submenu = new Menu({ commands });
+    submenu.title.label = 'Show/Hide Columns';
+    submenu.title.icon = filterListIcon;
+    submenu.addItem({ command: widget.commandIDs.togglePath });
+    submenu.addItem({ command: widget.commandIDs.toggleSizeCol });
+    submenu.addItem({ command: widget.commandIDs.toggleMimetypeCol });
+    submenu.addItem({ command: widget.commandIDs.toggleLastModifiedCol });
 
     // widget.toolbar.addItem("upload", uploader_button);
     // widget.toolbar.addItem("new file", new_file_button);
@@ -464,7 +589,12 @@ export namespace TreeFinderSidebar {
         selector,
         rank: 6,
       }),
-
+      app.contextMenu.addItem({
+        type: 'submenu',
+        submenu: submenu,
+        selector,
+        rank: 7,
+      }),
       app.contextMenu.addItem({
         args: { selection: true },
         command: widget.commandIDs.refresh,
