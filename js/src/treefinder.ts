@@ -133,9 +133,7 @@ export class TreeFinderWidget extends Widget {
     this.addClass("jp-tree-finder");
 
     this.cm = new JupyterContents(contents, rootPath);
-
     this.columnsToShow = ['size','mimetype','last_modified'];
-    console.log('The columns to show are: ', this.columnsToShow);
 
     rootPath = rootPath === "" ? rootPath : rootPath + ":";
     void this.cm.get(rootPath).then(root => this.node.init({
@@ -169,6 +167,8 @@ export class TreeFinderWidget extends Widget {
   }
 
   toggleColumn(col: (keyof JupyterContents.IJupyterContentRow)) {
+
+    // TODO: Make this logic more generic using tuples (col, rank) maybe?
     let idx = this.columnsToShow.indexOf(col, 0);
     if (idx != -1) {
       console.log('column is in columnsToShow');
@@ -195,7 +195,6 @@ export class TreeFinderWidget extends Widget {
     m.options = {
       ...m.options, 
       columnNames: this.columnsToShow, 
-      // needsWidths: true,
     };
 
     m.initColumns();
@@ -434,22 +433,17 @@ export namespace TreeFinderSidebar {
         const widget = tracker.currentWidget;
         if (widget) {
           size_col_state = !size_col_state;
-          // widget.colVisibilities[0] = size_col_state;
           console.log('-----------');
-          // console.log('Updated visibilities: ', widget.colVisibilities);
           console.log('This will toggle size col!');
-          console.log('-----------');
 
-          widget.treefinder.toggleColumn('size'); // TODO dont hardcode the cols name
-          console.log('Columns toggled!')
-          
-          // widget.treefinder = new TreeFinderWidget({ app, rootPath }, widget.colVisibilities);
-          // console.log('Update treefinder!')
+          widget.treefinder.toggleColumn('size');
+          console.log('Column toggled!')
+          console.log('-----------');
         }
       },
       label: 'size',
       isToggleable: true,
-      isToggled: () => size_col_state, // Here add logic to accordingly set state of Size column
+      isToggled: () => size_col_state,
     });
     commands.addCommand(widget.commandIDs.toggleMimetypeCol, {
       execute: args => {
@@ -458,10 +452,10 @@ export namespace TreeFinderSidebar {
           mimetype_col_state = !mimetype_col_state;
           console.log('-----------');
           console.log('This will toggle mimetype col!');
-          console.log('-----------');
 
           widget.treefinder.toggleColumn('mimetype');
-          console.log('Columns toggled!')
+          console.log('Column toggled!')
+          console.log('-----------');
         }
       },
       label: 'mimetype',
@@ -475,10 +469,10 @@ export namespace TreeFinderSidebar {
           lastModified_col_state = !lastModified_col_state;
           console.log('-----------');
           console.log('This will toggle last_modified col!');
-          console.log('-----------');
           
           widget.treefinder.toggleColumn('last_modified');
-          console.log('Columns toggled!')
+          console.log('Column toggled!')
+          console.log('-----------');
         }
       },
       label: 'last_modified',
