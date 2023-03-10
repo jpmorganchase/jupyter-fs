@@ -32,9 +32,10 @@ import {
 // import JSZip from "jszip";
 import { DisposableSet, IDisposable } from "@lumino/disposable";
 import { Menu, PanelLayout, Widget } from "@lumino/widgets";
-import { Content, Format, IContentRow, Path, TreeFinderPanelElement } from "tree-finder";
+import { Content, Format, IContentRow, Path, TreeFinderGridElement, TreeFinderPanelElement } from "tree-finder";
 
 import { JupyterClipboard } from "./clipboard";
+import { exposeAndSelectPath } from "./contents_utils";
 import { IFSResource } from "./filesystem";
 import { fileTreeIcon } from "./icons";
 import { doRename } from "./utils";
@@ -503,18 +504,33 @@ export namespace TreeFinderSidebar {
       }),
       app.commands.addCommand(widget.commandIDs.create_folder, {
         execute: async args =>  {
-          const target = widget.treefinder.model.selectedLast;
-          const path = target ? 
-            Path.fromarray(target.row.getChildren ?
+          const target = widget.treefinder.model.selectedLast ?? widget.treefinder.model.root;
+          const path = Path.fromarray(target.row.getChildren ?
               target.row.path :
               target.row.path.slice(0, -1)  // if a file is selected, target its containing folder
-            ) :
-            "";
-          await widget.treefinder.cm.newUntitled({
+          );
+          const row = await widget.treefinder.cm.newUntitled({
             type: "directory",
             path,
           });
-          (target ?? widget.treefinder.model.root).invalidate();
+          target.invalidate();
+          const model = await exposeAndSelectPath(widget.treefinder.model, row.path);
+          // Redraw, as _doRename relies on element being present
+          widget.treefinder.model.refreshSub.next(target.row.path.length <= 2 ? undefined : [target.row]);
+          // tree-finder uses rxjs bits that don't allow you to await, so to ensure sync draw:
+          await widget.treefinder.model.flatten();
+          const grid = (await widget.treefinder.node.querySelector('tree-finder-grid')) as TreeFinderGridElement<typeof row>;
+          await grid.draw();
+          // Check if new row (selection) in view (if outside virtual window, it will fail):
+          if (!document.querySelector(".tf-mod-select .rt-tree-container .rt-group-name")) {
+            // We need to scroll the selection into view!
+            const rowIdx = widget.treefinder.model.contents.findIndex(s => s.pathstr === model.pathstr);
+            await grid.scrollToCell(0, rowIdx, 1, widget.treefinder.model.contents.length);
+          }
+          const newContent = await _doRename(widget, model);
+          widget.treefinder.model.renamerSub.next( { name: newContent.name, target: model } );
+          // TODO: Model state of TreeFinderWidget should be updated by renamerSub process.
+          model.row = newContent;
         },
         icon: newFolderIcon,
         label: "New Folder",
@@ -639,7 +655,7 @@ export namespace TreeFinderSidebar {
 
   export function _doRename(widget: TreeFinderSidebar, oldContent: Content<JupyterContents.IJupyterContentRow>): Promise<JupyterContents.IJupyterContentRow> {
     const textNode = document.querySelector(".tf-mod-select .rt-tree-container .rt-group-name").firstChild as HTMLElement;
-    const original = textNode.textContent;
+    const original = textNode.textContent.replace(/(.*)\/$/, "$1");
     const editNode = document.createElement("input");
     editNode.value = original;
     return doRename(textNode, editNode, original).then(
@@ -650,13 +666,14 @@ export namespace TreeFinderSidebar {
         if (!isValidFileName(newName)) {
           void showErrorMessage(
             "Rename Error",
-            Error(newName +' is not a valid name for a file. Names must have nonzero length, and cannot include "/", "\\", or ":"')
+            Error(newName +' is not a valid name. Names must have nonzero length, and cannot include "/", "\\", or ":"')
           );
           return oldContent.row;
         }
-        const oldPath = oldContent.getPathAtDepth(1).join("/");
+        let oldPath = oldContent.getPathAtDepth(1).join("/");
         const newPath = oldPath.slice(0, -1 * original.length) + newName;
-        const promise = widget.treefinder.cm.rename(oldPath, newPath);
+        const suffix = textNode.textContent.endsWith("/") ? "/" : "";
+        const promise = widget.treefinder.cm.rename(oldPath + suffix, newPath + suffix);
         return promise
           .catch(error => {
             if (error !== "File not renamed") {
