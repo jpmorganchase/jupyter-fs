@@ -6,7 +6,7 @@
  * the Apache License 2.0.  The full license can be found in the LICENSE file.
  *
  */
-import { WidgetTracker } from "@jupyterlab/apputils";
+import { WidgetTracker, showErrorMessage } from "@jupyterlab/apputils";
 import { Drive } from "@jupyterlab/services";
 import { Widget } from "@lumino/widgets";
 import { ClipboardModel, ContentsModel, IContentRow, Path } from "tree-finder";
@@ -54,14 +54,22 @@ export class JupyterClipboard {
 
   protected async _onDelete<T extends IContentRow>(src: T) {
     const srcPathstr = Path.fromarray(src.path);
+    try {
     await this._drive.delete(srcPathstr);
+    } catch (err) {
+      showErrorMessage('Delete Failed', err);
+    }
   }
 
   protected async _onPaste<T extends IContentRow>(src: T, destPathstr: string, doCut: boolean) {
     const srcPathstr = Path.fromarray(src.path);
+    try {
     await this._drive.copy(srcPathstr, destPathstr);
     if (doCut) {
       await this._drive.delete(srcPathstr);
+      }
+    } catch (err) {
+      showErrorMessage('Paste Error', err);
     }
   }
 
