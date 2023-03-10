@@ -21,14 +21,20 @@ export class JupyterClipboard {
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     this._model.deleteSub.subscribe(async memo => {
       await Promise.all(memo.map(s => this._onDelete(s)));
-      this.model.refresh(this._tracker.currentWidget.treefinder.model, memo);
+      const rootNeedsRefresh = memo.some(v => v.path.length <= 2);
+      this.model.refresh(this._tracker.currentWidget.treefinder.model, rootNeedsRefresh ? undefined : memo);
     });
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     this._model.pasteSub.subscribe(async ({ destination, doCut, memo }) => {
-      const destPathstr = Path.fromarray(destination.kind === "dir" ? destination.path : destination.path.slice(0, -1));
+      const destPath = destination.kind === "dir" ? destination.path : destination.path.slice(0, -1);
+      const destPathstr = Path.fromarray(destPath);
+      const rootNeedsRefresh = destPath.length <= 1;
       await Promise.all(memo.map(s => this._onPaste(s, destPathstr, doCut)));
-      this.model.refresh(this._tracker.currentWidget.treefinder.model, [destination, ...memo]);
+      const to_invalidate = rootNeedsRefresh ?
+        undefined :
+        [destination, ...(doCut ? memo : [])]  // only invalidate sources if cutting
+      this.model.refresh(this._tracker.currentWidget.treefinder.model, to_invalidate);
     });
   }
 
