@@ -22,7 +22,13 @@ export class JupyterClipboard {
     this._model.deleteSub.subscribe(async memo => {
       await Promise.all(memo.map(s => this._onDelete(s)));
       const rootNeedsRefresh = memo.some(v => v.path.length <= 2);
-      this.model.refresh(this._tracker.currentWidget.treefinder.model, rootNeedsRefresh ? undefined : memo);
+      // tree-finder doesn't correctly refresh parents of folders, so we work around it for now
+      // (in more detail, tree-finder will only refresh the folder if the entry does not have a
+      // getChildren entry, go figure...)
+      this.model.refresh(
+        this._tracker.currentWidget.treefinder.model,
+        rootNeedsRefresh ? undefined : memo.map(s => { return {...s, getChildren: undefined}})
+      );
     });
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -55,7 +61,7 @@ export class JupyterClipboard {
   protected async _onDelete<T extends IContentRow>(src: T) {
     const srcPathstr = Path.fromarray(src.path);
     try {
-    await this._drive.delete(srcPathstr);
+      await this._drive.delete(srcPathstr);
     } catch (err) {
       showErrorMessage('Delete Failed', err);
     }
@@ -64,9 +70,9 @@ export class JupyterClipboard {
   protected async _onPaste<T extends IContentRow>(src: T, destPathstr: string, doCut: boolean) {
     const srcPathstr = Path.fromarray(src.path);
     try {
-    await this._drive.copy(srcPathstr, destPathstr);
-    if (doCut) {
-      await this._drive.delete(srcPathstr);
+      await this._drive.copy(srcPathstr, destPathstr);
+      if (doCut) {
+        await this._drive.delete(srcPathstr);
       }
     } catch (err) {
       showErrorMessage('Paste Error', err);
