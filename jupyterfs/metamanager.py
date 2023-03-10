@@ -172,9 +172,9 @@ class MetaManager(ContentsManager):
         if to_path is None:
             to_path = from_dir
         if self.dir_exists(to_path):
-            name = self.copy_pat.sub(".", from_name)
+            name = self.copy_pat.sub(".", stripDrive(from_name))
             # ensure that any drives are stripped from the resulting filename
-            to_name = stripDrive(self.increment_filename(name, to_path, insert="-Copy"))
+            to_name = self.increment_filename(name, to_path, insert="-Copy")
             # separate path and filename with a slash if to_path is not just a drive string
             to_path = ("{0}{1}" if isDrive(to_path) else "{0}/{1}").format(
                 to_path, to_name

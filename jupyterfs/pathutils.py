@@ -161,7 +161,7 @@ def path_old_new(method_name, returns_model):
 # handlers for drive specifications in path strings, as in "fooDrive:bar/baz.buzz"
 def getDrive(path):
     first, *_ = path.strip("/").split("/")
-    return first.split(":")[0]
+    return first.split(":", 1)[0]
 
 
 def isDrive(path):
@@ -172,4 +172,4 @@ def stripDrive(path):
     """Strips off leading "drive:foo" specification from path, if present"""
     # strip any drives off the front of the filename
     first, *rest = path.strip("/").split("/")
-    return "/".join([first.split(":").pop(), *rest])
+    return "/".join([first.split(":", 1).pop(), *rest])
