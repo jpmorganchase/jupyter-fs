@@ -27,6 +27,7 @@ import {
   filterListIcon,
   pasteIcon,
   refreshIcon,
+  newFolderIcon,
 } from "@jupyterlab/ui-components";
 // import JSZip from "jszip";
 import { DisposableSet, IDisposable } from "@lumino/disposable";
@@ -54,6 +55,11 @@ export class JupyterContents {
     path = JupyterContents.toFullPath(path, this.drive);
     newPath = JupyterContents.toFullPath(newPath, this.drive);
     return JupyterContents.toJupyterContentRow(await this.cm.rename(path, newPath), this.cm, this.drive);
+  }
+
+  async newUntitled(options?: Contents.ICreateOptions) {
+    options.path = JupyterContents.toFullPath(options.path, this.drive);
+    return JupyterContents.toJupyterContentRow(await this.cm.newUntitled(options), this.cm, this.drive);
   }
 
   readonly cm: ContentsManager;
@@ -346,6 +352,7 @@ export namespace TreeFinderSidebar {
     "paste",
     "refresh",
     "rename",
+    "create_folder",
     "togglePath",
     "toggleSizeCol",
     "toggleMimetypeCol",
@@ -407,14 +414,13 @@ export namespace TreeFinderSidebar {
     restorer.add(widget, widget.id);
     app.shell.add(widget, side);
 
-    // const uploader_button = new Uploader({ manager, widget });
-    // const new_file_button = new ToolbarButton({
-    //   icon: newFolderIcon,
-    //   onClick: () => {
-    //     app.commands.execute((CommandIDs.create_folder + ":" + widget.id), { path: "" });
-    //   },
-    //   tooltip: "New Folder",
-    // });
+    const new_file_button = new ToolbarButton({
+      icon: newFolderIcon,
+      onClick: () => {
+        app.commands.execute((widget.commandIDs.create_folder));
+      },
+      tooltip: "New Folder",
+    });
     const refresh_button = new ToolbarButton({
       icon: refreshIcon,
       onClick: () => {
@@ -440,8 +446,7 @@ export namespace TreeFinderSidebar {
     submenu_snippets.title.label = 'Use File Snippets...';
     submenu_snippets.addItem({ command: widget.commandIDs.copyFilePath });
 
-    // widget.toolbar.addItem("upload", uploader_button);
-    // widget.toolbar.addItem("new file", new_file_button);
+    widget.toolbar.addItem("new file", new_file_button);
     widget.toolbar.addItem("refresh", refresh_button);
 
     // // remove context highlight on context menu exit
@@ -495,6 +500,24 @@ export namespace TreeFinderSidebar {
         },
         icon: editIcon,
         label: "Rename",
+      }),
+      app.commands.addCommand(widget.commandIDs.create_folder, {
+        execute: async args =>  {
+          const target = widget.treefinder.model.selectedLast;
+          const path = target ? 
+            Path.fromarray(target.row.getChildren ?
+              target.row.path :
+              target.row.path.slice(0, -1)  // if a file is selected, target its containing folder
+            ) :
+            "";
+          await widget.treefinder.cm.newUntitled({
+            type: "directory",
+            path,
+          });
+          (target ?? widget.treefinder.model.root).invalidate();
+        },
+        icon: newFolderIcon,
+        label: "New Folder",
       }),
       app.commands.addCommand(widget.commandIDs.refresh, {
         execute: args => args["selection"] ? clipboard.refreshSelection(widget.treefinder.model) : clipboard.refresh(widget.treefinder.model),
