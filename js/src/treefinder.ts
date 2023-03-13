@@ -14,7 +14,6 @@ import {
   ToolbarButton,
   WidgetTracker, /*Clipboard, Dialog, IWindowResolver, showDialog*/
 } from "@jupyterlab/apputils";
-import { CommandRegistry } from '@lumino/commands';
 // import { PathExt, URLExt } from "@jupyterlab/coreutils";
 import { IDocumentManager, isValidFileName /*renameFile*/ } from "@jupyterlab/docmanager";
 // import { DocumentRegistry } from "@jupyterlab/docregistry";
@@ -414,74 +413,11 @@ export namespace TreeFinderSidebar {
       },
       tooltip: "Refresh",
     });
-
-    // Add the commands to hide columns into new command registry
-    const commands  = new CommandRegistry();
-
+  
     let size_col_state = true;
     let mimetype_col_state = true;
     let lastModified_col_state = true;
-    
-    commands.addCommand(widget.commandIDs.togglePath, {
-      execute: args => {},
-      label: 'path',
-      isEnabled: () => false,
-      isToggled: () => true,
-    });
-    commands.addCommand(widget.commandIDs.toggleSizeCol, {
-      execute: args => {
-        const widget = tracker.currentWidget;
-        if (widget) {
-          size_col_state = !size_col_state;
-          console.log('-----------');
-          console.log('This will toggle size col!');
-
-          widget.treefinder.toggleColumn('size');
-          console.log('Column toggled!')
-          console.log('-----------');
-        }
-      },
-      label: 'size',
-      isToggleable: true,
-      isToggled: () => size_col_state,
-    });
-    commands.addCommand(widget.commandIDs.toggleMimetypeCol, {
-      execute: args => {
-        const widget = tracker.currentWidget;
-        if (widget) {
-          mimetype_col_state = !mimetype_col_state;
-          console.log('-----------');
-          console.log('This will toggle mimetype col!');
-
-          widget.treefinder.toggleColumn('mimetype');
-          console.log('Column toggled!')
-          console.log('-----------');
-        }
-      },
-      label: 'mimetype',
-      isToggleable: true,
-      isToggled: () => mimetype_col_state,
-    });
-    commands.addCommand(widget.commandIDs.toggleLastModifiedCol, {
-      execute: args => {
-        const widget = tracker.currentWidget;
-        if (widget) {
-          lastModified_col_state = !lastModified_col_state;
-          console.log('-----------');
-          console.log('This will toggle last_modified col!');
-          
-          widget.treefinder.toggleColumn('last_modified');
-          console.log('Column toggled!')
-          console.log('-----------');
-        }
-      },
-      label: 'last_modified',
-      isToggleable: true,
-      isToggled: () => lastModified_col_state,
-    });
-
-    // Create submenu for show/hide cols and add commands
-    let submenu = new Menu({ commands });
+    let submenu = new Menu({ commands: app.commands});
     submenu.title.label = 'Show/Hide Columns';
     submenu.title.icon = filterListIcon;
     submenu.addItem({ command: widget.commandIDs.togglePath });
@@ -549,6 +485,63 @@ export namespace TreeFinderSidebar {
         execute: args => args["selection"] ? clipboard.refreshSelection(widget.treefinder.model) : clipboard.refresh(widget.treefinder.model),
         icon: refreshIcon,
         label: args => args["selection"] ? "Refresh Selection" : "Refresh",
+      }),
+      app.commands.addCommand(widget.commandIDs.togglePath, {
+        execute: args => {},
+        label: 'path',
+        isEnabled: () => false,
+        isToggled: () => true,
+      }),
+      app.commands.addCommand(widget.commandIDs.toggleSizeCol, {
+        execute: args => {
+          const widget = tracker.currentWidget;
+          if (widget) {
+            size_col_state = !size_col_state;
+            console.log('-----------');
+            console.log('This will toggle size col!');
+  
+            widget.treefinder.toggleColumn('size');
+            console.log('Column toggled!')
+            console.log('-----------');
+          }
+        },
+        label: 'size',
+        isToggleable: true,
+        isToggled: () => size_col_state,
+      }),
+      app.commands.addCommand(widget.commandIDs.toggleMimetypeCol, {
+        execute: args => {
+          const widget = tracker.currentWidget;
+          if (widget) {
+            mimetype_col_state = !mimetype_col_state;
+            console.log('-----------');
+            console.log('This will toggle mimetype col!');
+  
+            widget.treefinder.toggleColumn('mimetype');
+            console.log('Column toggled!')
+            console.log('-----------');
+          }
+        },
+        label: 'mimetype',
+        isToggleable: true,
+        isToggled: () => mimetype_col_state,
+      }),
+      app.commands.addCommand(widget.commandIDs.toggleLastModifiedCol, {
+        execute: args => {
+          const widget = tracker.currentWidget;
+          if (widget) {
+            lastModified_col_state = !lastModified_col_state;
+            console.log('-----------');
+            console.log('This will toggle last_modified col!');
+            
+            widget.treefinder.toggleColumn('last_modified');
+            console.log('Column toggled!')
+            console.log('-----------');
+          }
+        },
+        label: 'last_modified',
+        isToggleable: true,
+        isToggled: () => lastModified_col_state,
       }),
 
       // context menu items
