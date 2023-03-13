@@ -35,43 +35,55 @@ import { Menu, PanelLayout, Widget } from "@lumino/widgets";
 import { Content, Format, IContentRow, Path, TreeFinderGridElement, TreeFinderPanelElement } from "tree-finder";
 
 import { JupyterClipboard } from "./clipboard";
-import { exposeAndSelectPath } from "./contents_utils";
+import { revealAndSelectPath } from "./contents_utils";
 import { IFSResource } from "./filesystem";
 import { fileTreeIcon } from "./icons";
 import { doRename } from "./utils";
-// import { Uploader } from "./upload";
+import { Uploader } from "./upload";
 
-export class JupyterContents {
-  constructor(cm: ContentsManager, drive?: string) {
-    this.cm = cm;
+export class ContentsProxy {
+  constructor(contentsManager: ContentsManager, drive?: string) {
+    this.contentsManager = contentsManager;
     this.drive = drive;
   }
 
-  async get(path: string) {
-    path = JupyterContents.toFullPath(path, this.drive);
-    return JupyterContents.toJupyterContentRow(await this.cm.get(path), this.cm, this.drive);
+  async get(path: string, options?: Contents.IFetchOptions) {
+    path = ContentsProxy.toFullPath(path, this.drive);
+    return ContentsProxy.toJupyterContentRow(await this.contentsManager.get(path, options), this.contentsManager, this.drive);
+  }
+
+  async save(path: string, options?: Partial<Contents.IModel>) {
+    path = ContentsProxy.toFullPath(path, this.drive);
+    return ContentsProxy.toJupyterContentRow(await this.contentsManager.save(path, options), this.contentsManager, this.drive);
   }
 
   async rename(path: string, newPath: string) {
-    path = JupyterContents.toFullPath(path, this.drive);
-    newPath = JupyterContents.toFullPath(newPath, this.drive);
-    return JupyterContents.toJupyterContentRow(await this.cm.rename(path, newPath), this.cm, this.drive);
+    path = ContentsProxy.toFullPath(path, this.drive);
+    newPath = ContentsProxy.toFullPath(newPath, this.drive);
+    return ContentsProxy.toJupyterContentRow(await this.contentsManager.rename(path, newPath), this.contentsManager, this.drive);
   }
 
   async newUntitled(options?: Contents.ICreateOptions) {
-    options.path = JupyterContents.toFullPath(options.path, this.drive);
-    return JupyterContents.toJupyterContentRow(await this.cm.newUntitled(options), this.cm, this.drive);
+    options.path = ContentsProxy.toFullPath(options.path, this.drive);
+    return ContentsProxy.toJupyterContentRow(await this.contentsManager.newUntitled(options), this.contentsManager, this.drive);
   }
 
-  readonly cm: ContentsManager;
+  readonly contentsManager: ContentsManager;
   readonly drive: string;
 }
 
-export namespace JupyterContents {
+export namespace ContentsProxy {
   export interface IJupyterContentRow extends Omit<Contents.IModel, "path" | "content" | "type">, IContentRow {}
 
   export function toFullPath(path: string, drive?: string): string {
-    return (!drive || path.startsWith(`${drive}:`)) ? path : [drive, path].join(":");
+
+    if (!drive || path.startsWith(`${drive}:`)) {
+      return path;
+    } else if (path.startsWith(`${drive}/`)) {
+      return [drive, path.slice(drive.length + 1)].join(":");
+    } else {
+      return [drive, path].join(":");
+    };
   }
 
   export function toLocalPath(path: string): string {
@@ -79,7 +91,7 @@ export namespace JupyterContents {
     return [first.split(":").pop(), ...rest].join("/");
   }
 
-  export function toJupyterContentRow(row: Contents.IModel, cm: ContentsManager, drive: string): IJupyterContentRow {
+  export function toJupyterContentRow(row: Contents.IModel, contentsManager: ContentsManager, drive: string): IJupyterContentRow {
     const { path, type, ...rest } = row;
 
     const pathWithDrive = toFullPath(path, drive);
@@ -90,7 +102,7 @@ export namespace JupyterContents {
       kind,
       ...rest,
       ...(kind === "dir" ? {
-        getChildren: async () => (await cm.get(pathWithDrive, { content: true })).content.map((c: Contents.IModel) => toJupyterContentRow(c, cm, drive)),
+        getChildren: async () => (await contentsManager.get(pathWithDrive, { content: true })).content.map((c: Contents.IModel) => toJupyterContentRow(c, contentsManager, drive)),
       }: {}),
     };
   }
@@ -136,11 +148,11 @@ export class TreeFinderWidget extends Widget {
   }: TreeFinderSidebar.IOptions) {
     const { commands, serviceManager: { contents } } = app;
 
-    const node = document.createElement<JupyterContents.IJupyterContentRow>("tree-finder-panel");
+    const node = document.createElement<ContentsProxy.IJupyterContentRow>("tree-finder-panel");
     super({ node });
     this.addClass("jp-tree-finder");
 
-    this.cm = new JupyterContents(contents, rootPath);
+    this.contentsProxy = new ContentsProxy(contents, rootPath);
     this.settings = settings;
     this.columns = settings.composite.display_columns as (keyof JupyterContents.IJupyterContentRow)[];
     this.rootPath = rootPath === "" ? rootPath : rootPath + ":";
@@ -195,7 +207,7 @@ export class TreeFinderWidget extends Widget {
   }
 
   async nodeInit() {
-    await this.cm.get(this.rootPath).then(root => this.node.init({
+    await this.contentsProxy.get(this.rootPath).then(root => this.node.init({
       root,
       gridOptions: {
         columnFormatters: {
@@ -223,11 +235,11 @@ export class TreeFinderWidget extends Widget {
     return this.model.selection.map(c => Path.fromarray(c.row.path));
   }
   
-  cm: JupyterContents;
+  contentsProxy: ContentsProxy;
   rootPath: string;
   columns: (keyof JupyterContents.IJupyterContentRow)[];
   settings: ISettingRegistry.ISettings;
-  readonly node: TreeFinderPanelElement<JupyterContents.IJupyterContentRow>;
+  readonly node: TreeFinderPanelElement<ContentsProxy.IJupyterContentRow>;
 }
 
 export class TreeFinderSidebar extends Widget {
@@ -331,8 +343,6 @@ export class TreeFinderSidebar extends Widget {
     this.treefinder.draw();
   }
 
-  cm: JupyterContents;
-  // dr: DocumentRegistry;
   toolbar: Toolbar;
   treefinder: TreeFinderWidget;
 
@@ -422,6 +432,16 @@ export namespace TreeFinderSidebar {
       },
       tooltip: "New Folder",
     });
+    const uploader_button = new Uploader({
+      manager,
+      sidebar: widget,
+    });
+    uploader_button.uploadCompleted.connect(async (sender, args) => {
+      await revealAndSelectPath(widget.treefinder.model, args.path);
+      // We need to scroll the selection into view!
+      const pathstr = args.path.join("/");
+      await scrollIntoView(widget.treefinder, pathstr);
+    });
     const refresh_button = new ToolbarButton({
       icon: refreshIcon,
       onClick: () => {
@@ -448,18 +468,19 @@ export namespace TreeFinderSidebar {
     submenu_snippets.addItem({ command: widget.commandIDs.copyFilePath });
 
     widget.toolbar.addItem("new file", new_file_button);
+    widget.toolbar.addItem("upload", uploader_button);
     widget.toolbar.addItem("refresh", refresh_button);
 
     // // remove context highlight on context menu exit
     // document.ondblclick = () => {
-    //   app.commands.execute((CommandIDs.set_context + ":" + widget.id), { path: "" });
+    //   app.commands.execute((widget.commandIDs.set_context + ":" + widget.id), { path: "" });
     // };
     // widget.node.onclick = event => {
-    //   app.commands.execute((CommandIDs.select + ":" + widget.id), { path: "" });
+    //   app.commands.execute((widget.commandIDs.select + ":" + widget.id), { path: "" });
     // };
 
     // setInterval(() => {
-    //   app.commands.execute(CommandIDs.refresh);
+    //   app.commands.execute(widget.commandIDs.refresh);
     // }, 10000);
 
     // return a disposable containing all disposables associated
@@ -506,27 +527,19 @@ export namespace TreeFinderSidebar {
         execute: async args =>  {
           const target = widget.treefinder.model.selectedLast ?? widget.treefinder.model.root;
           const path = Path.fromarray(target.row.getChildren ?
-              target.row.path :
-              target.row.path.slice(0, -1)  // if a file is selected, target its containing folder
+            target.row.path :
+            target.row.path.slice(0, -1)  // if a file is selected, target its containing folder
           );
-          const row = await widget.treefinder.cm.newUntitled({
+          const row = await widget.treefinder.contentsProxy.newUntitled({
             type: "directory",
             path,
           });
           target.invalidate();
-          const model = await exposeAndSelectPath(widget.treefinder.model, row.path);
-          // Redraw, as _doRename relies on element being present
+          const model = await revealAndSelectPath(widget.treefinder.model, row.path);
+          // Is this really needed?
           widget.treefinder.model.refreshSub.next(target.row.path.length <= 2 ? undefined : [target.row]);
-          // tree-finder uses rxjs bits that don't allow you to await, so to ensure sync draw:
-          await widget.treefinder.model.flatten();
-          const grid = (await widget.treefinder.node.querySelector('tree-finder-grid')) as TreeFinderGridElement<typeof row>;
-          await grid.draw();
-          // Check if new row (selection) in view (if outside virtual window, it will fail):
-          if (!document.querySelector(".tf-mod-select .rt-tree-container .rt-group-name")) {
-            // We need to scroll the selection into view!
-            const rowIdx = widget.treefinder.model.contents.findIndex(s => s.pathstr === model.pathstr);
-            await grid.scrollToCell(0, rowIdx, 1, widget.treefinder.model.contents.length);
-          }
+          // Scroll into view if not visible
+          await scrollIntoView(widget.treefinder, model.pathstr);
           const newContent = await _doRename(widget, model);
           widget.treefinder.model.renamerSub.next( { name: newContent.name, target: model } );
           // TODO: Model state of TreeFinderWidget should be updated by renamerSub process.
@@ -653,7 +666,7 @@ export namespace TreeFinderSidebar {
     }, new DisposableSet());
   }
 
-  export function _doRename(widget: TreeFinderSidebar, oldContent: Content<JupyterContents.IJupyterContentRow>): Promise<JupyterContents.IJupyterContentRow> {
+  export function _doRename(widget: TreeFinderSidebar, oldContent: Content<ContentsProxy.IJupyterContentRow>): Promise<ContentsProxy.IJupyterContentRow> {
     const textNode = document.querySelector(".tf-mod-select .rt-tree-container .rt-group-name").firstChild as HTMLElement;
     const original = textNode.textContent.replace(/(.*)\/$/, "$1");
     const editNode = document.createElement("input");
@@ -673,7 +686,7 @@ export namespace TreeFinderSidebar {
         let oldPath = oldContent.getPathAtDepth(1).join("/");
         const newPath = oldPath.slice(0, -1 * original.length) + newName;
         const suffix = textNode.textContent.endsWith("/") ? "/" : "";
-        const promise = widget.treefinder.cm.rename(oldPath + suffix, newPath + suffix);
+        const promise = widget.treefinder.contentsProxy.rename(oldPath + suffix, newPath + suffix);
         return promise
           .catch(error => {
             if (error !== "File not renamed") {
@@ -690,5 +703,27 @@ export namespace TreeFinderSidebar {
           });
       }
     );
+  }
+
+  /**
+   * If a path entry is not in view, scroll it into view
+   * 
+   * @param treefinder The view
+   * @param pathstr The entry to show
+   */
+  async function scrollIntoView(treefinder: TreeFinderWidget, pathstr: string) {
+    // tree-finder uses rxjs bits that don't allow you to await, so to ensure sync draw:
+    await treefinder.model.flatten();
+    const grid = (await treefinder.node.querySelector('tree-finder-grid')) as TreeFinderGridElement<ContentsProxy.IJupyterContentRow>;
+    await grid.draw();
+    // Check if new row (selection) in view (if outside virtual window, it will fail):
+    if (!document.querySelector(".tf-mod-select .rt-tree-container .rt-group-name")) {
+      // We need to scroll the selection into view!
+      const rowIdx = treefinder.model.contents.findIndex(s => s.pathstr === pathstr);
+      if (rowIdx !== -1) {
+        // TODO: Should we perform a minimum scroll, or do we always want entry as close to the top of the view as possible?
+        await grid.scrollToCell(0, rowIdx, 1, treefinder.model.contents.length);
+      }
+    }
   }
 }
