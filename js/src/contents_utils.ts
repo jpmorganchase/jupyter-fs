@@ -14,6 +14,25 @@ import { Content, ContentsModel, IContentRow } from "tree-finder";
  */
 
 
+async function* walkPath<T extends IContentRow>(path: string[], root: Content<T>) {
+    // Walk the path from the root
+    if (path[0] !== root.name) {
+      throw new Error(`Path ${path.join('/')} not in ${root.pathstr}`);
+    }
+    let node = root;
+    yield node;
+    for (let i=1; i<path.length; ++i) {
+      const children = await node.getChildren();
+      const child = children?.find(c => c.name === path[i]);
+      if (!child) {
+        throw new Error(`Path ${path.join('/')} not in ${node.pathstr}`);
+      }
+      node = child;
+      yield node;
+    }
+}
+
+
 /**
  * Expand the contents nodes until path is exposed.
  * 
@@ -24,23 +43,13 @@ import { Content, ContentsModel, IContentRow } from "tree-finder";
  * @param path The path to expose, relative to the root (i.e. first entry matches path of root)
  */
 export async function revealPath<T extends IContentRow>(contents: ContentsModel<T>, path: string[]): Promise<Content<T>> {
-  if (path[0] !== contents.root.name) {
-    throw new Error(`Path ${path} not in ${contents.root.pathstr}`);
-  }
-  let node = contents.root;
-  for (let i=1; i<path.length; ++i) {
-    if (!node.isExpand) {
+  let node: Content<T>;
+  for await (node of walkPath(path, contents.root)) {
+    if (!node.isExpand && node.hasChildren) {
       await node.expand();
     }
-    // This is only for assertion purposes for the last iteration
-    const children = await node.getChildren();
-    const child = children.find(c => c.name === path[i]);
-    if (!child) {
-      throw new Error(`Path ${path} not in ${node.pathstr}`);
-    }
-    node = child;
   }
-  return node;
+  return node!;
 }
 
 
@@ -57,4 +66,18 @@ export async function revealAndSelectPath<T extends IContentRow>(contents: Conte
   const node = await revealPath(contents, path);
   contents.selectionModel.select(node, add);
   return node;
+}
+
+/**
+ * This will cause contents API calls if any dir has been invalidated between root and the parent.
+ * 
+ * @param child The content node's whose parent we are looking for
+ * @param root The root node of the path
+ */
+export async function getContentParent<T extends IContentRow>(child: Content<T>, root: Content<T>) {
+  // Walk from the root to the parent
+  let node: Content<T>;
+  for await (node of walkPath(child.row.path.slice(0, -1), root)) {
+  }
+  return node!;
 }
