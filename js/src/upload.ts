@@ -53,7 +53,7 @@ import { fileUploadIcon } from '@jupyterlab/ui-components';
 import type { ContentsProxy } from "./treefinder";
 import { IChangedArgs } from '@jupyterlab/coreutils';
 import { IDisposable } from '@lumino/disposable';
-import { ContentsModel } from 'tree-finder';
+import { Content, ContentsModel } from 'tree-finder';
 import { getContentParent } from './contents_utils';
 
 
@@ -200,9 +200,9 @@ export class Uploader implements IDisposable {
    *
    * @returns A promise containing the new file contents model.
    */
-  async upload(file: File): Promise<ContentsProxy.IJupyterContentRow | null> {
+  async upload(file: File, target?: Content<ContentsProxy.IJupyterContentRow>): Promise<ContentsProxy.IJupyterContentRow | null> {
     await this._uploadCheckDisposed();
-    let target = this._model.selectedLast || this._model.root;
+    target = target || this._model.selectedLast || this._model.root;
     if (!target.hasChildren) {
       target = await getContentParent(target, this._model.root);
     }

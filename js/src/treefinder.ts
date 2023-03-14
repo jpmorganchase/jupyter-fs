@@ -275,15 +275,13 @@ export class TreeFinderWidget extends Widget {
     switch (event.type) {
       case 'dragenter':
       case 'dragover':
-        this.addClass('jfs-mod-native-drop');
-        event.preventDefault();
+        this.evtNativeDragOverEnter(event as DragEvent);
         break;
       case 'dragleave':
       case 'dragend':
-        this.removeClass('jfs-mod-native-drop');
+        this.evtNativeDragLeaveEnd(event as DragEvent);
         break;
       case 'drop':
-        this.removeClass('jfs-mod-native-drop');
         this.evtNativeDrop(event as DragEvent);
         break;
       default:
@@ -317,11 +315,40 @@ export class TreeFinderWidget extends Widget {
     node.removeEventListener('dragend', this);
     node.removeEventListener('drop', this);
   }
+
+  private _findEventRowElement(event: DragEvent, selector: string): HTMLElement | undefined {
+    let node = event.target as HTMLElement;
+    while (node.parentElement && node.parentElement !== this.node) {
+      if (node.matches(selector)) {
+        return node;
+      }
+      node = node.parentElement;
+    }
+  }
+
+  protected evtNativeDragOverEnter(event: DragEvent): void {
+    let row = this._findEventRowElement(event, 'tree-finder-grid tr');
+    if (row) {
+      row.classList.add('jfs-mod-native-drop')
+    }
+    event.preventDefault();
+  }
+
+  protected evtNativeDragLeaveEnd(event: DragEvent) {
+    let row = this._findEventRowElement(event, '.jfs-mod-native-drop');
+    if (row) {
+      row.classList.remove('jfs-mod-native-drop');
+    }
+  }
   
   /**
    * Handle the `drop` event for the widget.
    */
   protected evtNativeDrop(event: DragEvent): void {
+    const row = this.node.querySelector('.jfs-mod-native-drop');
+    if (row) {
+      row.classList.remove('jfs-mod-native-drop');
+    }
     const files = event.dataTransfer?.files;
     if (!files || files.length === 0) {
       return;
@@ -344,8 +371,17 @@ export class TreeFinderWidget extends Widget {
       }
     }
     event.preventDefault();
+    // Translate row element to contents row
+    let target: Content<ContentsProxy.IJupyterContentRow> = this.model!.root;
+    if (row) {
+      const grid = this.node.querySelector('tree-finder-grid') as TreeFinderGridElement<ContentsProxy.IJupyterContentRow>;
+      const metadata = grid.getMeta(row?.querySelector('th')!);
+      if (metadata.y) {
+        target = this.model!.contents[metadata.y];
+      }
+    }
     for (let i = 0; i < files.length; i++) {
-      void this.uploader!.upload(files[i]);
+      void this.uploader!.upload(files[i], target);
     }
   }
 
@@ -559,6 +595,7 @@ export namespace TreeFinderSidebar {
         // Do not select/scroll into view: Upload might be slow, so user might have moved on!
         // We do however want to expand the folder
         await revealPath(widget.treefinder.model!, args.path);
+        await widget.treefinder.model!.flatten();
     });
     });
     const refresh_button = new ToolbarButton({
