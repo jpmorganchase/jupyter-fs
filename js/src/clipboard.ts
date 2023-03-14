@@ -8,14 +8,12 @@
  */
 import { WidgetTracker, showErrorMessage } from "@jupyterlab/apputils";
 import { Drive } from "@jupyterlab/services";
-import { Widget } from "@lumino/widgets";
 import { ClipboardModel, ContentsModel, IContentRow, Path } from "tree-finder";
 
-// "forward" declare the TreeFinderWidget
-type ITreeFinderWidget = Widget & {treefinder: {model: ContentsModel<any>}};
+import type { TreeFinderSidebar } from "./treefinder";
 
 export class JupyterClipboard {
-  constructor(tracker: WidgetTracker<ITreeFinderWidget>) {
+  constructor(tracker: WidgetTracker<TreeFinderSidebar>) {
     this._tracker = tracker;
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -26,8 +24,8 @@ export class JupyterClipboard {
       // (in more detail, tree-finder will only refresh the folder if the entry does not have a
       // getChildren entry, go figure...)
       this.model.refresh(
-        this._tracker.currentWidget.treefinder.model,
-        rootNeedsRefresh ? undefined : memo.map(s => { return {...s, getChildren: undefined}})
+        this._tracker.currentWidget!.treefinder.model!,
+        rootNeedsRefresh ? undefined as any : memo.map(s => { return {...s, getChildren: undefined}})
       );
     });
 
@@ -38,15 +36,15 @@ export class JupyterClipboard {
       const rootNeedsRefresh = destPath.length <= 1;
       await Promise.all(memo.map(s => this._onPaste(s, destPathstr, doCut)));
       const to_invalidate = rootNeedsRefresh ?
-        undefined :
+        undefined as any:
         [destination, ...(doCut ? memo : [])]  // only invalidate sources if cutting
-      this.model.refresh(this._tracker.currentWidget.treefinder.model, to_invalidate);
+      this.model.refresh(this._tracker.currentWidget!.treefinder.model!, to_invalidate);
     });
   }
 
   refresh<T extends IContentRow>(tm?: ContentsModel<T>, memo?: T[]) {
-    tm ??= this._tracker.currentWidget.treefinder.model as any as ContentsModel<T>;
-    this.model.refresh(tm, memo);
+    tm ??= this._tracker.currentWidget!.treefinder.model as any as ContentsModel<T>;
+    this.model.refresh(tm, memo as T[]);
   }
 
   // TODO: remove in favor of this.model.refreshSelection once tree-finder v0.0.14 is out
@@ -80,7 +78,7 @@ export class JupyterClipboard {
   }
 
   protected _model = new ClipboardModel();
-  protected _tracker: WidgetTracker<ITreeFinderWidget>;
+  protected _tracker: WidgetTracker<TreeFinderSidebar>;
 
   private _drive = new Drive();
 }

@@ -39,7 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 import { showErrorMessage, ToolbarButton  } from '@jupyterlab/apputils';
-import { IDocumentManager, shouldOverwrite } from '@jupyterlab/docmanager';
+import { shouldOverwrite } from '@jupyterlab/docmanager';
 import { Contents } from '@jupyterlab/services';
 import { ArrayExt } from '@lumino/algorithm';
 import { ISignal, Signal } from '@lumino/signaling';
@@ -50,8 +50,11 @@ import {
 } from '@jupyterlab/translation';
 import { fileUploadIcon } from '@jupyterlab/ui-components';
 
-import type { ContentsProxy, TreeFinderSidebar } from "./treefinder";
+import type { ContentsProxy } from "./treefinder";
 import { IChangedArgs } from '@jupyterlab/coreutils';
+import { IDisposable } from '@lumino/disposable';
+import { ContentsModel } from 'tree-finder';
+import { getContentParent } from './contents_utils';
 
 
 /**
@@ -77,14 +80,11 @@ export interface IUploadProgress {
  progress: number;
 }
 
-/**
- * A widget which provides an upload button.
- */
-export class Uploader extends ToolbarButton {
+export class UploadButton extends ToolbarButton {
   /**
    * Construct a new file browser buttons widget.
    */
-  constructor(options: Uploader.IOptions) {
+  constructor(options: UploadButton.IOptions) {
     super({
       icon: fileUploadIcon,
       label: options.label,
@@ -93,16 +93,73 @@ export class Uploader extends ToolbarButton {
       },
       tooltip: Private.translateToolTip(options.translator)
     });
-    this.manager = options.manager;
-    this._sidebar = options.sidebar;
     this.translator = options.translator || nullTranslator;
     this._trans = this.translator.load('jupyterlab');
+    this._uploader = options.uploader;
     this._input.onclick = this._onInputClicked;
     this._input.onchange = this._onInputChanged;
     this.addClass('jp-id-upload');
   }
 
-  manager: IDocumentManager;
+  /**
+   * The 'change' handler for the input field.
+   */
+  private _onInputChanged = () => {
+    const files = Array.prototype.slice.call(this._input.files) as File[];
+    const pending = files.map(async file => (await this._uploader).upload(file));
+    void Promise.all(pending).catch(error => {
+      void showErrorMessage(
+        this._trans._p('showErrorMessage', 'Upload Error'),
+        error
+      );
+    });
+  };
+
+  /**
+   * The 'click' handler for the input field.
+   */
+  private _onInputClicked = () => {
+    // In order to allow repeated uploads of the same file (with delete in between),
+    // we need to clear the input value to trigger a change event.
+    this._input.value = '';
+  };
+
+  protected translator: ITranslator;
+  private _trans: TranslationBundle;
+  private _input = Private.createUploadInput();
+  private _uploader: Promise<Uploader>;
+}
+
+export namespace UploadButton {
+  export interface IOptions {
+    /**
+     * The language translator.
+     */
+    translator?: ITranslator;
+
+    /**
+     * An optional label.
+     */
+    label?: string;
+
+    /**
+     * Pormise to uploader instance to handle upload logic
+     */
+    uploader: Promise<Uploader>
+  }
+}
+
+/**
+ * A widget which provides an upload button.
+ */
+export class Uploader implements IDisposable {
+  /**
+   * Construct a new file browser buttons widget.
+   */
+  constructor(options: Uploader.IOptions) {
+    this._model = options.model;
+    this._contentsProxy = options.contentsProxy;
+  }
 
   /**
    * A signal emitted when an upload progresses.
@@ -119,6 +176,24 @@ export class Uploader extends ToolbarButton {
   }
 
   /**
+   * Is this instance disposed?
+   */
+  get isDisposed() {
+    return this._disposed;
+  };
+
+  /**
+   * Dispose of the resources held by the model.
+   */
+  dispose(): void {
+    if (this.isDisposed) {
+      return;
+    }
+    this._disposed = true;
+    Signal.clearData(this);
+  }
+
+  /**
    * Upload a `File` object.
    *
    * @param file - The `File` object to upload.
@@ -127,12 +202,16 @@ export class Uploader extends ToolbarButton {
    */
   async upload(file: File): Promise<ContentsProxy.IJupyterContentRow | null> {
     await this._uploadCheckDisposed();
-    const target = this._sidebar.treefinder.model.selectedLast || this._sidebar.treefinder.model.root;
-    let path = target.hasChildren ? target.pathstr : target.row.path.slice(0, -1).join("/");
-    path = path ? path + '/' + file.name : file.name;
+    let target = this._model.selectedLast || this._model.root;
+    if (!target.hasChildren) {
+      target = await getContentParent(target, this._model.root);
+    }
+    let path = target.pathstr ? target.pathstr + '/' + file.name : file.name;
     let res = null;
     try {
-      res = await this._sidebar.treefinder.contentsProxy.get(path, {content: false});
+      // alternatively to try to get the file and check for 404, we can get the parent
+      // and check if the file is in the list. 
+      res = await this._contentsProxy.get(path, {content: false});
     } catch (e) {
       // TODO: Check if e is a 404
     }
@@ -187,7 +266,7 @@ export class Uploader extends ToolbarButton {
         chunk,
         content
       };
-      return await this._sidebar.treefinder.contentsProxy.save(path, model);
+      return await this._contentsProxy.save(path, model);
     };
 
     if (!chunked) {
@@ -264,33 +343,9 @@ export class Uploader extends ToolbarButton {
     return Promise.resolve();
   }
 
-  /**
-   * The 'change' handler for the input field.
-   */
-  private _onInputChanged = () => {
-    const files = Array.prototype.slice.call(this._input.files) as File[];
-    const pending = files.map(file => this.upload(file));
-    void Promise.all(pending).catch(error => {
-      void showErrorMessage(
-        this._trans._p('showErrorMessage', 'Upload Error'),
-        error
-      );
-    });
-  };
 
-  /**
-   * The 'click' handler for the input field.
-   */
-  private _onInputClicked = () => {
-    // In order to allow repeated uploads of the same file (with delete in between),
-    // we need to clear the input value to trigger a change event.
-    this._input.value = '';
-  };
-
-  protected translator: ITranslator;
-  private _sidebar: TreeFinderSidebar;
-  private _trans: TranslationBundle;
-  private _input = Private.createUploadInput();
+  private _model: ContentsModel<ContentsProxy.IJupyterContentRow>;
+  private _contentsProxy: ContentsProxy;
   private _uploads: IUploadProgress[] = [];
   private _uploadChanged = new Signal<this, IChangedArgs<IUploadProgress | null>>(
     this
@@ -298,6 +353,7 @@ export class Uploader extends ToolbarButton {
   private _uploadCompleted = new Signal<this, IUploadedData>(
     this
   );
+  private _disposed = false;
 }
 
 
@@ -309,25 +365,16 @@ export namespace Uploader {
    * The options used to create an uploader.
    */
   export interface IOptions {
-    /**
-     * A document manager instance
-     */
-    manager: IDocumentManager;
 
     /**
-     * The language translator.
+     * Contents model
      */
-    translator?: ITranslator;
-
+    model: ContentsModel<ContentsProxy.IJupyterContentRow>;
+    
     /**
-     * An optional label.
+     * Contents manager proxy
      */
-    label?: string;
-
-    /**
-     * Sidebar widget
-     */
-    sidebar: TreeFinderSidebar;
+    contentsProxy: ContentsProxy;
   }
 }
 
