@@ -60,6 +60,13 @@
         }
       },
       "default": {}
+    },
+    "display_columns": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["size", "mimetype", "last_modified"]
+      }
     }
   }
 }

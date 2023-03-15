@@ -18,6 +18,7 @@ import {
 import { IDocumentManager, isValidFileName /*renameFile*/ } from "@jupyterlab/docmanager";
 // import { DocumentRegistry } from "@jupyterlab/docregistry";
 import { Contents, ContentsManager } from "@jupyterlab/services";
+import { ISettingRegistry } from "@jupyterlab/settingregistry";
 import {
   closeIcon,
   copyIcon,
@@ -123,6 +124,7 @@ export class TreeFinderTracker extends WidgetTracker<TreeFinderSidebar> {
 export class TreeFinderWidget extends Widget {
   constructor({
     app,
+    settings,
     rootPath = "",
   }: TreeFinderSidebar.IOptions) {
     const { commands, serviceManager: { contents } } = app;
@@ -132,7 +134,8 @@ export class TreeFinderWidget extends Widget {
     this.addClass("jp-tree-finder");
 
     this.cm = new JupyterContents(contents, rootPath);
-    this.columnsToShow = ['size','mimetype','last_modified'];
+    this.settings = settings;
+    this.columns = settings.composite.display_columns as (keyof JupyterContents.IJupyterContentRow)[];
 
     rootPath = rootPath === "" ? rootPath : rootPath + ":";
     void this.cm.get(rootPath).then(root => this.node.init({
@@ -146,7 +149,7 @@ export class TreeFinderWidget extends Widget {
         showFilter: true,
       },
       modelOptions: {
-        columnNames: this.columnsToShow,
+        columnNames: this.columns,
       },
     })).then(() => {
       this.model.openSub.subscribe(rows => rows.forEach(row => {
@@ -165,40 +168,37 @@ export class TreeFinderWidget extends Widget {
     this.model.refreshSub.next();
   }
 
+  // TODO: Make this function more generic using tuples (col, rank) maybe?
   toggleColumn(col: (keyof JupyterContents.IJupyterContentRow)) {
-
-    // TODO: Make this logic more generic using tuples (col, rank) maybe?
-    let idx = this.columnsToShow.indexOf(col, 0);
+    let idx = this.columns.indexOf(col, 0);
     if (idx != -1) {
-      console.log('column is in columnsToShow');
-      this.columnsToShow.splice(idx, 1);
-      console.log('Updated columns to show are:', this.columnsToShow);
+      this.columns.splice(idx, 1);
     }
     else {
       let pos = 0;
       if (col == 'mimetype') {
-        let lm_idx = this.columnsToShow.indexOf('last_modified', 0);
-        let size_idx = this.columnsToShow.indexOf('size', 0);
+        let lm_idx = this.columns.indexOf('last_modified', 0);
+        let size_idx = this.columns.indexOf('size', 0);
         if (lm_idx != -1 && size_idx == -1) { pos = lm_idx - 1; }
         else { pos = 1 }
       }
       else if (col == 'last_modified') {
         pos = 2;
       }
-      console.log('column is NOT in columnsToShow');
-      this.columnsToShow.splice(pos, 0, col);
-      console.log('Updated columns to show are:', this.columnsToShow);
+      this.columns.splice(pos, 0, col);
     }
 
-    let m = this.node.model;
+    let m = this.model;
+    m.filter;
     m.options = {
       ...m.options, 
-      columnNames: this.columnsToShow, 
+      columnNames: this.columns, 
     };
 
     m.initColumns();
     m.requestDraw();
     this.refresh(); // Minimally set width columns
+    this.settings.set("display_columns", this.columns); // Save user settings
   }
 
   get model() {
@@ -214,13 +214,15 @@ export class TreeFinderWidget extends Widget {
   }
   
   cm: JupyterContents;
-  columnsToShow: (keyof JupyterContents.IJupyterContentRow)[];
+  columns: (keyof JupyterContents.IJupyterContentRow)[];
+  settings: ISettingRegistry.ISettings;
   readonly node: TreeFinderPanelElement<JupyterContents.IJupyterContentRow>;
 }
 
 export class TreeFinderSidebar extends Widget {
   constructor({
     app,
+    settings,
     rootPath = "",
     caption = "TreeFinder",
     id = "jupyterlab-tree-finder",
@@ -243,8 +245,7 @@ export class TreeFinderSidebar extends Widget {
     this.toolbar.addClass("jp-tree-finder-toolbar");
     // this.toolbar.addClass(id);
 
-    this.treefinder = new TreeFinderWidget({ app, rootPath });
-    console.log('New TreeFinderWidget created!')
+    this.treefinder = new TreeFinderWidget({ app, rootPath, settings });
 
     this.layout = new PanelLayout();
     this.layout.addWidget(this.toolbar);
@@ -354,6 +355,7 @@ export namespace TreeFinderSidebar {
 
   export interface IOptions {
     app: JupyterFrontEnd;
+    settings: ISettingRegistry.ISettings;
 
     rootPath?: string;
     caption?: string;
@@ -366,6 +368,7 @@ export namespace TreeFinderSidebar {
     resolver: IWindowResolver;
     restorer: ILayoutRestorer;
     router: IRouter;
+    settings: ISettingRegistry.ISettings;
 
     side?: string;
   }
@@ -386,6 +389,7 @@ export namespace TreeFinderSidebar {
     resolver,
     restorer,
     router,
+    settings,
 
     rootPath = "",
     caption = "TreeFinder",
@@ -393,7 +397,7 @@ export namespace TreeFinderSidebar {
     side = "left",
   }: TreeFinderSidebar.ISidebarProps): IDisposable {
     const selector = `#${id}`;
-    const widget = new TreeFinderSidebar({ app, rootPath, caption, id });
+    const widget = new TreeFinderSidebar({ app, rootPath, settings, caption, id });
     void tracker.add(widget);
     restorer.add(widget, widget.id);
     app.shell.add(widget, side);
@@ -413,10 +417,12 @@ export namespace TreeFinderSidebar {
       },
       tooltip: "Refresh",
     });
-  
-    let size_col_state = true;
-    let mimetype_col_state = true;
-    let lastModified_col_state = true;
+
+    const colsToDisplay = settings.composite.display_columns as string[];
+    let size_col_state = colsToDisplay.indexOf('size') > -1;
+    let mimetype_col_state = colsToDisplay.indexOf('mimetype') > -1;
+    let lastModified_col_state = colsToDisplay.indexOf('last_modified') > -1;
+
     let submenu = new Menu({ commands: app.commands});
     submenu.title.label = 'Show/Hide Columns';
     submenu.title.icon = filterListIcon;
@@ -497,12 +503,9 @@ export namespace TreeFinderSidebar {
           const widget = tracker.currentWidget;
           if (widget) {
             size_col_state = !size_col_state;
-            console.log('-----------');
-            console.log('This will toggle size col!');
-  
+            // console.log('-----------');
+            // console.log('This will toggle size col!');
             widget.treefinder.toggleColumn('size');
-            console.log('Column toggled!')
-            console.log('-----------');
           }
         },
         label: 'size',
@@ -514,12 +517,9 @@ export namespace TreeFinderSidebar {
           const widget = tracker.currentWidget;
           if (widget) {
             mimetype_col_state = !mimetype_col_state;
-            console.log('-----------');
-            console.log('This will toggle mimetype col!');
-  
+            // console.log('-----------');
+            // console.log('This will toggle mimetype col!');
             widget.treefinder.toggleColumn('mimetype');
-            console.log('Column toggled!')
-            console.log('-----------');
           }
         },
         label: 'mimetype',
@@ -535,8 +535,6 @@ export namespace TreeFinderSidebar {
             console.log('This will toggle last_modified col!');
             
             widget.treefinder.toggleColumn('last_modified');
-            console.log('Column toggled!')
-            console.log('-----------');
           }
         },
         label: 'last_modified',

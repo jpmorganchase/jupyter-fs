@@ -49,14 +49,6 @@ async function activate(
 ) {
   const comm = new FSComm();
   const widgetMap : {[key: string]: IDisposable} = {};
-  const sidebarProps: TreeFinderSidebar.ISidebarProps = {
-    app,
-    manager,
-    paths,
-    resolver,
-    restorer,
-    router,
-  };
 
   // Attempt to load application settings
   let settings: ISettingRegistry.ISettings;
@@ -66,6 +58,16 @@ async function activate(
     // eslint-disable-next-line no-console
     console.warn(`Failed to load settings for the jupyter-fs extension.\n${error}`);
   }
+
+  const sidebarProps: TreeFinderSidebar.ISidebarProps = {
+    app,
+    manager,
+    paths,
+    resolver,
+    restorer,
+    router,
+    settings,
+  };
 
   async function refreshWidgets({ resources, options }: {resources: IFSResource[]; options: IFSOptions}) {
     if (options.verbose) {
@@ -151,10 +153,10 @@ async function activate(
   if (settings) {
     // initial setup when DOM attachment of custom elements is complete.
     void app.started.then(refresh);
-
+    console.log(settings);
     // rerun setup whenever relevant settings change
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    settings.changed.connect(refresh);
+    //settings.changed.connect(refresh);
   }
 
   // Inject lab icons
