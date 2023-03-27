@@ -136,7 +136,7 @@ export class TreeFinderWidget extends Widget {
     this.cm = new JupyterContents(contents, rootPath);
     this.settings = settings;
     this.columns = settings.composite.display_columns as (keyof JupyterContents.IJupyterContentRow)[];
-
+    // const allCols = (settings.schema.properties['display_columns'] as any).items.enum;
     rootPath = rootPath === "" ? rootPath : rootPath + ":";
     void this.cm.get(rootPath).then(root => this.node.init({
       root,
@@ -158,7 +158,27 @@ export class TreeFinderWidget extends Widget {
         }
       }));
     });
+
+    // if (allCols.length !== this.columns.length) {
+    //   let missing = allCols.filter((item: any) => this.columns.indexOf(item) < 0);
+    //   console.log(missing);
+    //   for (var m in missing) {
+    //     this.toggleColumn(m as (keyof JupyterContents.IJupyterContentRow));
+    //   }
+    // }
   }
+
+  // fixCols() {
+  //   const allCols = (this.settings.schema.properties['display_columns'] as any).items.enum;
+
+  //   if (allCols.length !== this.columns.length) {
+  //     let missing = allCols.filter((item: any) => this.columns.indexOf(item) < 0);
+  //     console.log(missing);
+  //     for (var m in missing) {
+  //       this.toggleColumn(m as (keyof JupyterContents.IJupyterContentRow));
+  //     }
+  //   }
+  // }
 
   draw() {
     this.model.requestDraw();
@@ -171,25 +191,24 @@ export class TreeFinderWidget extends Widget {
   // TODO: Make this function more generic using tuples (col, rank) maybe?
   toggleColumn(col: (keyof JupyterContents.IJupyterContentRow)) {
     let idx = this.columns.indexOf(col, 0);
-    if (idx != -1) {
+    if (idx !== -1) {
       this.columns.splice(idx, 1);
     }
     else {
       let pos = 0;
-      if (col == 'mimetype') {
+      if (col === 'mimetype') {
         let lm_idx = this.columns.indexOf('last_modified', 0);
         let size_idx = this.columns.indexOf('size', 0);
-        if (lm_idx != -1 && size_idx == -1) { pos = lm_idx - 1; }
+        if (lm_idx !== -1 && size_idx == -1) { pos = lm_idx - 1; }
         else { pos = 1 }
       }
-      else if (col == 'last_modified') {
+      else if (col === 'last_modified') {
         pos = 2;
       }
       this.columns.splice(pos, 0, col);
     }
-
     let m = this.model;
-    m.filter;
+    console.log('model', m);
     m.options = {
       ...m.options, 
       columnNames: this.columns, 
@@ -198,6 +217,7 @@ export class TreeFinderWidget extends Widget {
     m.initColumns();
     m.requestDraw();
     this.refresh(); // Minimally set width columns
+    // this.node.options = {showFilter: true};
     this.settings.set("display_columns", this.columns); // Save user settings
   }
 
@@ -214,6 +234,8 @@ export class TreeFinderWidget extends Widget {
   }
   
   cm: JupyterContents;
+  commands: any;
+  rootPath: string;
   columns: (keyof JupyterContents.IJupyterContentRow)[];
   settings: ISettingRegistry.ISettings;
   readonly node: TreeFinderPanelElement<JupyterContents.IJupyterContentRow>;
@@ -250,6 +272,9 @@ export class TreeFinderSidebar extends Widget {
     this.layout = new PanelLayout();
     this.layout.addWidget(this.toolbar);
     this.layout.addWidget(this.treefinder);
+
+    // console.log('try to fix cols...')
+    // this.treefinder.fixCols();
   }
 
   restore() { // restore expansion prior to rebuild
@@ -503,8 +528,6 @@ export namespace TreeFinderSidebar {
           const widget = tracker.currentWidget;
           if (widget) {
             size_col_state = !size_col_state;
-            // console.log('-----------');
-            // console.log('This will toggle size col!');
             widget.treefinder.toggleColumn('size');
           }
         },
@@ -517,8 +540,6 @@ export namespace TreeFinderSidebar {
           const widget = tracker.currentWidget;
           if (widget) {
             mimetype_col_state = !mimetype_col_state;
-            // console.log('-----------');
-            // console.log('This will toggle mimetype col!');
             widget.treefinder.toggleColumn('mimetype');
           }
         },
@@ -531,9 +552,6 @@ export namespace TreeFinderSidebar {
           const widget = tracker.currentWidget;
           if (widget) {
             lastModified_col_state = !lastModified_col_state;
-            console.log('-----------');
-            console.log('This will toggle last_modified col!');
-            
             widget.treefinder.toggleColumn('last_modified');
           }
         },

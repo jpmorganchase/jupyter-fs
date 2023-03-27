@@ -154,9 +154,10 @@ async function activate(
     // initial setup when DOM attachment of custom elements is complete.
     void app.started.then(refresh);
     console.log(settings);
+    console.log(settings.changed);
     // rerun setup whenever relevant settings change
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    //settings.changed.connect(refresh);
+    // settings.changed.connect(refresh);
   }
 
   // Inject lab icons
