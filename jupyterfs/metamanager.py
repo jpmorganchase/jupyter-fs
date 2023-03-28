@@ -238,16 +238,17 @@ class MetaManagerHandler(APIHandler):
         self._jupyterfsConfig
 
     def _validate_resource(self, resource):
-        for validator in self.fsconfig.resource_validators:
-            if re.fullmatch(validator, resource["url"]) is not None:
-                break
-        else:
-            self.log.warning(
-                "Resource failed validation: %r vs %r",
-                resource["url"],
-                self.fsconfig.resource_validators,
-            )
-            return False
+        if self.fsconfig.resource_validators:
+            for validator in self.fsconfig.resource_validators:
+                if re.fullmatch(validator, resource["url"]) is not None:
+                    break
+            else:
+                self.log.warning(
+                    "Resource failed validation: %r vs %r",
+                    resource["url"],
+                    self.fsconfig.resource_validators,
+                )
+                return False
         return True
 
     @web.authenticated
