@@ -62,11 +62,15 @@
       "default": {}
     },
     "display_columns": {
+      "description": "The list of columns that will be displayed",
       "type": "array",
       "items": {
         "type": "string",
-        "enum": ["size", "mimetype", "last_modified"]
-      }
+        "enum": ["size", "last_modified", "mimetype"]
+      },
+      "default": ["size", "last_modified", "mimetype"],
+      "maxItems": 3,
+      "uniqueItems": true
     }
   }
 }

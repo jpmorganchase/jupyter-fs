@@ -136,9 +136,59 @@ export class TreeFinderWidget extends Widget {
     this.cm = new JupyterContents(contents, rootPath);
     this.settings = settings;
     this.columns = settings.composite.display_columns as (keyof JupyterContents.IJupyterContentRow)[];
-    // const allCols = (settings.schema.properties['display_columns'] as any).items.enum;
-    rootPath = rootPath === "" ? rootPath : rootPath + ":";
-    void this.cm.get(rootPath).then(root => this.node.init({
+    this.rootPath = rootPath === "" ? rootPath : rootPath + ":";
+    this.nodeInit().then(() => {
+      this.model.openSub.subscribe(rows => rows.forEach(row => {
+        if (!row.getChildren) {
+          void commands.execute("docmanager:open", { path: Path.fromarray(row.path) });
+        }
+      }));
+    });
+  }
+
+  draw() {
+    this.model.requestDraw();
+  }
+
+  refresh() {
+    this.model.refreshSub.next();
+  }
+
+  // TODO: Avoid hardcoding the order of columns.
+  async toggleColumn(col: (keyof JupyterContents.IJupyterContentRow)) {
+    // Preserve the position of the columns in order [size, last_modified, mimetype]
+    let idx = this.columns.indexOf(col, 0);
+    if (idx !== -1) {
+      this.columns.splice(idx, 1);
+    }
+    else {
+      let pos = 0;
+      if (col === 'last_modified') {
+        let mimetype_idx = this.columns.indexOf('mimetype', 0);
+        let size_idx = this.columns.indexOf('size', 0);
+        if (mimetype_idx !== -1 && size_idx == -1) { pos = mimetype_idx - 1; }
+        else { pos = 1 }
+      }
+      else if (col === 'mimetype') {
+        pos = 2;
+      }
+      this.columns.splice(pos, 0, col);
+    }
+
+    // Update the new list of columns to the ContentsModel's options
+    let m = this.model;
+    m.options = {
+      ...m.options, 
+      columnNames: this.columns, 
+    };
+    m.initColumns();
+    this.nodeInit();
+
+    this.settings.set("display_columns", this.columns);
+  }
+
+  async nodeInit() {
+    await this.cm.get(this.rootPath).then(root => this.node.init({
       root,
       gridOptions: {
         columnFormatters: {
@@ -151,74 +201,7 @@ export class TreeFinderWidget extends Widget {
       modelOptions: {
         columnNames: this.columns,
       },
-    })).then(() => {
-      this.model.openSub.subscribe(rows => rows.forEach(row => {
-        if (!row.getChildren) {
-          void commands.execute("docmanager:open", { path: Path.fromarray(row.path) });
-        }
-      }));
-    });
-
-    // if (allCols.length !== this.columns.length) {
-    //   let missing = allCols.filter((item: any) => this.columns.indexOf(item) < 0);
-    //   console.log(missing);
-    //   for (var m in missing) {
-    //     this.toggleColumn(m as (keyof JupyterContents.IJupyterContentRow));
-    //   }
-    // }
-  }
-
-  // fixCols() {
-  //   const allCols = (this.settings.schema.properties['display_columns'] as any).items.enum;
-
-  //   if (allCols.length !== this.columns.length) {
-  //     let missing = allCols.filter((item: any) => this.columns.indexOf(item) < 0);
-  //     console.log(missing);
-  //     for (var m in missing) {
-  //       this.toggleColumn(m as (keyof JupyterContents.IJupyterContentRow));
-  //     }
-  //   }
-  // }
-
-  draw() {
-    this.model.requestDraw();
-  }
-
-  refresh() {
-    this.model.refreshSub.next();
-  }
-
-  // TODO: Make this function more generic using tuples (col, rank) maybe?
-  toggleColumn(col: (keyof JupyterContents.IJupyterContentRow)) {
-    let idx = this.columns.indexOf(col, 0);
-    if (idx !== -1) {
-      this.columns.splice(idx, 1);
-    }
-    else {
-      let pos = 0;
-      if (col === 'mimetype') {
-        let lm_idx = this.columns.indexOf('last_modified', 0);
-        let size_idx = this.columns.indexOf('size', 0);
-        if (lm_idx !== -1 && size_idx == -1) { pos = lm_idx - 1; }
-        else { pos = 1 }
-      }
-      else if (col === 'last_modified') {
-        pos = 2;
-      }
-      this.columns.splice(pos, 0, col);
-    }
-    let m = this.model;
-    console.log('model', m);
-    m.options = {
-      ...m.options, 
-      columnNames: this.columns, 
-    };
-
-    m.initColumns();
-    m.requestDraw();
-    this.refresh(); // Minimally set width columns
-    // this.node.options = {showFilter: true};
-    this.settings.set("display_columns", this.columns); // Save user settings
+    }))
   }
 
   get model() {
@@ -272,9 +255,6 @@ export class TreeFinderSidebar extends Widget {
     this.layout = new PanelLayout();
     this.layout.addWidget(this.toolbar);
     this.layout.addWidget(this.treefinder);
-
-    // console.log('try to fix cols...')
-    // this.treefinder.fixCols();
   }
 
   restore() { // restore expansion prior to rebuild
@@ -453,8 +433,8 @@ export namespace TreeFinderSidebar {
     submenu.title.icon = filterListIcon;
     submenu.addItem({ command: widget.commandIDs.togglePath });
     submenu.addItem({ command: widget.commandIDs.toggleSizeCol });
-    submenu.addItem({ command: widget.commandIDs.toggleMimetypeCol });
     submenu.addItem({ command: widget.commandIDs.toggleLastModifiedCol });
+    submenu.addItem({ command: widget.commandIDs.toggleMimetypeCol });
 
     // widget.toolbar.addItem("upload", uploader_button);
     // widget.toolbar.addItem("new file", new_file_button);
@@ -524,40 +504,40 @@ export namespace TreeFinderSidebar {
         isToggled: () => true,
       }),
       app.commands.addCommand(widget.commandIDs.toggleSizeCol, {
-        execute: args => {
+        execute: async args => {
           const widget = tracker.currentWidget;
           if (widget) {
             size_col_state = !size_col_state;
-            widget.treefinder.toggleColumn('size');
+            await widget.treefinder.toggleColumn('size');
           }
         },
         label: 'size',
         isToggleable: true,
         isToggled: () => size_col_state,
       }),
-      app.commands.addCommand(widget.commandIDs.toggleMimetypeCol, {
-        execute: args => {
-          const widget = tracker.currentWidget;
-          if (widget) {
-            mimetype_col_state = !mimetype_col_state;
-            widget.treefinder.toggleColumn('mimetype');
-          }
-        },
-        label: 'mimetype',
-        isToggleable: true,
-        isToggled: () => mimetype_col_state,
-      }),
       app.commands.addCommand(widget.commandIDs.toggleLastModifiedCol, {
-        execute: args => {
+        execute: async args => {
           const widget = tracker.currentWidget;
           if (widget) {
             lastModified_col_state = !lastModified_col_state;
-            widget.treefinder.toggleColumn('last_modified');
+            await widget.treefinder.toggleColumn('last_modified');
           }
         },
         label: 'last_modified',
         isToggleable: true,
         isToggled: () => lastModified_col_state,
+      }),
+      app.commands.addCommand(widget.commandIDs.toggleMimetypeCol, {
+        execute: async args => {
+          const widget = tracker.currentWidget;
+          if (widget) {
+            mimetype_col_state = !mimetype_col_state;
+            await widget.treefinder.toggleColumn('mimetype');
+          }
+        },
+        label: 'mimetype',
+        isToggleable: true,
+        isToggled: () => mimetype_col_state,
       }),
 
       // context menu items
