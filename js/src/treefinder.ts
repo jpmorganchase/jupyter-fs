@@ -234,6 +234,7 @@ export class TreeFinderWidget extends Widget {
         columnFormatters: {
           last_modified: (x => Format.timeSince(x as any as Date)),
           size: (x => x && Format.bytesToHumanReadable(x)),
+          writable: (x => x ? "✓" : "╳"),
         },
         doWindowResize: true,
         showFilter: true,
@@ -610,6 +611,7 @@ export namespace TreeFinderSidebar {
     let size_col_state = colsToDisplay.indexOf('size') > -1;
     let mimetype_col_state = colsToDisplay.indexOf('mimetype') > -1;
     let lastModified_col_state = colsToDisplay.indexOf('last_modified') > -1;
+    let writable_col_state = colsToDisplay.indexOf('writable') > -1;
 
     let submenu_cols = new Menu({ commands: app.commands });
     submenu_cols.title.label = 'Show/Hide Columns';
@@ -618,6 +620,7 @@ export namespace TreeFinderSidebar {
     submenu_cols.addItem({ command: widget.commandIDs.toggleSizeCol });
     submenu_cols.addItem({ command: widget.commandIDs.toggleLastModifiedCol });
     submenu_cols.addItem({ command: widget.commandIDs.toggleMimetypeCol });
+    submenu_cols.addItem({ command: widget.commandIDs.toggleWritableCol });
 
     let submenu_snippets = new Menu({ commands: app.commands });
     submenu_snippets.title.label = 'Use File Snippets...';
@@ -639,6 +642,14 @@ export namespace TreeFinderSidebar {
     //   app.commands.execute(widget.commandIDs.refresh);
     // }, 10000);
 
+    // check if selection can be written to - used to visually disable UX actions
+    const selectionIsWritable = (selection: Content<ContentsProxy.IJupyterContentRow>[] | undefined): boolean => {
+      if (selection) {
+      return selection.every((x: Content<JupyterContents.IJupyterContentRow>) => x.row.writable)
+      }
+      return true
+    }
+
     // return a disposable containing all disposables associated
     // with this widget, ending with the widget itself
     return [
@@ -652,11 +663,13 @@ export namespace TreeFinderSidebar {
         execute: args => clipboard.model.cutSelection(widget.treefinder.model!),
         icon: cutIcon,
         label: "Cut",
+        isEnabled: () => selectionIsWritable(widget.treefinder.selection),
       }),
       app.commands.addCommand(widget.commandIDs.delete, {
         execute: args => clipboard.model.deleteSelection(widget.treefinder.model!),
         icon: closeIcon.bindprops({ stylesheet: "menuItem" }),
         label: "Delete",
+        isEnabled: () => selectionIsWritable(widget.treefinder.selection),
       }),
       app.commands.addCommand(widget.commandIDs.open, {
         execute: args => widget.treefinder.model!.openSub.next(widget.treefinder.selection?.map(c => c.row)),
@@ -678,6 +691,7 @@ export namespace TreeFinderSidebar {
         },
         icon: editIcon,
         label: "Rename",
+        isEnabled: () => selectionIsWritable(widget.treefinder.selection),
       }),
       app.commands.addCommand(widget.commandIDs.create_folder, {
         execute: async args =>  {
@@ -751,6 +765,18 @@ export namespace TreeFinderSidebar {
         label: 'mimetype',
         isToggleable: true,
         isToggled: () => mimetype_col_state,
+      }),
+      app.commands.addCommand(widget.commandIDs.toggleWritableCol, {
+        execute: async args => {
+          const widget = tracker.currentWidget;
+          if (widget) {
+            writable_col_state = !writable_col_state;
+            await widget.treefinder.toggleColumn('writable');
+          }
+        },
+        label: 'writable',
+        isToggleable: true,
+        isToggled: () => writable_col_state,
       }),
       app.commands.addCommand(widget.commandIDs.copyFilePath, {
         execute: async args => {
