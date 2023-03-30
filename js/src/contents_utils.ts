@@ -54,13 +54,14 @@ export async function revealPath<T extends IContentRow>(contents: ContentsModel<
 
 
 /**
- * Expand the contents nodes until path is exposed.
+ * Expand the contents nodes until path is exposed, and select the node of that path.
  * 
  * This means that even if the final element of the path is a directory, its expanded state will
  * not change.
  * 
  * @param contents The contents model that the path is in
  * @param path The path to expose, relative to the root (i.e. first entry matches path of root)
+ * @param add Whether or not to add the path to the current selection, or to replace the current selection @see TreeFinder.SelectionModel.select
  */
 export async function revealAndSelectPath<T extends IContentRow>(contents: ContentsModel<T>, path: string[], add?: boolean): Promise<Content<T>> {
   const node = await revealPath(contents, path);
