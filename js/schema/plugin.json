@@ -68,7 +68,7 @@
         "type": "string",
         "enum": ["size", "last_modified", "mimetype"]
       },
-      "default": ["size", "last_modified", "mimetype"],
+      "default": ["size"],
       "maxItems": 3,
       "uniqueItems": true
     }

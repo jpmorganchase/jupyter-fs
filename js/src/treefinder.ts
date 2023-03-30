@@ -217,7 +217,6 @@ export class TreeFinderWidget extends Widget {
   }
   
   cm: JupyterContents;
-  commands: any;
   rootPath: string;
   columns: (keyof JupyterContents.IJupyterContentRow)[];
   settings: ISettingRegistry.ISettings;
