@@ -349,7 +349,8 @@ export namespace TreeFinderSidebar {
     "togglePath",
     "toggleSizeCol",
     "toggleMimetypeCol",
-    "toggleLastModifiedCol"
+    "toggleLastModifiedCol",
+    "copyFilePath",
   ] as const;
   // use typescript-fu to convert commandIds to an interface
   export type ICommandIDs = {[k in typeof commandNames[number]]: string};
@@ -427,13 +428,17 @@ export namespace TreeFinderSidebar {
     let mimetype_col_state = colsToDisplay.indexOf('mimetype') > -1;
     let lastModified_col_state = colsToDisplay.indexOf('last_modified') > -1;
 
-    let submenu = new Menu({ commands: app.commands});
-    submenu.title.label = 'Show/Hide Columns';
-    submenu.title.icon = filterListIcon;
-    submenu.addItem({ command: widget.commandIDs.togglePath });
-    submenu.addItem({ command: widget.commandIDs.toggleSizeCol });
-    submenu.addItem({ command: widget.commandIDs.toggleLastModifiedCol });
-    submenu.addItem({ command: widget.commandIDs.toggleMimetypeCol });
+    let submenu_cols = new Menu({ commands: app.commands });
+    submenu_cols.title.label = 'Show/Hide Columns';
+    submenu_cols.title.icon = filterListIcon;
+    submenu_cols.addItem({ command: widget.commandIDs.togglePath });
+    submenu_cols.addItem({ command: widget.commandIDs.toggleSizeCol });
+    submenu_cols.addItem({ command: widget.commandIDs.toggleLastModifiedCol });
+    submenu_cols.addItem({ command: widget.commandIDs.toggleMimetypeCol });
+
+    let submenu_snippets = new Menu({ commands: app.commands });
+    submenu_snippets.title.label = 'Use File Snippets...';
+    submenu_snippets.addItem({ command: widget.commandIDs.copyFilePath });
 
     // widget.toolbar.addItem("upload", uploader_button);
     // widget.toolbar.addItem("new file", new_file_button);
@@ -538,6 +543,18 @@ export namespace TreeFinderSidebar {
         isToggleable: true,
         isToggled: () => mimetype_col_state,
       }),
+      app.commands.addCommand(widget.commandIDs.copyFilePath, {
+        execute: async args => {
+          const widget = tracker.currentWidget;
+          if (widget) {
+            lastModified_col_state = !lastModified_col_state;
+            await widget.treefinder.toggleColumn('last_modified');
+          }
+        },
+        label: 'Copy File Path',
+        isToggleable: true,
+        isToggled: () => lastModified_col_state,
+      }),
 
       // context menu items
       app.contextMenu.addItem({
@@ -573,9 +590,15 @@ export namespace TreeFinderSidebar {
       }),
       app.contextMenu.addItem({
         type: 'submenu',
-        submenu: submenu,
+        submenu: submenu_cols,
         selector,
         rank: 7,
+      }),
+      app.contextMenu.addItem({
+        type: 'submenu',
+        submenu: submenu_snippets,
+        selector,
+        rank: 8,
       }),
       app.contextMenu.addItem({
         args: { selection: true },
