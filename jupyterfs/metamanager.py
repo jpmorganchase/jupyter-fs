@@ -64,6 +64,7 @@ class MetaManager(ContentsManager):
         managers = dict((("", self._default_root_manager),))
 
         for resource in resources:
+            
             # server side resources don't have a default 'auth' key
             if "auth" not in resource:
                 resource["auth"] = "ask"
