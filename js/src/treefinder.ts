@@ -523,7 +523,8 @@ export namespace TreeFinderSidebar {
     "toggleSizeCol",
     "toggleMimetypeCol",
     "toggleLastModifiedCol",
-    "copyFilePath",
+    "copyFullPath",
+    "copyRelativePath",
   ] as const;
   // use typescript-fu to convert commandIds to an interface
   export type ICommandIDs = {[k in typeof commandNames[number]]: string};
@@ -533,11 +534,12 @@ export namespace TreeFinderSidebar {
 
   export interface IOptions {
     app: JupyterFrontEnd;
+    
     settings?: ISettingRegistry.ISettings;
-
     rootPath?: string;
     caption?: string;
     id?: string;
+    url?: string;
     translator?: ITranslator;
   }
 
@@ -547,9 +549,19 @@ export namespace TreeFinderSidebar {
     resolver: IWindowResolver;
     restorer: ILayoutRestorer;
     router: IRouter;
-    settings?: ISettingRegistry.ISettings;
 
+    settings?: ISettingRegistry.ISettings;
     side?: string;
+  }
+
+  function _getRelativePaths(selectedFiles: any): String[] {
+    var allPaths: String[] = [];
+    // const selectedFiles = widget.treefinder.selection!;
+    for (var file of selectedFiles) {
+      let relativePath = file.getPathAtDepth(1).join('/');
+      allPaths.push(relativePath);
+    };
+    return allPaths;
   }
 
   export function sidebarFromResource(resource: IFSResource, props: TreeFinderSidebar.ISidebarProps): IDisposable {
@@ -558,6 +570,7 @@ export namespace TreeFinderSidebar {
       rootPath: resource.drive,
       caption: `${resource.name}\nFile Tree`,
       id: [resource.name.split(" ").join(""), resource.drive].join("_"),
+      url: resource.url,
     });
   }
 
@@ -569,6 +582,7 @@ export namespace TreeFinderSidebar {
     restorer,
     router,
     settings,
+    url,
 
     rootPath = "",
     caption = "TreeFinder",
@@ -622,7 +636,8 @@ export namespace TreeFinderSidebar {
 
     let submenu_snippets = new Menu({ commands: app.commands });
     submenu_snippets.title.label = 'Use File Snippets...';
-    submenu_snippets.addItem({ command: widget.commandIDs.copyFilePath });
+    submenu_snippets.addItem({ command: widget.commandIDs.copyRelativePath });
+    submenu_snippets.addItem({ command: widget.commandIDs.copyFullPath });
 
     widget.toolbar.addItem("new file", new_file_button);
     widget.toolbar.addItem("upload", uploader_button);
@@ -776,17 +791,19 @@ export namespace TreeFinderSidebar {
         isToggleable: true,
         isToggled: () => writable_col_state,
       }),
-      app.commands.addCommand(widget.commandIDs.copyFilePath, {
+      app.commands.addCommand(widget.commandIDs.copyFullPath, {
         execute: async args => {
-          const widget = tracker.currentWidget;
-          if (widget) {
-            lastModified_col_state = !lastModified_col_state;
-            await widget.treefinder.toggleColumn('last_modified');
-          }
+          var fullPaths = _getRelativePaths(widget.treefinder.selection!).map(e => (url ?? '') + e)
+          navigator.clipboard.writeText(fullPaths.join('\n'));
         },
-        label: 'Copy File Path',
-        isToggleable: true,
-        isToggled: () => lastModified_col_state,
+        label: 'Copy Path',
+      }),
+      app.commands.addCommand(widget.commandIDs.copyRelativePath, {
+        execute: async args => {
+          var relativePaths = _getRelativePaths(widget.treefinder.selection!);
+          navigator.clipboard.writeText(relativePaths.join('\n'));
+        },
+        label: 'Copy Relative Path',
       }),
 
       // context menu items
