@@ -554,9 +554,8 @@ export namespace TreeFinderSidebar {
     side?: string;
   }
 
-  function _getRelativePaths(selectedFiles: any): String[] {
+  function _getRelativePaths(selectedFiles: Content<ContentsProxy.IJupyterContentRow>[]): String[] {
     var allPaths: String[] = [];
-    // const selectedFiles = widget.treefinder.selection!;
     for (var file of selectedFiles) {
       let relativePath = file.getPathAtDepth(1).join('/');
       allPaths.push(relativePath);
@@ -633,11 +632,6 @@ export namespace TreeFinderSidebar {
     submenu_cols.addItem({ command: widget.commandIDs.toggleLastModifiedCol });
     submenu_cols.addItem({ command: widget.commandIDs.toggleMimetypeCol });
     submenu_cols.addItem({ command: widget.commandIDs.toggleWritableCol });
-
-    let submenu_snippets = new Menu({ commands: app.commands });
-    submenu_snippets.title.label = 'Use File Snippets...';
-    submenu_snippets.addItem({ command: widget.commandIDs.copyRelativePath });
-    submenu_snippets.addItem({ command: widget.commandIDs.copyFullPath });
 
     widget.toolbar.addItem("new file", new_file_button);
     widget.toolbar.addItem("upload", uploader_button);
@@ -796,7 +790,7 @@ export namespace TreeFinderSidebar {
           var fullPaths = _getRelativePaths(widget.treefinder.selection!).map(e => (url ?? '') + e)
           navigator.clipboard.writeText(fullPaths.join('\n'));
         },
-        label: 'Copy Path',
+        label: 'Copy Full Path',
       }),
       app.commands.addCommand(widget.commandIDs.copyRelativePath, {
         execute: async args => {
@@ -812,7 +806,6 @@ export namespace TreeFinderSidebar {
         selector,
         rank: 1,
       }),
-
       app.contextMenu.addItem({
         command: widget.commandIDs.copy,
         selector,
@@ -839,16 +832,20 @@ export namespace TreeFinderSidebar {
         rank: 6,
       }),
       app.contextMenu.addItem({
-        type: 'submenu',
-        submenu: submenu_cols,
+        command: widget.commandIDs.copyFullPath,
         selector,
         rank: 7,
       }),
       app.contextMenu.addItem({
-        type: 'submenu',
-        submenu: submenu_snippets,
+        command: widget.commandIDs.copyRelativePath,
         selector,
         rank: 8,
+      }),
+      app.contextMenu.addItem({
+        type: 'submenu',
+        submenu: submenu_cols,
+        selector,
+        rank: 9,
       }),
       app.contextMenu.addItem({
         args: { selection: true },
