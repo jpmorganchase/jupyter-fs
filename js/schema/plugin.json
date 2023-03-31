@@ -66,10 +66,10 @@
       "type": "array",
       "items": {
         "type": "string",
-        "enum": ["size", "last_modified", "mimetype"]
+        "enum": ["size", "last_modified", "writable", "mimetype"]
       },
       "default": ["size"],
-      "maxItems": 3,
+      "maxItems": 4,
       "uniqueItems": true
     }
   }

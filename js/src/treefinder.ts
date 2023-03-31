@@ -196,24 +196,22 @@ export class TreeFinderWidget extends Widget {
 
   // TODO: Avoid hardcoding the order of columns.
   async toggleColumn(col: (keyof ContentsProxy.IJupyterContentRow)) {
-    // Preserve the position of the columns in order [size, last_modified, mimetype]
+    // toggle whether or not column is in array
     let idx = this.columns.indexOf(col, 0);
     if (idx !== -1) {
       this.columns.splice(idx, 1);
+    } else {
+      this.columns.push(col)
     }
-    else {
-      let pos = 0;
-      if (col === 'last_modified') {
-        let mimetype_idx = this.columns.indexOf('mimetype', 0);
-        let size_idx = this.columns.indexOf('size', 0);
-        if (mimetype_idx !== -1 && size_idx == -1) { pos = mimetype_idx - 1; }
-        else { pos = 1 }
-      }
-      else if (col === 'mimetype') {
-        pos = 2;
-      }
-      this.columns.splice(pos, 0, col);
-    }
+
+    // Preserve the position of the columns in preffered order
+    const preferred_col_order = [
+      "size",
+      "last_modified",
+      "writable",
+      "mimetype",
+    ]
+    this.columns.sort( (a, b) => { return preferred_col_order.indexOf(a) - preferred_col_order.indexOf(b) })
 
     // Update the new list of columns to the ContentsModel's options
     let m = this.model!;
