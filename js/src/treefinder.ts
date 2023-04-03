@@ -787,7 +787,10 @@ export namespace TreeFinderSidebar {
       }),
       app.commands.addCommand(widget.commandIDs.copyFullPath, {
         execute: async args => {
-          var fullPaths = _getRelativePaths(widget.treefinder.selection!).map(e => (url ?? '') + e)
+          let trimEnd = (path: string): string => {
+            return path.trimEnd().replace(/\/+$/, ''); 
+          };
+          var fullPaths = _getRelativePaths(widget.treefinder.selection!).map(relativePath => [trimEnd(url ?? ''), relativePath].join('/'));
           navigator.clipboard.writeText(fullPaths.join('\n'));
         },
         label: 'Copy Full Path',
