@@ -523,6 +523,7 @@ export namespace TreeFinderSidebar {
     "toggleSizeCol",
     "toggleMimetypeCol",
     "toggleLastModifiedCol",
+    "toggleWritableCol",
     "copyFullPath",
     "copyRelativePath",
   ] as const;
