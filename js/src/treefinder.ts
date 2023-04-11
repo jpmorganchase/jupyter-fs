@@ -290,6 +290,9 @@ export class TreeFinderWidget extends Widget {
    */
    handleEvent(event: Event): void {
     switch (event.type) {
+      case 'keydown':
+        this.evtKeydown(event as KeyboardEvent);
+        break;
       case 'dragenter':
       case 'dragover':
         this.evtNativeDragOverEnter(event as DragEvent);
@@ -313,6 +316,7 @@ export class TreeFinderWidget extends Widget {
    protected onAfterAttach(msg: Message): void {
     super.onAfterAttach(msg);
     const node = this.node;
+    node.addEventListener('keydown', this);
     node.addEventListener('dragenter', this);
     node.addEventListener('dragover', this);
     node.addEventListener('dragleave', this);
@@ -326,6 +330,7 @@ export class TreeFinderWidget extends Widget {
   protected onBeforeDetach(msg: Message): void {
     super.onBeforeDetach(msg);
     const node = this.node;
+    node.removeEventListener('keydown', this);
     node.removeEventListener('dragover', this);
     node.removeEventListener('dragover', this);
     node.removeEventListener('dragleave', this);
@@ -340,6 +345,51 @@ export class TreeFinderWidget extends Widget {
         return node;
       }
       node = node.parentElement;
+    }
+  }
+
+  protected evtKeydown(event: KeyboardEvent): void {
+    switch (event.key) {
+      case "ArrowDown":
+      case "ArrowUp": 
+        event.stopPropagation();
+        event.preventDefault();
+        const model = this.model!;
+        let last = model.selectedLast;
+        // tree-finder has a bug where it doesn't update selectedLast in `selectRange`, hacky work-around for now:
+        const {range, pivot} = model.selectionModel as any as {range: string[], pivot: string};
+        // once bug is fixed, this conditional should never be true:
+        if (pivot && pivot === last?.pathstr && range && range.length >= 1) {
+          // get the part of range that is furthest away from pivot:
+          const paths = model.contents.map(c => c.pathstr);
+          const pivotIdx = paths.indexOf(pivot);
+          const rangeStartIdx = paths.indexOf(range[0]);
+          const rangeEndIdx = paths.indexOf(range[range.length - 1]);
+          if (pivotIdx < rangeStartIdx) {
+            last = model.contents[rangeEndIdx];
+          } else {
+            last = model.contents[rangeStartIdx];
+          }
+        }
+        let idx = last
+          ? model.contents.indexOf(last)
+          : event.key === "ArrowUp"
+            ? model.contents.length - 1  // select last item
+            : 0;  // select first item
+        if (last) {
+          idx = event.key === "ArrowUp" ? idx - 1 : idx + 1;
+        }
+        if (idx < 0 || idx >= model.contents.length) {
+          return;  // Do nothing if going past the edge
+        }
+        const next = model.contents[idx];
+        if (event.shiftKey) {
+          model.selectionModel.selectRange(next, model.contents);
+        } else {
+          model.selectionModel.select(next);
+        }
+        void TreeFinderSidebar.scrollIntoView(this, next.pathstr);
+        break;
     }
   }
 
