@@ -10,7 +10,8 @@ import { WidgetTracker, showErrorMessage } from "@jupyterlab/apputils";
 import { Drive } from "@jupyterlab/services";
 import { ClipboardModel, ContentsModel, IContentRow, Path } from "tree-finder";
 
-import type { TreeFinderSidebar } from "./treefinder";
+import type { ContentsProxy, TreeFinderSidebar } from "./treefinder";
+import { getRefreshTargets } from "./contents_utils";
 
 export class JupyterClipboard {
   constructor(tracker: WidgetTracker<TreeFinderSidebar>) {
@@ -19,32 +20,46 @@ export class JupyterClipboard {
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     this._model.deleteSub.subscribe(async memo => {
       await Promise.all(memo.map(s => this._onDelete(s)));
-      const rootNeedsRefresh = memo.some(v => v.path.length <= 2);
-      // tree-finder doesn't correctly refresh parents of folders, so we work around it for now
-      // (in more detail, tree-finder will only refresh the folder if the entry does not have a
-      // getChildren entry, go figure...)
-      this.model.refresh(
-        this._tracker.currentWidget!.treefinder.model!,
-        rootNeedsRefresh ? undefined as any : memo.map(s => { return {...s, getChildren: undefined}})
+      const contentsModel = this._tracker.currentWidget!.treefinder.model!;
+      const toRefresh = getRefreshTargets<ContentsProxy.IJupyterContentRow>(
+        memo as ContentsProxy.IJupyterContentRow[],
+        contentsModel.root,
+        true
       );
+      this.model.refresh(contentsModel, toRefresh!);
     });
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     this._model.pasteSub.subscribe(async ({ destination, doCut, memo }) => {
       const destPath = destination.kind === "dir" ? destination.path : destination.path.slice(0, -1);
       const destPathstr = Path.fromarray(destPath);
-      const rootNeedsRefresh = destPath.length <= 1;
       await Promise.all(memo.map(s => this._onPaste(s, destPathstr, doCut)));
-      const to_invalidate = rootNeedsRefresh ?
-        undefined as any:
-        [destination, ...(doCut ? memo : [])]  // only invalidate sources if cutting
-      this.model.refresh(this._tracker.currentWidget!.treefinder.model!, to_invalidate);
+      const contentsModel = this._tracker.currentWidget!.treefinder.model!;
+      let toRefresh = getRefreshTargets<ContentsProxy.IJupyterContentRow>(
+        [destination] as ContentsProxy.IJupyterContentRow[],
+        contentsModel.root,
+        false
+      );
+      // Only refresh sources if cutting:
+      if (doCut && toRefresh !== undefined) {
+        const extra = getRefreshTargets<ContentsProxy.IJupyterContentRow>(
+          memo as ContentsProxy.IJupyterContentRow[],
+          contentsModel.root,
+          false
+        );
+        if (extra === undefined) {
+          toRefresh = undefined;
+        } else {
+          toRefresh.push(...extra);
+        }
+      }
+      this.model.refresh(contentsModel, toRefresh!);
     });
   }
 
   refresh<T extends IContentRow>(tm?: ContentsModel<T>, memo?: T[]) {
     tm ??= this._tracker.currentWidget!.treefinder.model as any as ContentsModel<T>;
-    this.model.refresh(tm, memo as T[]);
+    this.model.refresh(tm, memo!);
   }
 
   // TODO: remove in favor of this.model.refreshSelection once tree-finder v0.0.14 is out

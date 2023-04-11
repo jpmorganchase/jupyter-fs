@@ -13,19 +13,25 @@ import { Content, ContentsModel, IContentRow } from "tree-finder";
  * Utilities for manipulating the tree-finder contents model
  */
 
-
+/**
+ * Walk the path from root, yielding all rows along the way
+ * 
+ * @param path The path to walk to
+ * @param root The root to start from
+ */
 async function* walkPath<T extends IContentRow>(path: string[], root: Content<T>) {
     // Walk the path from the root
-    if (path[0] !== root.name) {
-      throw new Error(`Path ${path.join('/')} not in ${root.pathstr}`);
+    const pathstr = path.join('/');
+    if (!pathstr.startsWith(root.pathstr)) {
+      throw new Error(`Path ${pathstr} not in ${root.pathstr}`);
     }
     let node = root;
     yield node;
-    for (let i=1; i<path.length; ++i) {
+    for (let i=root.row.path.length; i<path.length; ++i) {
       const children = await node.getChildren();
       const child = children?.find(c => c.name === path[i]);
       if (!child) {
-        throw new Error(`Path ${path.join('/')} not in ${node.pathstr}`);
+        throw new Error(`Path ${pathstr} not in ${node.pathstr}`);
       }
       node = child;
       yield node;
@@ -70,7 +76,9 @@ export async function revealAndSelectPath<T extends IContentRow>(contents: Conte
 }
 
 /**
- * This will cause contents API calls if any dir has been invalidated between root and the parent.
+ * Get the parent contents row for the given contents row.
+ * 
+ * Note: This will cause contents API calls if any dir has been invalidated between root and the parent.
  * 
  * @param child The content node's whose parent we are looking for
  * @param root The root node of the path
@@ -81,4 +89,34 @@ export async function getContentParent<T extends IContentRow>(child: Content<T>,
   for await (node of walkPath(child.row.path.slice(0, -1), root)) {
   }
   return node!;
+}
+
+
+/**
+ * Get targets to use for a call to tree-finder's refresh
+ * 
+ * @param invalidateTargets The targets that need to be refreshed
+ * @param root The root node of the contents tree
+ * @param targetParents Whether the parents are the ones that should be invalidated
+ * @returns 
+ */
+export function getRefreshTargets<T extends IContentRow>(
+  invalidateTargets: T[],
+  root: Content<T>,
+  targetParents=false
+): T[] | undefined {
+  const rootRefreshThreshold = root.row.path.length + (targetParents ? 1 : 0);
+  const rootNeedsRefresh = invalidateTargets.some(
+    t => t.path.length <= rootRefreshThreshold + (t.getChildren ? 0 : 1)
+  );
+  if (rootNeedsRefresh) {
+    return undefined;
+  }
+  if (targetParents) {
+    // tree-finder doesn't correctly refresh parents of folders, so we work around it for now
+    // (in more detail, tree-finder will only refresh the folder if the entry does not have a
+    // getChildren entry, go figure...)
+    return invalidateTargets.map(t => { return {...t, getChildren: undefined}})
+  }
+  return invalidateTargets;
 }
