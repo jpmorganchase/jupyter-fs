@@ -240,7 +240,25 @@ export class TreeFinderWidget extends Widget {
       modelOptions: {
         columnNames: this.columns,
       },
-    }))
+    })).then(() => {
+      const grid = this.node.querySelector<TreeFinderGridElement<ContentsProxy.IJupyterContentRow>>("tree-finder-grid");
+      grid?.addStyleListener(() => {
+        let lastSelectIdx = this.model?.selectedLast ? this.model?.contents.indexOf(this.model.selectedLast) : -1;
+        for (let rowHeader of grid.querySelectorAll<HTMLTableCellElement>("tr > th")) {
+          const nameElement = rowHeader.querySelector<HTMLSpanElement>("span.rt-group-name");
+          // Ensure we can tab to all items
+          nameElement?.setAttribute("tabindex", "0");
+          // Ensure last selected element retains focus after redraw:
+          if (nameElement && lastSelectIdx !== -1) {
+            const meta = grid.getMeta(rowHeader);
+            if (meta && meta.y === lastSelectIdx) {
+              nameElement.focus();
+              lastSelectIdx = -1;
+            }
+          }
+        }
+      });
+    })
   }
 
   get ready(): Promise<void> {
