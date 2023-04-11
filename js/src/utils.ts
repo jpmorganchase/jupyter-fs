@@ -66,7 +66,7 @@ export function createOpenNode(): HTMLElement {
   return body;
 }
 
-export function doRename(
+export function promptRename(
   text: HTMLElement,
   edit: HTMLInputElement,
   original: string

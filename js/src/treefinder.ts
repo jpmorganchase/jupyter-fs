@@ -46,7 +46,7 @@ import { JupyterClipboard } from "./clipboard";
 import { getContentParent, revealAndSelectPath, revealPath } from "./contents_utils";
 import { IFSResource } from "./filesystem";
 import { fileTreeIcon } from "./icons";
-import { doRename } from "./utils";
+import { promptRename } from "./utils";
 import { Uploader, UploadButton } from "./upload";
 
 export class ContentsProxy {
@@ -938,7 +938,7 @@ export namespace TreeFinderSidebar {
     const original = textNode!.textContent!.replace(/(.*)\/$/, "$1");
     const editNode = document.createElement("input");
     editNode.value = original;
-    return doRename(textNode, editNode, original).then(
+    return promptRename(textNode, editNode, original).then(
       newName => {
         if (!newName || newName === oldContent.name) {
           return oldContent.row;
