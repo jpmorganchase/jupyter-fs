@@ -202,12 +202,18 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderTracker> = {
       `;
     }
 
-    themeManager.themeChanged.connect(() => {
+    themeManager.themeChanged.connect(async () => {
+      // Update SVG icon fills (since we put them in pseudo-elements we cannot style with CSS)
       const primary = getComputedStyle(document.documentElement).getPropertyValue('--jp-ui-font-color1');
       style.textContent = iconStyleContent(
         folderIcon.svgstr.replace(/fill="([^"]{0,7})"/, `fill="${primary}"`),
         fileIcon.svgstr.replace(/fill="([^"]{0,7})"/, `fill="${primary}"`)
       );
+
+      // Refresh widgets in case font/border sizes etc have changed
+      await Promise.all(Object.keys(widgetMap).map(
+        key => widgetMap[key].treefinder.nodeInit()
+      ));
     });
 
     style.textContent = iconStyleContent(folderIcon.svgstr, fileIcon.svgstr);
