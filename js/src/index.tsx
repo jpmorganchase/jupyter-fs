@@ -19,9 +19,10 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 
 import { AskDialog, askRequired } from "./auth";
+import { createCommands, idFromResource } from "./commands";
 import { FSComm, IFSOptions, IFSResource } from "./filesystem";
 import { FileUploadStatus } from "./progress";
-import { TreeFinderSidebar } from "./treefinder";
+import { ContentsProxy, TreeFinderSidebar } from "./treefinder";
 import { ITreeFinderTracker } from "./tokens";
 
 // tslint:disable: variable-name
@@ -52,7 +53,8 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderTracker> = {
     themeManager: IThemeManager,
   ): Promise<ITreeFinderTracker> {
     const comm = new FSComm();
-    const widgetMap : {[key: string]: IDisposable} = {};
+    const widgetMap : {[key: string]: TreeFinderSidebar} = {};
+    let commands: IDisposable | undefined;
 
     // Attempt to load application settings
     let settings: ISettingRegistry.ISettings | undefined;
@@ -63,14 +65,16 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderTracker> = {
       console.warn(`Failed to load settings for the jupyter-fs extension.\n${error}`);
     }
 
-    const sidebarProps: TreeFinderSidebar.ISidebarProps = {
+    let columns = settings?.composite.display_columns as (keyof ContentsProxy.IJupyterContentRow)[] ?? ['size'];
+
+    const sharedSidebarProps: Omit<TreeFinderSidebar.ISidebarProps, "url"> = {
       app,
       manager,
       paths,
       resolver,
       restorer,
       router,
-      settings,
+      columns, 
     };
 
     async function refreshWidgets({ resources, options }: {resources: IFSResource[]; options: IFSOptions}) {
@@ -78,16 +82,30 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderTracker> = {
         // eslint-disable-next-line no-console
         console.info(`jupyter-fs frontend received resources:\n${JSON.stringify(resources)}`);
       }
+      
+      columns = settings?.composite.display_columns as (keyof ContentsProxy.IJupyterContentRow)[] ?? ['size'];
+      sharedSidebarProps.columns = columns;
 
       // create the fs resource frontends (ie FileTree instances)
       for (const r of resources) {
         // make one composite disposable for all fs resource frontends
-        let w = widgetMap[r.drive!];
+        const id = idFromResource(r);
+        let w = widgetMap[id];
         if (!w || w.isDisposed) {
+          const sidebarProps = {...sharedSidebarProps, url: r.url};
           w = TreeFinderSidebar.sidebarFromResource(r, sidebarProps);
-          widgetMap[r.drive!] = w;
+          widgetMap[id] = w;
+        } else {
+          w.treefinder.columns = columns;
         }
       }
+      commands = createCommands(
+        app,
+        TreeFinderSidebar.tracker,
+        TreeFinderSidebar.clipboard,
+        resources,
+        settings
+      )
     }
 
     async function refresh() {
@@ -95,10 +113,14 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderTracker> = {
       let resources: IFSResource[] = settings!.composite.resources as any;
       const options: IFSOptions = settings!.composite.options as any;
 
-      function cleanup() {
-        let keys = resources.map(r => r.drive);
+      function cleanup(all=false) {
+        if (commands) {
+          commands.dispose();
+          commands = undefined;
+        }
+        let keys = resources.map(idFromResource);
         for (let key of Object.keys(widgetMap)) {
-          if (keys.indexOf(key) === -1) {
+          if (all || keys.indexOf(key) === -1) {
             widgetMap[key].dispose();
             delete widgetMap[key];
           }
@@ -131,8 +153,8 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderTracker> = {
               resources: resources.map(r => ({ ...r, tokenDict: values[r.url] })),
               options,
             });
-            await refreshWidgets({ resources, options });
             cleanup();
+            await refreshWidgets({ resources, options });
           };
 
           ReactDOM.render(
@@ -146,21 +168,23 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderTracker> = {
           );
         } else {
           // otherwise, just go ahead and refresh the widgets
-          await refreshWidgets({ options, resources });
           cleanup();
+          await refreshWidgets({ options, resources });
         }
       } catch {
-        cleanup();
+        cleanup(true);
       }
     }
 
+    // initial setup when DOM attachment of custom elements is complete.
+    void app.started.then(refresh);
+
     if (settings) {
-      // initial setup when DOM attachment of custom elements is complete.
-      void app.started.then(refresh);
-      console.log('Settings has changed.. refreshing!')
       // rerun setup whenever relevant settings change
-      // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      settings.changed.connect(refresh);
+      settings.changed.connect(async () => {
+        console.log('Settings has changed.. refreshing!');
+        await refresh();
+      });
     }
 
     // Inject lab icons
