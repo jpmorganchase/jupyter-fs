@@ -426,7 +426,7 @@ class FSManager(FileContentsManager):
         s = nbformat.writes(nb, version=nbformat.NO_CONVERT)
         self._pyfilesystem_instance.writetext(path, s)
 
-    def _save_file(self, path, content, format):
+    def _save_file(self, path, content, format, chunk=None):
         """Save content of a generic file."""
         if format not in {"text", "base64"}:
             raise web.HTTPError(
@@ -442,10 +442,11 @@ class FSManager(FileContentsManager):
         except Exception as e:
             raise web.HTTPError(400, "Encoding error saving %s: %s" % (path, e))
 
-        if format == "text":
+        # Overwrite content if unchunked or for the first chunk
+        if chunk is None or chunk == 1:
             self._pyfilesystem_instance.writebytes(path, bcontent)
         else:
-            self._pyfilesystem_instance.writebytes(path, bcontent)
+            self._pyfilesystem_instance.appendbytes(path, bcontent)
 
     def save(self, model, path=""):
         """Save the file model and return the model with no content."""
@@ -456,8 +457,13 @@ class FSManager(FileContentsManager):
         if "content" not in model and model["type"] != "directory":
             raise web.HTTPError(400, "No file content provided")
 
+        chunk = model.get("chunk", None)
+        if chunk and model["type"] != "file":
+            raise web.HTTPError(400, 'File type "{}" is not supported for chunked transfer'.format(model["type"]))
+
         self.log.debug("Saving %s", path)
-        self.run_pre_save_hooks(model=model, path=path)
+        if chunk is None or chunk == 1:
+            self.run_pre_save_hooks(model=model, path=path)
 
         try:
             if model["type"] == "notebook":
@@ -471,7 +477,7 @@ class FSManager(FileContentsManager):
                 #     self.create_checkpoint(path)
             elif model["type"] == "file":
                 # Missing format will be handled internally by _save_file.
-                self._save_file(path, model["content"], model.get("format"))
+                self._save_file(path, model["content"], model.get("format"), chunk)
             elif model["type"] == "directory":
                 self._save_directory(path, model)
             else:
@@ -493,7 +499,8 @@ class FSManager(FileContentsManager):
         if validation_message:
             model["message"] = validation_message
 
-        self.run_post_save_hooks(model=model, os_path=path)
+        if chunk is None or chunk == -1:
+            self.run_post_save_hooks(model=model, os_path=path)
 
         return model
 
@@ -523,7 +530,7 @@ class FSManager(FileContentsManager):
             self._pyfilesystem_instance.remove(path)
 
     def rename_file(self, old_path, new_path):
-        """Rename a file."""
+        """Rename a file or directory."""
         old_path = old_path.strip("/")
         new_path = new_path.strip("/")
         if new_path == old_path:
@@ -535,9 +542,14 @@ class FSManager(FileContentsManager):
         ):  # TODO and not samefile(old_os_path, new_os_path):
             raise web.HTTPError(409, "File already exists: %s" % new_path)
 
-        # Move the file
+        # Move the file or directory
         try:
-            self._pyfilesystem_instance.move(old_path, new_path)
+            if self.dir_exists(old_path):
+                self.log.debug("Renaming directory %s to %s", old_path, new_path)
+                self._pyfilesystem_instance.movedir(old_path, new_path, create=True)
+            else:
+                self.log.debug("Renaming file %s to %s", old_path, new_path)
+                self._pyfilesystem_instance.move(old_path, new_path)
         except web.HTTPError:
             raise
         except Exception as e:
