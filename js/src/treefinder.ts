@@ -910,11 +910,11 @@ export namespace TreeFinderSidebar {
    * @param treefinder The view
    * @param pathstr The entry to show
    */
-  async function scrollIntoView(treefinder: TreeFinderWidget, pathstr: string) {
+  export async function scrollIntoView(treefinder: TreeFinderWidget, pathstr: string) {
     // tree-finder uses rxjs bits that don't allow you to await, so to ensure sync draw:
     const model = treefinder.model!;
     await model.flatten();
-    const grid = (await treefinder.node.querySelector('tree-finder-grid')) as TreeFinderGridElement<ContentsProxy.IJupyterContentRow>;
+    const grid = treefinder.node.querySelector('tree-finder-grid') as TreeFinderGridElement<ContentsProxy.IJupyterContentRow>;
     await grid.draw();
     // Check if new row (selection) in view (if outside virtual window, it will fail):
     if (!document.querySelector(".tf-mod-select .rt-tree-container .rt-group-name")) {
