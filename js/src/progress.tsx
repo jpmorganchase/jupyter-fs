@@ -68,15 +68,15 @@ function FileUploadComponent(
 ): React.ReactElement<FileUploadComponent.IProps> {
   const translator = props.translator || nullTranslator;
   const trans = translator.load('jupyterlab');
+  const items = [<TextItem source={trans.__('Uploading…')} />];
+  items.push(...props.items.map(
+    i => i.complete ?
+      <TextItem source={trans.__("Complete!")} /> :
+      <ProgressBar percentage={i.progress}/>
+  ));
   return (
     <GroupItem spacing={HALF_SPACING}>
-      <TextItem source={trans.__('Uploading…')} />
-      <>
-        {props.items.map(i => i.complete ?
-          <TextItem source={trans.__("Complete!")} /> :
-          <ProgressBar percentage={i.progress}/>
-        )}
-      </>
+      {...items}
     </GroupItem>
   );
 }
