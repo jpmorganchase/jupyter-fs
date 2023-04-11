@@ -940,6 +940,7 @@ export namespace TreeFinderSidebar {
     editNode.value = original;
     return promptRename(textNode, editNode, original).then(
       newName => {
+        textNode.parentElement?.focus();
         if (!newName || newName === oldContent.name) {
           return oldContent.row;
         }
@@ -965,7 +966,7 @@ export namespace TreeFinderSidebar {
             return oldContent.row;
           })
           .then(newContent => {
-            textNode.textContent = newName;
+            textNode.textContent = newName + suffix;
             return newContent;
           });
       }
