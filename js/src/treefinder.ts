@@ -32,6 +32,7 @@ import {
 } from "@jupyterlab/ui-components";
 // import JSZip from "jszip";
 import { ArrayExt } from "@lumino/algorithm";
+import { CommandRegistry } from '@lumino/commands';
 import { Message } from '@lumino/messaging';
 import { PanelLayout, Widget } from "@lumino/widgets";
 import { Content, ContentsModel, Format, IContentRow, Path, TreeFinderGridElement, TreeFinderPanelElement } from "tree-finder";
@@ -163,21 +164,12 @@ export class TreeFinderWidget extends Widget {
     
     this.translator = translator || nullTranslator;
     this._trans = this.translator.load('jupyterlab');
+    this._commands = commands;
     
     this._columns = columns;
     this.rootPath = rootPath === "" ? rootPath : rootPath + ":";
     // CAREFUL: tree-finder currently REQUIRES the node to be added to the DOM before init can be called!
-    this._ready = this.nodeInit().then(() => {
-      this.uploader = new Uploader({
-        contentsProxy: this.contentsProxy,
-        model: this.model!,
-      });
-      this.model!.openSub.subscribe(rows => rows.forEach(row => {
-        if (!row.getChildren) {
-          void commands.execute("docmanager:open", { path: Path.fromarray(row.path) });
-        }
-      }));
-    });
+    this._ready = this.nodeInit();
   }
 
   draw() {
@@ -221,6 +213,19 @@ export class TreeFinderWidget extends Widget {
           }
         }
       });
+      if (this.uploader) {
+        this.uploader.model = this.model!;
+      } else {
+        this.uploader = new Uploader({
+          contentsProxy: this.contentsProxy,
+          model: this.model!,
+        });
+      }
+      this.model!.openSub.subscribe(rows => rows.forEach(row => {
+        if (!row.getChildren) {
+          void this._commands.execute("docmanager:open", { path: Path.fromarray(row.path) });
+        }
+      }));
     })
   }
   
@@ -444,6 +449,7 @@ export class TreeFinderWidget extends Widget {
 
   private _ready: Promise<void>;
   private _trans: TranslationBundle;
+  private _commands: CommandRegistry;
 }
 
 export namespace TreeFinderWidget {

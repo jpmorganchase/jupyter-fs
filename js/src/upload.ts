@@ -157,7 +157,7 @@ export class Uploader implements IDisposable {
    * Construct a new file browser buttons widget.
    */
   constructor(options: Uploader.IOptions) {
-    this._model = options.model;
+    this.model = options.model;
     this._contentsProxy = options.contentsProxy;
   }
 
@@ -202,9 +202,9 @@ export class Uploader implements IDisposable {
    */
   async upload(file: File, target?: Content<ContentsProxy.IJupyterContentRow>): Promise<ContentsProxy.IJupyterContentRow | null> {
     await this._uploadCheckDisposed();
-    target = target || this._model.selectedLast || this._model.root;
+    target = target || this.model.selectedLast || this.model.root;
     if (!target.hasChildren) {
-      target = await getContentParent(target, this._model.root);
+      target = await getContentParent(target, this.model.root);
     }
     let path = target.pathstr ? target.pathstr + '/' + file.name : file.name;
     let res = null;
@@ -344,7 +344,7 @@ export class Uploader implements IDisposable {
   }
 
 
-  private _model: ContentsModel<ContentsProxy.IJupyterContentRow>;
+  model: ContentsModel<ContentsProxy.IJupyterContentRow>;
   private _contentsProxy: ContentsProxy;
   private _uploads: IUploadProgress[] = [];
   private _uploadChanged = new Signal<this, IChangedArgs<IUploadProgress | null>>(
