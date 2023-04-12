@@ -75,6 +75,22 @@ export async function revealAndSelectPath<T extends IContentRow>(contents: Conte
   return node;
 }
 
+
+/**
+ * Recursively opens directories in a contents model
+ *
+ * @param model The contents model where directories are to be opened
+ * @param path Array of directory names to be opened in order
+ */
+export async function openDirRecursive<T extends IContentRow>(model: ContentsModel<T>, path: string[]) {
+  for await (const node of walkPath(path, model.root)) {
+    if (node.pathstr !== model.root.pathstr) {
+      model.openDir(node.row);
+    }
+  }
+}
+
+
 /**
  * Get the parent contents row for the given contents row.
  *

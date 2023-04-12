@@ -41,6 +41,11 @@ export interface IFSResource {
   auth: "ask" | "env" | false;
 
   /**
+   * Directory to be first opened
+   */
+  preferred_dir?: string; 
+
+  /**
    * The jupyterlab drive name associated with this resource. This is defined
    * on resource initialization
    */
@@ -160,7 +165,6 @@ export class FSComm extends FSCommBase {
           throw new ServerConnection.ResponseError(response, data);
         });
       }
-
       return response.json();
     });
   }

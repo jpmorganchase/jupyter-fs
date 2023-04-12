@@ -40,7 +40,7 @@ import { Content, ContentsModel, Format, Path, TreeFinderGridElement, TreeFinder
 import { JupyterClipboard } from "./clipboard";
 import { commandIDs, idFromResource } from "./commands";
 import { ContentsProxy } from "./contents_proxy";
-import { getContentParent, revealPath } from "./contents_utils";
+import { getContentChild, getContentParent, revealPath, openDirRecursive } from "./contents_utils";
 import { DragDropWidget, TABLE_HEADER_MIME } from "./drag";
 import { IFSResource } from "./filesystem";
 import { fileTreeIcon } from "./icons";
@@ -654,6 +654,7 @@ export namespace TreeFinderSidebar {
     columns: Array<keyof ContentsProxy.IJupyterContentRow>;
     url: string;
 
+    preferredDir?: string;
     rootPath?: string;
     caption?: string;
     id?: string;
@@ -678,6 +679,7 @@ export namespace TreeFinderSidebar {
       rootPath: resource.drive,
       caption: `${resource.name}\nFile Tree`,
       id: idFromResource(resource),
+      preferredDir: resource.preferred_dir,
       url: resource.url,
     });
   }
@@ -692,6 +694,7 @@ export namespace TreeFinderSidebar {
     url,
     columns,
     settings,
+    preferredDir,
 
     rootPath = "",
     caption = "TreeFinder",
@@ -732,6 +735,17 @@ export namespace TreeFinderSidebar {
     widget.toolbar.addItem("new file", new_file_button);
     widget.toolbar.addItem("upload", uploader_button);
     widget.toolbar.addItem("refresh", refresh_button);
+
+    if (preferredDir) {
+      void widget.treefinder.ready.then(async () => {
+        var path = preferredDir.split("/");
+        if (preferredDir.startsWith("/")) {
+          path = path.slice(1);
+        };
+        path.unshift(rootPath);
+        openDirRecursive(widget.treefinder.model!, path);
+      })
+    }
 
     // // remove context highlight on context menu exit
     // document.ondblclick = () => {

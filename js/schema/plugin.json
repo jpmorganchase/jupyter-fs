@@ -49,6 +49,10 @@
           "description": "A url pointing to an fs resource, as per the PyFilesystem fsurl specification",
           "type": "string"
         },
+        "preferred_dir": {
+          "description": "Directory to be first opened (e.g., myDir/mySubdir)",
+          "type": "string"
+        },
         "auth": {
           "description": "Given any template {{VARS}} in the url, 'ask' (default) to open a dialog box asking for credentials, or `env` to pick up credentials from the server's environment variables",
           "type": "string",
