@@ -72,6 +72,11 @@ export class ContentsProxy {
     return ContentsProxy.toJupyterContentRow(await this.contentsManager.newUntitled(options), this.contentsManager, this.drive);
   }
 
+  async downloadUrl(path: string) {
+    path = ContentsProxy.toFullPath(path, this.drive);
+    return await this.contentsManager.getDownloadUrl(path);
+  }
+
   readonly contentsManager: ContentsManager;
   readonly drive?: string;
 }
@@ -516,25 +521,23 @@ export class TreeFinderSidebar extends Widget {
     // });
   }
 
-  // async download(path: string, folder: boolean): Promise<any> {
-  //   if (folder) {
-  //     const zip = new JSZip();
-  //     await this.wrapFolder(zip, path); // folder packing
-  //     // generate and save zip, reset path
-  //     path = PathExt.basename(path);
-  //     writeZipFile(zip, path);
-  //   } else {
-  //     return this.cm.getDownloadUrl(this.basepath + path).then(url => {
-  //       const element = document.createElement("a");
-  //       document.body.appendChild(element);
-  //       element.setAttribute("href", url);
-  //       element.setAttribute("download", "");
-  //       element.click();
-  //       document.body.removeChild(element);
-  //       return void 0;
-  //     });
-  //   }
-  // }
+  async download(path: string, folder: boolean): Promise<void> {
+    if (folder) {
+      // const zip = new JSZip();
+      // await this.wrapFolder(zip, path); // folder packing
+      // // generate and save zip, reset path
+      // path = PathExt.basename(path);
+      // writeZipFile(zip, path);
+    } else {
+      const url = await this.treefinder.contentsProxy.downloadUrl(path);
+      const element = document.createElement("a");
+      element.setAttribute("href", url);
+      element.setAttribute("download", "");
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    }
+  }
 
   // async wrapFolder(zip: JSZip, path: string) {
   //   const base = this.cm.get(this.basepath + path);

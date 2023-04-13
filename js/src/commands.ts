@@ -12,6 +12,7 @@ import {
   closeIcon,
   copyIcon,
   cutIcon,
+  downloadIcon,
   editIcon,
   filterListIcon,
   pasteIcon,
@@ -39,7 +40,10 @@ export const commandNames = [
   "paste",
   "refresh",
   "rename",
+  "download",
   "create_folder",
+  // "create_file",
+  // "navigate",
   "copyFullPath",
   "copyRelativePath",
   "toggleColumnPath",
@@ -74,7 +78,7 @@ const currentWidgetSelectionIsWritable = (tracker: TreeFinderTracker): boolean =
   if (selection) {
     return selection.every((x: Content<ContentsProxy.IJupyterContentRow>) => x.row.writable);
   }
-  return true;
+  return false;
 };
 
 function toggleColumnCommandId(column: string): string {
@@ -181,6 +185,16 @@ export function createCommands(
       icon: editIcon,
       label: "Rename",
       isEnabled: () => currentWidgetSelectionIsWritable(tracker),
+    }),
+    app.commands.addCommand(commandIDs.download, {
+      execute: async args => {
+        const widget = tracker.currentWidget!;
+        const selection = widget.treefinder.selection!;
+        await Promise.allSettled(selection.map(s => widget.download(s.pathstr, s.hasChildren)));
+      },
+      icon: downloadIcon,
+      label: "Download",
+      isEnabled: () => !!(tracker.currentWidget?.treefinder.model?.selection),
     }),
     app.commands.addCommand(commandIDs.create_folder, {
       execute: async args =>  {
@@ -291,12 +305,27 @@ export function createCommands(
       rank: contextMenuRank++,
     }),
     app.contextMenu.addItem({
+      command: commandIDs.download,
+      selector,
+      rank: contextMenuRank++,
+    }),
+    app.contextMenu.addItem({
+      type: "separator",
+      selector,
+      rank: contextMenuRank++,
+    }),
+    app.contextMenu.addItem({
       command: commandIDs.copyFullPath,
       selector,
       rank: contextMenuRank++,
     }),
     app.contextMenu.addItem({
       command: commandIDs.copyRelativePath,
+      selector,
+      rank: contextMenuRank++,
+    }),
+    app.contextMenu.addItem({
+      type: "separator",
       selector,
       rank: contextMenuRank++,
     }),
