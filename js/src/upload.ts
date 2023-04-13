@@ -38,23 +38,23 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-import { showErrorMessage, ToolbarButton  } from '@jupyterlab/apputils';
-import { shouldOverwrite } from '@jupyterlab/docmanager';
-import { Contents } from '@jupyterlab/services';
-import { ArrayExt } from '@lumino/algorithm';
-import { ISignal, Signal } from '@lumino/signaling';
+import { showErrorMessage, ToolbarButton  } from "@jupyterlab/apputils";
+import { shouldOverwrite } from "@jupyterlab/docmanager";
+import { Contents } from "@jupyterlab/services";
+import { ArrayExt } from "@lumino/algorithm";
+import { ISignal, Signal } from "@lumino/signaling";
 import {
   ITranslator,
   nullTranslator,
-  TranslationBundle
-} from '@jupyterlab/translation';
-import { fileUploadIcon } from '@jupyterlab/ui-components';
+  TranslationBundle,
+} from "@jupyterlab/translation";
+import { fileUploadIcon } from "@jupyterlab/ui-components";
 
 import type { ContentsProxy } from "./treefinder";
-import { IChangedArgs } from '@jupyterlab/coreutils';
-import { IDisposable } from '@lumino/disposable';
-import { Content, ContentsModel } from 'tree-finder';
-import { getContentParent } from './contents_utils';
+import { IChangedArgs } from "@jupyterlab/coreutils";
+import { IDisposable } from "@lumino/disposable";
+import { Content, ContentsModel } from "tree-finder";
+import { getContentParent } from "./contents_utils";
 
 
 /**
@@ -73,11 +73,11 @@ export interface IUploadedData {
 * An upload progress event for a file at `path`.
 */
 export interface IUploadProgress {
- path: string;
- /**
+  path: string;
+  /**
   * % uploaded [0, 1)
   */
- progress: number;
+  progress: number;
 }
 
 export class UploadButton extends ToolbarButton {
@@ -91,14 +91,14 @@ export class UploadButton extends ToolbarButton {
       onClick: () => {
         this._input.click();
       },
-      tooltip: Private.translateToolTip(options.translator)
+      tooltip: Private.translateToolTip(options.translator),
     });
     this.translator = options.translator || nullTranslator;
-    this._trans = this.translator.load('jupyterlab');
+    this._trans = this.translator.load("jupyterlab");
     this._uploader = options.uploader;
     this._input.onclick = this._onInputClicked;
     this._input.onchange = this._onInputChanged;
-    this.addClass('jp-id-upload');
+    this.addClass("jp-id-upload");
   }
 
   /**
@@ -109,7 +109,7 @@ export class UploadButton extends ToolbarButton {
     const pending = files.map(async file => (await this._uploader).upload(file));
     void Promise.all(pending).catch(error => {
       void showErrorMessage(
-        this._trans._p('showErrorMessage', 'Upload Error'),
+        this._trans._p("showErrorMessage", "Upload Error"),
         error
       );
     });
@@ -121,7 +121,7 @@ export class UploadButton extends ToolbarButton {
   private _onInputClicked = () => {
     // In order to allow repeated uploads of the same file (with delete in between),
     // we need to clear the input value to trigger a change event.
-    this._input.value = '';
+    this._input.value = "";
   };
 
   protected translator: ITranslator;
@@ -180,7 +180,7 @@ export class Uploader implements IDisposable {
    */
   get isDisposed() {
     return this._disposed;
-  };
+  }
 
   /**
    * Dispose of the resources held by the model.
@@ -206,18 +206,18 @@ export class Uploader implements IDisposable {
     if (!target.hasChildren) {
       target = await getContentParent(target, this.model.root);
     }
-    let path = target.pathstr ? target.pathstr + '/' + file.name : file.name;
+    const path = target.pathstr ? target.pathstr + "/" + file.name : file.name;
     let res = null;
     try {
       // alternatively to try to get the file and check for 404, we can get the parent
-      // and check if the file is in the list. 
-      res = await this._contentsProxy.get(path, {content: false});
+      // and check if the file is in the list.
+      res = await this._contentsProxy.get(path, { content: false });
     } catch (e) {
       // TODO: Check if e is a 404
     }
     if (res) {
       // drop drive when prompting:
-      if (!await shouldOverwrite(path.slice(path.indexOf('/') + 1))) {
+      if (!await shouldOverwrite(path.slice(path.indexOf("/") + 1))) {
         return null;
       }
     }
@@ -225,8 +225,8 @@ export class Uploader implements IDisposable {
     const chunkedUpload = file.size > CHUNK_SIZE;
     const uploaded = await this._upload(file, path, chunkedUpload);
     target.invalidate();
-    this._uploadCompleted.emit({path: uploaded.path})
-    return uploaded
+    this._uploadCompleted.emit({ path: uploaded.path });
+    return uploaded;
   }
 
   /**
@@ -239,8 +239,8 @@ export class Uploader implements IDisposable {
   ): Promise<ContentsProxy.IJupyterContentRow> {
     // Gather the file model parameters.
     const name = file.name;
-    const type: Contents.ContentType = 'file';
-    const format: Contents.FileFormat = 'base64';
+    const type: Contents.ContentType = "file";
+    const format: Contents.FileFormat = "base64";
 
     const uploadInner = async (
       blob: Blob,
@@ -252,19 +252,19 @@ export class Uploader implements IDisposable {
       await new Promise((resolve, reject) => {
         reader.onload = resolve;
         reader.onerror = event =>
-          reject(`Failed to upload "${file.name}":` + event);
+          reject(`Failed to upload "${file.name}":  ${event}`);
       });
       await this._uploadCheckDisposed();
 
       // remove header https://stackoverflow.com/a/24289420/907060
-      const content = (reader.result as string).split(',')[1];
+      const content = (reader.result as string).split(",")[1];
 
       const model: Partial<Contents.IModel> = {
         type,
         format,
         name,
         chunk,
-        content
+        content,
       };
       return await this._contentsProxy.save(path, model);
     };
@@ -273,9 +273,7 @@ export class Uploader implements IDisposable {
       try {
         return await uploadInner(file);
       } catch (err) {
-        ArrayExt.removeFirstWhere(this._uploads, uploadIndex => {
-          return file.name === uploadIndex.path;
-        });
+        ArrayExt.removeFirstWhere(this._uploads, uploadIndex => file.name === uploadIndex.path);
         throw err;
       }
     }
@@ -284,9 +282,9 @@ export class Uploader implements IDisposable {
 
     let upload = { path, progress: 0 };
     this._uploadChanged.emit({
-      name: 'start',
+      name: "start",
       newValue: upload,
-      oldValue: null
+      oldValue: null,
     });
 
     for (let start = 0; !finalModel; start += CHUNK_SIZE) {
@@ -298,9 +296,9 @@ export class Uploader implements IDisposable {
       this._uploads.splice(this._uploads.indexOf(upload));
       this._uploads.push(newUpload);
       this._uploadChanged.emit({
-        name: 'update',
+        name: "update",
         newValue: newUpload,
-        oldValue: upload
+        oldValue: upload,
       });
       upload = newUpload;
 
@@ -308,14 +306,12 @@ export class Uploader implements IDisposable {
       try {
         currentModel = await uploadInner(file.slice(start, end), chunk);
       } catch (err) {
-        ArrayExt.removeFirstWhere(this._uploads, uploadIndex => {
-          return file.name === uploadIndex.path;
-        });
+        ArrayExt.removeFirstWhere(this._uploads, uploadIndex => file.name === uploadIndex.path);
 
         this._uploadChanged.emit({
-          name: 'failure',
+          name: "failure",
           newValue: upload,
-          oldValue: null
+          oldValue: null,
         });
 
         throw err;
@@ -328,9 +324,9 @@ export class Uploader implements IDisposable {
 
     this._uploads.splice(this._uploads.indexOf(upload));
     this._uploadChanged.emit({
-      name: 'finish',
+      name: "finish",
       newValue: null,
-      oldValue: upload
+      oldValue: upload,
     });
 
     return finalModel;
@@ -338,7 +334,7 @@ export class Uploader implements IDisposable {
 
   private _uploadCheckDisposed(): Promise<void> {
     if (this.isDisposed) {
-      return Promise.reject('Filemanager disposed. File upload canceled');
+      return Promise.reject("Filemanager disposed. File upload canceled");
     }
     return Promise.resolve();
   }
@@ -370,7 +366,7 @@ export namespace Uploader {
      * Contents model
      */
     model: ContentsModel<ContentsProxy.IJupyterContentRow>;
-    
+
     /**
      * Contents manager proxy
      */
@@ -386,8 +382,8 @@ namespace Private {
    * Create the upload input node for a file buttons widget.
    */
   export function createUploadInput(): HTMLInputElement {
-    const input = document.createElement('input');
-    input.type = 'file';
+    const input = document.createElement("input");
+    input.type = "file";
     input.multiple = true;
     return input;
   }
@@ -397,7 +393,7 @@ namespace Private {
    */
   export function translateToolTip(translator?: ITranslator): string {
     translator = translator || nullTranslator;
-    const trans = translator.load('jupyterlab');
-    return trans.__('Upload Files');
+    const trans = translator.load("jupyterlab");
+    return trans.__("Upload Files");
   }
 }

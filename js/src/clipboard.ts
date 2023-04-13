@@ -76,7 +76,7 @@ export class JupyterClipboard {
     try {
       await this._drive.delete(srcPathstr);
     } catch (err) {
-      showErrorMessage('Delete Failed', err);
+      await showErrorMessage("Delete Failed", err);
     }
   }
 
@@ -88,7 +88,7 @@ export class JupyterClipboard {
         await this._drive.delete(srcPathstr);
       }
     } catch (err) {
-      showErrorMessage('Paste Error', err);
+      await showErrorMessage("Paste Error", err);
     }
   }
 

@@ -71,23 +71,23 @@ const currentWidgetSelectionIsWritable = (tracker: TreeFinderTracker): boolean =
     return false;
   }
   const selection = tracker.currentWidget.treefinder.model?.selection;
-  if (selection) { 
-    return selection.every((x: Content<ContentsProxy.IJupyterContentRow>) => x.row.writable)
+  if (selection) {
+    return selection.every((x: Content<ContentsProxy.IJupyterContentRow>) => x.row.writable);
   }
-  return true
-}
+  return true;
+};
 
 function toggleColumnCommandId(column: string): string {
   return `${commandIDs.toggleColumn}-${column}`;
 }
 
 
-function _getRelativePaths(selectedFiles: Content<ContentsProxy.IJupyterContentRow>[]): string[] {
-  var allPaths: string[] = [];
-  for (var file of selectedFiles) {
-    let relativePath = file.getPathAtDepth(1).join('/');
+function _getRelativePaths(selectedFiles: Array<Content<ContentsProxy.IJupyterContentRow>>): string[] {
+  const allPaths: string[] = [];
+  for (const file of selectedFiles) {
+    const relativePath = file.getPathAtDepth(1).join("/");
     allPaths.push(relativePath);
-  };
+  }
   return allPaths;
 }
 
@@ -100,11 +100,11 @@ export function createCommands(
   settings?: ISettingRegistry.ISettings,
 ): IDisposable {
   const selector = ".jp-tree-finder-sidebar";
-  let submenu = new Menu({ commands: app.commands});
-  submenu.title.label = 'Show/Hide Columns';
+  const submenu = new Menu({ commands: app.commands });
+  submenu.title.label = "Show/Hide Columns";
   submenu.title.icon = filterListIcon;
-  submenu.addItem({ command: commandIDs.togglePath});
-  for (let column of COLUMN_NAMES) {
+  submenu.addItem({ command: commandIDs.togglePath });
+  for (const column of COLUMN_NAMES) {
     submenu.addItem({ command: toggleColumnCommandId(column) });
   }
 
@@ -119,11 +119,11 @@ export function createCommands(
   //   }
   // }
   const toggleState: {[key: string]: boolean} = {};
-  const colsToDisplay = settings?.composite.display_columns as string[] ?? ['size'];
-  for (let key of COLUMN_NAMES) {
+  const colsToDisplay = settings?.composite.display_columns as string[] ?? ["size"];
+  for (const key of COLUMN_NAMES) {
     toggleState[key] = colsToDisplay.includes(key);
   }
-    
+
   // globally accessible jupyter commands[
   return [
     app.commands.addCommand(commandIDs.copy, {
@@ -211,7 +211,7 @@ export function createCommands(
     app.commands.addCommand(commandIDs.refresh, {
       execute: args => {
         if (args["selection"]) {
-          clipboard.refreshSelection(tracker.currentWidget!.treefinder.model!)
+          clipboard.refreshSelection(tracker.currentWidget!.treefinder.model!);
         } else {
           clipboard.refresh(tracker.currentWidget!.treefinder.model);
         }
@@ -223,44 +223,40 @@ export function createCommands(
     app.commands.addCommand(commandIDs.copyFullPath, {
       execute: async args => {
         const widget = tracker.currentWidget!;
-        const trimEnd = (path: string): string => {
-          return path.trimEnd().replace(/\/+$/, ''); 
-        };
-        const fullPaths = _getRelativePaths(widget.treefinder.selection!).map(relativePath => [trimEnd(widget.url ?? ''), relativePath].join('/'));
-        navigator.clipboard.writeText(fullPaths.join('\n'));
+        const trimEnd = (path: string): string => path.trimEnd().replace(/\/+$/, "");
+        const fullPaths = _getRelativePaths(widget.treefinder.selection!).map(relativePath => [trimEnd(widget.url ?? ""), relativePath].join("/"));
+        await navigator.clipboard.writeText(fullPaths.join("\n"));
       },
-      label: 'Copy Full Path',
+      label: "Copy Full Path",
       isEnabled: () => !!tracker.currentWidget,
     }),
     app.commands.addCommand(commandIDs.copyRelativePath, {
       execute: async args => {
         const widget = tracker.currentWidget!;
         const relativePaths = _getRelativePaths(widget.treefinder.selection!);
-        navigator.clipboard.writeText(relativePaths.join('\n'));
+        await navigator.clipboard.writeText(relativePaths.join("\n"));
       },
-      label: 'Copy Relative Path',
+      label: "Copy Relative Path",
       isEnabled: () => !!tracker.currentWidget,
     }),
 
     app.commands.addCommand(commandIDs.togglePath, {
-      execute: args => {},
-      label: 'path',
+      execute: args => {
+        void 0;
+      },
+      label: "path",
       isEnabled: () => false,
       isToggled: () => true,
     }),
-    ...COLUMN_NAMES.map((column: keyof ContentsProxy.IJupyterContentRow) => {
-      return app.commands.addCommand(toggleColumnCommandId(column), {
-        execute: async args => {
-          toggleState[column] = !toggleState[column];
-          settings?.set("display_columns", COLUMN_NAMES.filter(k => toggleState[k]));
-        },
-        label: column,
-        isToggleable: true,
-        isToggled: () => {
-          return toggleState[column];
-        },
-      })
-    }),
+    ...COLUMN_NAMES.map((column: keyof ContentsProxy.IJupyterContentRow) => app.commands.addCommand(toggleColumnCommandId(column), {
+      execute: async args => {
+        toggleState[column] = !toggleState[column];
+        await settings?.set("display_columns", COLUMN_NAMES.filter(k => toggleState[k]));
+      },
+      label: column,
+      isToggleable: true,
+      isToggled: () => toggleState[column],
+    })),
 
     // context menu items
     app.contextMenu.addItem({
@@ -305,8 +301,8 @@ export function createCommands(
       rank: 8,
     }),
     app.contextMenu.addItem({
-      type: 'submenu',
-      submenu: submenu,
+      type: "submenu",
+      submenu,
       selector,
       rank: 9,
     }),
@@ -318,5 +314,5 @@ export function createCommands(
     }),
   ].reduce((set: DisposableSet, d) => {
     set.add(d); return set;
-  }, new DisposableSet());;
+  }, new DisposableSet());
 }

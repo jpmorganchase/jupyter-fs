@@ -1,10 +1,10 @@
 
-import { WidgetTracker } from '@jupyterlab/apputils';
-import { Token } from '@lumino/coreutils';
-import { TreeFinderSidebar } from './treefinder';
+import { WidgetTracker } from "@jupyterlab/apputils";
+import { Token } from "@lumino/coreutils";
+import { TreeFinderSidebar } from "./treefinder";
 
 export const ITreeFinderTracker = new Token<ITreeFinderTracker>(
-  '@jupyterlab/filebrowser:IFileBrowserFactory'
+  "@jupyterlab/filebrowser:IFileBrowserFactory"
 );
 
 /**

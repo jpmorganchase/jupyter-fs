@@ -24,8 +24,8 @@ import { ISettingRegistry } from "@jupyterlab/settingregistry";
 import {
   ITranslator,
   nullTranslator,
-  TranslationBundle
-} from '@jupyterlab/translation';
+  TranslationBundle,
+} from "@jupyterlab/translation";
 import {
   refreshIcon,
   newFolderIcon,
@@ -33,7 +33,7 @@ import {
 // import JSZip from "jszip";
 import { ArrayExt } from "@lumino/algorithm";
 import { CommandRegistry } from '@lumino/commands';
-import { Message } from '@lumino/messaging';
+import { Message } from "@lumino/messaging";
 import { PanelLayout, Widget } from "@lumino/widgets";
 import { Content, ContentsModel, Format, IContentRow, Path, TreeFinderGridElement, TreeFinderPanelElement } from "tree-finder";
 
@@ -90,7 +90,7 @@ export namespace ContentsProxy {
       return [drive, path.slice(drive.length + 1)].join(":");
     } else {
       return [drive, path].join(":");
-    };
+    }
   }
 
   export function toLocalPath(path: string): string {
@@ -161,11 +161,11 @@ export class TreeFinderWidget extends Widget {
     this.addClass("jp-tree-finder");
 
     this.contentsProxy = new ContentsProxy(contents, rootPath);
-    
+
     this.translator = translator || nullTranslator;
-    this._trans = this.translator.load('jupyterlab');
+    this._trans = this.translator.load("jupyterlab");
     this._commands = commands;
-    
+
     this._columns = columns;
     this.rootPath = rootPath === "" ? rootPath : rootPath + ":";
     // CAREFUL: tree-finder currently REQUIRES the node to be added to the DOM before init can be called!
@@ -199,7 +199,7 @@ export class TreeFinderWidget extends Widget {
       const grid = this.node.querySelector<TreeFinderGridElement<ContentsProxy.IJupyterContentRow>>("tree-finder-grid");
       grid?.addStyleListener(() => {
         let lastSelectIdx = this.model?.selectedLast ? this.model?.contents.indexOf(this.model.selectedLast) : -1;
-        for (let rowHeader of grid.querySelectorAll<HTMLTableCellElement>("tr > th")) {
+        for (const rowHeader of grid.querySelectorAll<HTMLTableCellElement>("tr > th")) {
           const nameElement = rowHeader.querySelector<HTMLSpanElement>("span.rt-group-name");
           // Ensure we can tab to all items
           nameElement?.setAttribute("tabindex", "0");
@@ -226,31 +226,30 @@ export class TreeFinderWidget extends Widget {
           void this._commands.execute("docmanager:open", { path: Path.fromarray(row.path) });
         }
       }));
-    })
+    });
   }
-  
-  get columns(): (keyof ContentsProxy.IJupyterContentRow)[] {
+
+  get columns(): Array<keyof ContentsProxy.IJupyterContentRow> {
     return this._columns;
   }
-  set columns(value: (keyof ContentsProxy.IJupyterContentRow)[]) {
+  set columns(value: Array<keyof ContentsProxy.IJupyterContentRow>) {
     if (ArrayExt.shallowEqual(this._columns, value)) {
       return;
     }
     this._columns = value;
-    let m = this.model!;
+    const m = this.model!;
     m.options = {
-      ...m.options, 
-      columnNames: this._columns, 
+      ...m.options,
+      columnNames: this._columns,
     };
     m.initColumns();
-    this.nodeInit();
-
+    void this.nodeInit();
   }
 
   get ready(): Promise<void> {
     return this._ready;
   }
-  
+
 
   get model(): ContentsModel<ContentsProxy.IJupyterContentRow> | undefined {
     return this.node.model;
@@ -263,7 +262,7 @@ export class TreeFinderWidget extends Widget {
   get selectionPathstrs() {
     return this.model?.selection.map(c => Path.fromarray(c.row.path));
   }
-  
+
   /**
    * Handle the DOM events for the tree view.
    *
@@ -274,20 +273,20 @@ export class TreeFinderWidget extends Widget {
    * called in response to events on the panel's DOM node. It should
    * not be called directly by user code.
    */
-   handleEvent(event: Event): void {
+  handleEvent(event: Event): void {
     switch (event.type) {
-      case 'keydown':
+      case "keydown":
         this.evtKeydown(event as KeyboardEvent);
         break;
-      case 'dragenter':
-      case 'dragover':
+      case "dragenter":
+      case "dragover":
         this.evtNativeDragOverEnter(event as DragEvent);
         break;
-      case 'dragleave':
-      case 'dragend':
+      case "dragleave":
+      case "dragend":
         this.evtNativeDragLeaveEnd(event as DragEvent);
         break;
-      case 'drop':
+      case "drop":
         this.evtNativeDrop(event as DragEvent);
         break;
       default:
@@ -295,19 +294,19 @@ export class TreeFinderWidget extends Widget {
     }
   }
 
-  
+
   /**
    * A message handler invoked on an `'after-attach'` message.
    */
-   protected onAfterAttach(msg: Message): void {
+  protected onAfterAttach(msg: Message): void {
     super.onAfterAttach(msg);
     const node = this.node;
-    node.addEventListener('keydown', this);
-    node.addEventListener('dragenter', this);
-    node.addEventListener('dragover', this);
-    node.addEventListener('dragleave', this);
-    node.addEventListener('dragend', this);
-    node.addEventListener('drop', this);
+    node.addEventListener("keydown", this);
+    node.addEventListener("dragenter", this);
+    node.addEventListener("dragover", this);
+    node.addEventListener("dragleave", this);
+    node.addEventListener("dragend", this);
+    node.addEventListener("drop", this);
   }
 
   /**
@@ -316,12 +315,12 @@ export class TreeFinderWidget extends Widget {
   protected onBeforeDetach(msg: Message): void {
     super.onBeforeDetach(msg);
     const node = this.node;
-    node.removeEventListener('keydown', this);
-    node.removeEventListener('dragover', this);
-    node.removeEventListener('dragover', this);
-    node.removeEventListener('dragleave', this);
-    node.removeEventListener('dragend', this);
-    node.removeEventListener('drop', this);
+    node.removeEventListener("keydown", this);
+    node.removeEventListener("dragover", this);
+    node.removeEventListener("dragover", this);
+    node.removeEventListener("dragleave", this);
+    node.removeEventListener("dragend", this);
+    node.removeEventListener("drop", this);
   }
 
   private _findEventRowElement(event: DragEvent, selector: string): HTMLElement | undefined {
@@ -334,73 +333,77 @@ export class TreeFinderWidget extends Widget {
     }
   }
 
+  selectNeighbour(diff: number, asRange: boolean) {
+    const model = this.model!;
+    let last = model.selectedLast;
+    // tree-finder has a bug where it doesn't update selectedLast in `selectRange`, hacky work-around for now:
+    const { range, pivot } = model.selectionModel as any as {range: string[], pivot: string};
+    // once bug is fixed, this conditional should never be true:
+    if (pivot && pivot === last?.pathstr && range && range.length >= 1) {
+      // get the part of range that is furthest away from pivot:
+      const paths = model.contents.map(c => c.pathstr);
+      const pivotIdx = paths.indexOf(pivot);
+      const rangeStartIdx = paths.indexOf(range[0]);
+      const rangeEndIdx = paths.indexOf(range[range.length - 1]);
+      if (pivotIdx < rangeStartIdx) {
+        last = model.contents[rangeEndIdx];
+      } else {
+        last = model.contents[rangeStartIdx];
+      }
+    }
+    let idx = last
+      ? model.contents.indexOf(last)
+      : diff < 0
+        ? model.contents.length - 1  // select last item
+        : 0;  // select first item
+    if (last) {
+      idx = idx + diff;
+    }
+    if (idx < 0 || idx >= model.contents.length) {
+      return;  // Do nothing if going past the edge
+    }
+    const next = model.contents[idx];
+    if (asRange) {
+      model.selectionModel.selectRange(next, model.contents);
+    } else {
+      model.selectionModel.select(next);
+    }
+    void TreeFinderSidebar.scrollIntoView(this, next.pathstr);
+  }
+
   protected evtKeydown(event: KeyboardEvent): void {
     switch (event.key) {
       case "ArrowDown":
-      case "ArrowUp": 
+      case "ArrowUp":
         event.stopPropagation();
         event.preventDefault();
-        const model = this.model!;
-        let last = model.selectedLast;
-        // tree-finder has a bug where it doesn't update selectedLast in `selectRange`, hacky work-around for now:
-        const {range, pivot} = model.selectionModel as any as {range: string[], pivot: string};
-        // once bug is fixed, this conditional should never be true:
-        if (pivot && pivot === last?.pathstr && range && range.length >= 1) {
-          // get the part of range that is furthest away from pivot:
-          const paths = model.contents.map(c => c.pathstr);
-          const pivotIdx = paths.indexOf(pivot);
-          const rangeStartIdx = paths.indexOf(range[0]);
-          const rangeEndIdx = paths.indexOf(range[range.length - 1]);
-          if (pivotIdx < rangeStartIdx) {
-            last = model.contents[rangeEndIdx];
-          } else {
-            last = model.contents[rangeStartIdx];
-          }
-        }
-        let idx = last
-          ? model.contents.indexOf(last)
-          : event.key === "ArrowUp"
-            ? model.contents.length - 1  // select last item
-            : 0;  // select first item
-        if (last) {
-          idx = event.key === "ArrowUp" ? idx - 1 : idx + 1;
-        }
-        if (idx < 0 || idx >= model.contents.length) {
-          return;  // Do nothing if going past the edge
-        }
-        const next = model.contents[idx];
-        if (event.shiftKey) {
-          model.selectionModel.selectRange(next, model.contents);
-        } else {
-          model.selectionModel.select(next);
-        }
-        void TreeFinderSidebar.scrollIntoView(this, next.pathstr);
+        this.selectNeighbour(event.key === "ArrowUp" ? -1 : 1, event.shiftKey);
         break;
     }
   }
 
   protected evtNativeDragOverEnter(event: DragEvent): void {
-    let row = this._findEventRowElement(event, 'tree-finder-grid tr');
+    const row = this._findEventRowElement(event, "tree-finder-grid tr");
     if (row) {
-      row.classList.add('jfs-mod-native-drop')
+      row.classList.add("jfs-mod-native-drop");
     }
     event.preventDefault();
   }
 
   protected evtNativeDragLeaveEnd(event: DragEvent) {
-    let row = this._findEventRowElement(event, '.jfs-mod-native-drop');
+    const row = this._findEventRowElement(event, ".jfs-mod-native-drop");
     if (row) {
-      row.classList.remove('jfs-mod-native-drop');
+      row.classList.remove("jfs-mod-native-drop");
     }
   }
-  
+
   /**
    * Handle the `drop` event for the widget.
    */
   protected evtNativeDrop(event: DragEvent): void {
-    const row = this.node.querySelector('.jfs-mod-native-drop');
+    const row = this.node.querySelector(".jfs-mod-native-drop");
     if (row) {
-      row.classList.remove('jfs-mod-native-drop');
+      row.classList.remove("jfs-mod-native-drop");
     }
     const files = event.dataTransfer?.files;
     if (!files || files.length === 0) {
@@ -411,15 +414,15 @@ export class TreeFinderWidget extends Widget {
       return;
     }
     for (let i = 0; i < length; i++) {
-      let entry = event.dataTransfer?.items[i].webkitGetAsEntry();
+      const entry = event.dataTransfer?.items[i].webkitGetAsEntry();
       if (entry?.isDirectory) {
-        console.log('currently not supporting drag + drop for folders');
+        console.log("currently not supporting drag + drop for folders");
         void showDialog({
-          title: this._trans.__('Error Uploading Folder'),
+          title: this._trans.__("Error Uploading Folder"),
           body: this._trans.__(
-            'Drag and Drop is currently not supported for folders'
+            "Drag and Drop is currently not supported for folders"
           ),
-          buttons: [Dialog.cancelButton({ label: this._trans.__('Close') })]
+          buttons: [Dialog.cancelButton({ label: this._trans.__("Close") })],
         });
       }
     }
@@ -427,8 +430,8 @@ export class TreeFinderWidget extends Widget {
     // Translate row element to contents row
     let target: Content<ContentsProxy.IJupyterContentRow> = this.model!.root;
     if (row) {
-      const grid = this.node.querySelector('tree-finder-grid') as TreeFinderGridElement<ContentsProxy.IJupyterContentRow>;
-      const metadata = grid.getMeta(row?.querySelector('th')!);
+      const grid = this.node.querySelector("tree-finder-grid") as TreeFinderGridElement<ContentsProxy.IJupyterContentRow>;
+      const metadata = grid.getMeta(row.querySelector("th")!);
       if (metadata.y) {
         target = this.model!.contents[metadata.y];
       }
@@ -440,7 +443,7 @@ export class TreeFinderWidget extends Widget {
 
   contentsProxy: ContentsProxy;
   rootPath: string;
-  private _columns: (keyof ContentsProxy.IJupyterContentRow)[];
+  private _columns: Array<keyof ContentsProxy.IJupyterContentRow>;
   settings: ISettingRegistry.ISettings | undefined;
   uploader: Uploader | undefined;
   readonly node: TreeFinderPanelElement<ContentsProxy.IJupyterContentRow>;
@@ -455,9 +458,9 @@ export class TreeFinderWidget extends Widget {
 export namespace TreeFinderWidget {
   export interface IOptions {
     app: JupyterFrontEnd;
-    columns: (keyof ContentsProxy.IJupyterContentRow)[];
+    columns: Array<keyof ContentsProxy.IJupyterContentRow>;
     rootPath: string;
-    
+
     translator?: ITranslator;
   }
 }
@@ -482,7 +485,7 @@ export class TreeFinderSidebar extends Widget {
     this.toolbar = new Toolbar();
     this.toolbar.addClass("jp-tree-finder-toolbar");
 
-    this.treefinder = new TreeFinderWidget({app, rootPath, columns });
+    this.treefinder = new TreeFinderWidget({ app, rootPath, columns });
 
     this.layout = new PanelLayout();
     this.layout.addWidget(this.toolbar);
@@ -490,7 +493,7 @@ export class TreeFinderSidebar extends Widget {
   }
 
   restore() { // restore expansion prior to rebuild
-    this.treefinder.ready.then(() => this.treefinder.refresh());
+    void this.treefinder.ready.then(() => this.treefinder.refresh());
     // const array: Array<Promise<any>> = [];
     // Object.keys(this.controller).forEach(key => {
     //   if (this.controller[key].open && (key !== "")) {
@@ -573,7 +576,7 @@ export namespace TreeFinderSidebar {
 
   export interface IOptions {
     app: JupyterFrontEnd;
-    columns: (keyof ContentsProxy.IJupyterContentRow)[];
+    columns: Array<keyof ContentsProxy.IJupyterContentRow>;
     url: string;
 
     rootPath?: string;
@@ -625,18 +628,19 @@ export namespace TreeFinderSidebar {
     const new_file_button = new ToolbarButton({
       icon: newFolderIcon,
       onClick: () => {
-        app.commands.execute((commandIDs.create_folder));
+        void app.commands.execute((commandIDs.create_folder));
       },
       tooltip: "New Folder",
     });
-    const uploader_button = new UploadButton({uploader: widget.treefinder.ready.then(() => widget.treefinder.uploader!)});
-    widget.treefinder.ready.then(() => {
-      widget.treefinder.uploader!.uploadCompleted.connect(async (sender, args) => {
+    const uploader_button = new UploadButton({ uploader: widget.treefinder.ready.then(() => widget.treefinder.uploader!) });
+    void widget.treefinder.ready.then(() => {
+      widget.treefinder.uploader!.uploadCompleted.connect((sender, args) => {
         // Do not select/scroll into view: Upload might be slow, so user might have moved on!
         // We do however want to expand the folder
-        await revealPath(widget.treefinder.model!, args.path);
-        await widget.treefinder.model!.flatten();
-    });
+        void revealPath(widget.treefinder.model!, args.path).then(() =>
+          widget.treefinder.model!.flatten()
+        );
+      });
     });
     const refresh_button = new ToolbarButton({
       icon: refreshIcon,
@@ -670,7 +674,7 @@ export namespace TreeFinderSidebar {
 
   export function doRename(widget: TreeFinderSidebar, oldContent: Content<ContentsProxy.IJupyterContentRow>): Promise<ContentsProxy.IJupyterContentRow> {
     const textNode = document.querySelector(".tf-mod-select .rt-tree-container .rt-group-name")!.firstChild as HTMLElement;
-    const original = textNode!.textContent!.replace(/(.*)\/$/, "$1");
+    const original = textNode.textContent!.replace(/(.*)\/$/, "$1");
     const editNode = document.createElement("input");
     editNode.value = original;
     return promptRename(textNode, editNode, original).then(
@@ -686,7 +690,7 @@ export namespace TreeFinderSidebar {
           );
           return oldContent.row;
         }
-        let oldPath = oldContent.getPathAtDepth(1).join("/");
+        const oldPath = oldContent.getPathAtDepth(1).join("/");
         const newPath = oldPath.slice(0, -1 * original.length) + newName;
         const suffix = textNode.textContent!.endsWith("/") ? "/" : "";
         const promise = widget.treefinder.contentsProxy.rename(oldPath + suffix, newPath + suffix);
@@ -710,7 +714,7 @@ export namespace TreeFinderSidebar {
 
   /**
    * If a path entry is not in view, scroll it into view
-   * 
+   *
    * @param treefinder The view
    * @param pathstr The entry to show
    */
@@ -718,7 +722,7 @@ export namespace TreeFinderSidebar {
     // tree-finder uses rxjs bits that don't allow you to await, so to ensure sync draw:
     const model = treefinder.model!;
     await model.flatten();
-    const grid = treefinder.node.querySelector('tree-finder-grid') as TreeFinderGridElement<ContentsProxy.IJupyterContentRow>;
+    const grid = treefinder.node.querySelector("tree-finder-grid") as TreeFinderGridElement<ContentsProxy.IJupyterContentRow>;
     await grid.draw();
     // Check if new row (selection) in view (if outside virtual window, it will fail):
     if (!document.querySelector(".tf-mod-select .rt-tree-container .rt-group-name")) {
@@ -726,7 +730,7 @@ export namespace TreeFinderSidebar {
       const rowIdx = model.contents.findIndex(s => s.pathstr === pathstr);
       if (rowIdx !== -1) {
         // TODO: Should we perform a minimum scroll, or do we always want entry as close to the top of the view as possible?
-        await grid.scrollToCell(0, rowIdx, 1, model.contents.length);
+        grid.scrollToCell(0, rowIdx, 1, model.contents.length);
       }
     }
   }

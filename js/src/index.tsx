@@ -11,8 +11,8 @@ import { ILayoutRestorer, IRouter, JupyterFrontEnd, JupyterFrontEndPlugin } from
 import { IThemeManager, IWindowResolver } from "@jupyterlab/apputils";
 import { IDocumentManager } from "@jupyterlab/docmanager";
 import { ISettingRegistry } from "@jupyterlab/settingregistry";
-import { IStatusBar } from '@jupyterlab/statusbar';
-import { ITranslator } from '@jupyterlab/translation';
+import { IStatusBar } from "@jupyterlab/statusbar";
+import { ITranslator } from "@jupyterlab/translation";
 import { folderIcon, fileIcon } from "@jupyterlab/ui-components";
 import { IDisposable } from "@lumino/disposable";
 import * as React from "react";
@@ -65,7 +65,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderTracker> = {
       console.warn(`Failed to load settings for the jupyter-fs extension.\n${error}`);
     }
 
-    let columns = settings?.composite.display_columns as (keyof ContentsProxy.IJupyterContentRow)[] ?? ['size'];
+    let columns = settings?.composite.display_columns as Array<keyof ContentsProxy.IJupyterContentRow> ?? ["size"];
 
     const sharedSidebarProps: Omit<TreeFinderSidebar.ISidebarProps, "url"> = {
       app,
@@ -74,16 +74,16 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderTracker> = {
       resolver,
       restorer,
       router,
-      columns, 
+      columns,
     };
 
-    async function refreshWidgets({ resources, options }: {resources: IFSResource[]; options: IFSOptions}) {
+    function refreshWidgets({ resources, options }: {resources: IFSResource[]; options: IFSOptions}) {
       if (options.verbose) {
         // eslint-disable-next-line no-console
         console.info(`jupyter-fs frontend received resources:\n${JSON.stringify(resources)}`);
       }
-      
-      columns = settings?.composite.display_columns as (keyof ContentsProxy.IJupyterContentRow)[] ?? ['size'];
+
+      columns = settings?.composite.display_columns as Array<keyof ContentsProxy.IJupyterContentRow> ?? ["size"];
       sharedSidebarProps.columns = columns;
 
       // create the fs resource frontends (ie FileTree instances)
@@ -92,7 +92,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderTracker> = {
         const id = idFromResource(r);
         let w = widgetMap[id];
         if (!w || w.isDisposed) {
-          const sidebarProps = {...sharedSidebarProps, url: r.url};
+          const sidebarProps = { ...sharedSidebarProps, url: r.url };
           w = TreeFinderSidebar.sidebarFromResource(r, sidebarProps);
           widgetMap[id] = w;
         } else {
@@ -105,7 +105,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderTracker> = {
         TreeFinderSidebar.clipboard,
         resources,
         settings
-      )
+      );
     }
 
     async function refresh() {
@@ -118,8 +118,8 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderTracker> = {
           commands.dispose();
           commands = undefined;
         }
-        let keys = resources.map(idFromResource);
-        for (let key of Object.keys(widgetMap)) {
+        const keys = resources.map(idFromResource);
+        for (const key of Object.keys(widgetMap)) {
           if (all || keys.indexOf(key) === -1) {
             widgetMap[key].dispose();
             delete widgetMap[key];
@@ -154,7 +154,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderTracker> = {
               options,
             });
             cleanup();
-            await refreshWidgets({ resources, options });
+            refreshWidgets({ resources, options });
           };
 
           ReactDOM.render(
@@ -169,7 +169,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderTracker> = {
         } else {
           // otherwise, just go ahead and refresh the widgets
           cleanup();
-          await refreshWidgets({ options, resources });
+          refreshWidgets({ options, resources });
         }
       } catch {
         cleanup(true);
@@ -181,9 +181,9 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderTracker> = {
 
     if (settings) {
       // rerun setup whenever relevant settings change
-      settings.changed.connect(async () => {
-        console.log('Settings has changed.. refreshing!');
-        await refresh();
+      settings.changed.connect(() => {
+        console.log("Settings has changed.. refreshing!");
+        void refresh();
       });
     }
 
@@ -202,16 +202,16 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderTracker> = {
       `;
     }
 
-    themeManager.themeChanged.connect(async () => {
+    themeManager.themeChanged.connect(() => {
       // Update SVG icon fills (since we put them in pseudo-elements we cannot style with CSS)
-      const primary = getComputedStyle(document.documentElement).getPropertyValue('--jp-ui-font-color1');
+      const primary = getComputedStyle(document.documentElement).getPropertyValue("--jp-ui-font-color1");
       style.textContent = iconStyleContent(
         folderIcon.svgstr.replace(/fill="([^"]{0,7})"/, `fill="${primary}"`),
         fileIcon.svgstr.replace(/fill="([^"]{0,7})"/, `fill="${primary}"`)
       );
 
       // Refresh widgets in case font/border sizes etc have changed
-      await Promise.all(Object.keys(widgetMap).map(
+      void Promise.all(Object.keys(widgetMap).map(
         key => widgetMap[key].treefinder.nodeInit()
       ));
     });
@@ -219,12 +219,12 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderTracker> = {
     style.textContent = iconStyleContent(folderIcon.svgstr, fileIcon.svgstr);
 
     document.head.appendChild(style);
-    return { tracker: TreeFinderSidebar.tracker }
-  }
-}
+    return { tracker: TreeFinderSidebar.tracker };
+  },
+};
 
 
-const PROGRESS_ID = "jupyter-fs:progress"
+const PROGRESS_ID = "jupyter-fs:progress";
 export const progressStatus: JupyterFrontEndPlugin<void> = {
   autoStart: true,
   id: PROGRESS_ID,
@@ -244,7 +244,7 @@ export const progressStatus: JupyterFrontEndPlugin<void> = {
     }
     const item = new FileUploadStatus({
       tracker: tracker.tracker,
-      translator
+      translator,
     });
     statusbar.registerStatusItem(
       PROGRESS_ID,
@@ -255,8 +255,8 @@ export const progressStatus: JupyterFrontEndPlugin<void> = {
         activeStateChanged: item.model.stateChanged,
       }
     );
-  }
-}
+  },
+};
 
 export default [
   browser,

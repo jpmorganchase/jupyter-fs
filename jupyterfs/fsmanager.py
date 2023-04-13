@@ -459,7 +459,12 @@ class FSManager(FileContentsManager):
 
         chunk = model.get("chunk", None)
         if chunk and model["type"] != "file":
-            raise web.HTTPError(400, 'File type "{}" is not supported for chunked transfer'.format(model["type"]))
+            raise web.HTTPError(
+                400,
+                'File type "{}" is not supported for chunked transfer'.format(
+                    model["type"]
+                ),
+            )
 
         self.log.debug("Saving %s", path)
         if chunk is None or chunk == 1:

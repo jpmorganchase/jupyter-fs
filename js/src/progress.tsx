@@ -38,18 +38,18 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-import { VDomModel, VDomRenderer, WidgetTracker } from '@jupyterlab/apputils';
-import { IChangedArgs } from '@jupyterlab/coreutils';
-import { GroupItem, ProgressBar, TextItem } from '@jupyterlab/statusbar';
+import { VDomModel, VDomRenderer, WidgetTracker } from "@jupyterlab/apputils";
+import { IChangedArgs } from "@jupyterlab/coreutils";
+import { GroupItem, ProgressBar, TextItem } from "@jupyterlab/statusbar";
 import {
   ITranslator,
   nullTranslator,
-} from '@jupyterlab/translation';
-import { ArrayExt } from '@lumino/algorithm';
-import React from 'react';
+} from "@jupyterlab/translation";
+import { ArrayExt } from "@lumino/algorithm";
+import React from "react";
 
-import type { TreeFinderSidebar } from './treefinder';
-import type { IUploadProgress, Uploader } from './upload';
+import type { TreeFinderSidebar } from "./treefinder";
+import type { IUploadProgress, Uploader } from "./upload";
 
 /**
  * Half-spacing between items in the overall status item.
@@ -67,8 +67,8 @@ function FileUploadComponent(
   props: FileUploadComponent.IProps
 ): React.ReactElement<FileUploadComponent.IProps> {
   const translator = props.translator || nullTranslator;
-  const trans = translator.load('jupyterlab');
-  const items = [<TextItem source={trans.__('Uploading…')} />];
+  const trans = translator.load("jupyterlab");
+  const items = [<TextItem source={trans.__("Uploading…")} />];
   items.push(...props.items.map(
     i => i.complete ?
       <TextItem source={trans.__("Complete!")} /> :
@@ -104,7 +104,7 @@ namespace FileUploadComponent {
 /**
  * The time for which to show the "Complete!" message after uploading.
  */
-const UPLOAD_COMPLETE_MESSAGE_MILLIS: number = 2000;
+const UPLOAD_COMPLETE_MESSAGE_MILLIS = 2000;
 
 /**
  * Status bar item to display file upload progress.
@@ -126,11 +126,11 @@ export class FileUploadStatus extends VDomRenderer<FileUploadStatus.Model> {
    * Render the FileUpload status.
    */
   render() {
-    const items = this.model!.items;
+    const items = this.model.items;
     if (items.length > 0) {
       return (
         <FileUploadComponent
-          items={this.model!.items}
+          items={this.model.items}
           translator={this.translator}
         />
       );
@@ -149,9 +149,9 @@ export class FileUploadStatus extends VDomRenderer<FileUploadStatus.Model> {
     sidebar: TreeFinderSidebar | null
   ) => {
     if (sidebar === null) {
-      this.model!.sidebar = null;
+      this.model.sidebar = null;
     } else {
-      this.model!.sidebar = sidebar;
+      this.model.sidebar = sidebar;
     }
   };
 
@@ -211,13 +211,13 @@ export namespace FileUploadStatus {
       uploader: Uploader,
       uploads: IChangedArgs<IUploadProgress>
     ) => {
-      if (uploads.name === 'start') {
+      if (uploads.name === "start") {
         this._items.push({
           path: uploads.newValue.path,
           progress: uploads.newValue.progress * 100,
-          complete: false
+          complete: false,
         });
-      } else if (uploads.name === 'update') {
+      } else if (uploads.name === "update") {
         const idx = ArrayExt.findFirstIndex(
           this._items,
           val => val.path === uploads.oldValue.path
@@ -225,7 +225,7 @@ export namespace FileUploadStatus {
         if (idx !== -1) {
           this._items[idx].progress = uploads.newValue.progress * 100;
         }
-      } else if (uploads.name === 'finish') {
+      } else if (uploads.name === "finish") {
         const finishedItem = ArrayExt.findFirstValue(
           this._items,
           val => val.path === uploads.oldValue.path
@@ -238,7 +238,7 @@ export namespace FileUploadStatus {
             this.stateChanged.emit(void 0);
           }, UPLOAD_COMPLETE_MESSAGE_MILLIS);
         }
-      } else if (uploads.name === 'failure') {
+      } else if (uploads.name === "failure") {
         ArrayExt.removeFirstWhere(
           this._items,
           val => val.path === uploads.newValue.path
@@ -248,7 +248,7 @@ export namespace FileUploadStatus {
       this.stateChanged.emit(void 0);
     };
 
-    private _items: Array<IFileUploadItem> = [];
+    private _items: IFileUploadItem[] = [];
     private _sidebar: TreeFinderSidebar | null = null;
   }
 

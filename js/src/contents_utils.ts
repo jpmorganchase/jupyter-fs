@@ -15,36 +15,36 @@ import { Content, ContentsModel, IContentRow } from "tree-finder";
 
 /**
  * Walk the path from root, yielding all rows along the way
- * 
+ *
  * @param path The path to walk to
  * @param root The root to start from
  */
 async function* walkPath<T extends IContentRow>(path: string[], root: Content<T>) {
-    // Walk the path from the root
-    const pathstr = path.join('/');
-    if (!pathstr.startsWith(root.pathstr)) {
-      throw new Error(`Path ${pathstr} not in ${root.pathstr}`);
+  // Walk the path from the root
+  const pathstr = path.join("/");
+  if (!pathstr.startsWith(root.pathstr)) {
+    throw new Error(`Path ${pathstr} not in ${root.pathstr}`);
+  }
+  let node = root;
+  yield node;
+  for (let i=root.row.path.length; i<path.length; ++i) {
+    const children = await node.getChildren();
+    const child = children?.find(c => c.name === path[i]);
+    if (!child) {
+      throw new Error(`Path ${pathstr} not in ${node.pathstr}`);
     }
-    let node = root;
+    node = child;
     yield node;
-    for (let i=root.row.path.length; i<path.length; ++i) {
-      const children = await node.getChildren();
-      const child = children?.find(c => c.name === path[i]);
-      if (!child) {
-        throw new Error(`Path ${pathstr} not in ${node.pathstr}`);
-      }
-      node = child;
-      yield node;
-    }
+  }
 }
 
 
 /**
  * Expand the contents nodes until path is exposed.
- * 
+ *
  * This means that even if the final element of the path is a directory, its expanded state will
  * not change.
- * 
+ *
  * @param contents The contents model that the path is in
  * @param path The path to expose, relative to the root (i.e. first entry matches path of root)
  */
@@ -61,10 +61,10 @@ export async function revealPath<T extends IContentRow>(contents: ContentsModel<
 
 /**
  * Expand the contents nodes until path is exposed, and select the node of that path.
- * 
+ *
  * This means that even if the final element of the path is a directory, its expanded state will
  * not change.
- * 
+ *
  * @param contents The contents model that the path is in
  * @param path The path to expose, relative to the root (i.e. first entry matches path of root)
  * @param add Whether or not to add the path to the current selection, or to replace the current selection @see TreeFinder.SelectionModel.select
@@ -77,9 +77,9 @@ export async function revealAndSelectPath<T extends IContentRow>(contents: Conte
 
 /**
  * Get the parent contents row for the given contents row.
- * 
+ *
  * Note: This will cause contents API calls if any dir has been invalidated between root and the parent.
- * 
+ *
  * @param child The content node's whose parent we are looking for
  * @param root The root node of the path
  */
@@ -87,6 +87,7 @@ export async function getContentParent<T extends IContentRow>(child: Content<T>,
   // Walk from the root to the parent
   let node: Content<T>;
   for await (node of walkPath(child.row.path.slice(0, -1), root)) {
+    // no-op
   }
   return node!;
 }
@@ -94,11 +95,11 @@ export async function getContentParent<T extends IContentRow>(child: Content<T>,
 
 /**
  * Get targets to use for a call to tree-finder's refresh
- * 
+ *
  * @param invalidateTargets The targets that need to be refreshed
  * @param root The root node of the contents tree
  * @param targetParents Whether the parents are the ones that should be invalidated
- * @returns 
+ * @returns
  */
 export function getRefreshTargets<T extends IContentRow>(
   invalidateTargets: T[],
@@ -116,7 +117,7 @@ export function getRefreshTargets<T extends IContentRow>(
     // tree-finder doesn't correctly refresh parents of folders, so we work around it for now
     // (in more detail, tree-finder will only refresh the folder if the entry does not have a
     // getChildren entry, go figure...)
-    return invalidateTargets.map(t => { return {...t, getChildren: undefined}})
+    return invalidateTargets.map(t => ({ ...t, getChildren: undefined }));
   }
   return invalidateTargets;
 }
