@@ -42,14 +42,14 @@ export const commandNames = [
   "create_folder",
   "copyFullPath",
   "copyRelativePath",
-  "toggleColumn-path",
+  "toggleColumnPath",
   "toggleColumn",
-];
+] as const;
 
 
-export const commandIDs: CommandIDs = Object.fromEntries(commandNames.map(
+export const commandIDs = Object.fromEntries(commandNames.map(
   name => [name, `treefinder:${name}`]
-));
+)) as CommandIDs;
 export type CommandIDs = {[k in typeof commandNames[number]]: string};
 
 
@@ -103,7 +103,7 @@ export function createCommands(
   const submenu = new Menu({ commands: app.commands });
   submenu.title.label = "Show/Hide Columns";
   submenu.title.icon = filterListIcon;
-  submenu.addItem({ command: commandIDs.togglePath });
+  submenu.addItem({ command: commandIDs.toggleColumnPath });
   for (const column of COLUMN_NAMES) {
     submenu.addItem({ command: toggleColumnCommandId(column) });
   }
@@ -123,6 +123,8 @@ export function createCommands(
   for (const key of COLUMN_NAMES) {
     toggleState[key] = colsToDisplay.includes(key);
   }
+
+  let contextMenuRank = 1;
 
   // globally accessible jupyter commands[
   return [
@@ -240,10 +242,8 @@ export function createCommands(
       isEnabled: () => !!tracker.currentWidget,
     }),
 
-    app.commands.addCommand(commandIDs.togglePath, {
-      execute: args => {
-        void 0;
-      },
+    app.commands.addCommand(commandIDs.toggleColumnPath, {
+      execute: args => { /* no-op */ },
       label: "path",
       isEnabled: () => false,
       isToggled: () => true,
@@ -262,55 +262,55 @@ export function createCommands(
     app.contextMenu.addItem({
       command: commandIDs.open,
       selector,
-      rank: 1,
+      rank: contextMenuRank++,
     }),
 
     app.contextMenu.addItem({
       command: commandIDs.copy,
       selector,
-      rank: 2,
+      rank: contextMenuRank++,
     }),
     app.contextMenu.addItem({
       command: commandIDs.cut,
       selector,
-      rank: 3,
+      rank: contextMenuRank++,
     }),
     app.contextMenu.addItem({
       command: commandIDs.paste,
       selector,
-      rank: 4,
+      rank: contextMenuRank++,
     }),
     app.contextMenu.addItem({
       command: commandIDs.delete,
       selector,
-      rank: 5,
+      rank: contextMenuRank++,
     }),
     app.contextMenu.addItem({
       command: commandIDs.rename,
       selector,
-      rank: 6,
+      rank: contextMenuRank++,
     }),
     app.contextMenu.addItem({
       command: commandIDs.copyFullPath,
       selector,
-      rank: 7,
+      rank: contextMenuRank++,
     }),
     app.contextMenu.addItem({
       command: commandIDs.copyRelativePath,
       selector,
-      rank: 8,
+      rank: contextMenuRank++,
     }),
     app.contextMenu.addItem({
       type: "submenu",
       submenu,
       selector,
-      rank: 9,
+      rank: contextMenuRank++,
     }),
     app.contextMenu.addItem({
       args: { selection: true },
       command: commandIDs.refresh,
       selector,
-      rank: 10,
+      rank: contextMenuRank++,
     }),
   ].reduce((set: DisposableSet, d) => {
     set.add(d); return set;
