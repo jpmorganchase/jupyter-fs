@@ -229,17 +229,19 @@ export const progressStatus: JupyterFrontEndPlugin<void> = {
   autoStart: true,
   id: PROGRESS_ID,
   requires: [
-    ITreeFinderTracker,
     ITranslator,
   ],
-  optional: [IStatusBar],
+  optional: [
+    ITreeFinderTracker,
+    IStatusBar,
+  ],
   async activate(
     app: JupyterFrontEnd,
-    tracker: ITreeFinderTracker,
     translator: ITranslator,
+    tracker: ITreeFinderTracker | null,
     statusbar: IStatusBar | null,
   ) {
-    if (!statusbar) {
+    if (!statusbar || !tracker) {
       return;
     }
     const item = new FileUploadStatus({
