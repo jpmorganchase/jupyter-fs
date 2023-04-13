@@ -57,8 +57,8 @@ class MetaManager(ContentsManager):
     def initResource(self, *resources, options={}):
         """initialize one or more (name, url) tuple representing a PyFilesystem resource specification"""
         # handle options
-        cache = "cache" not in options or options["cache"]
-        verbose = "verbose" in options and options["verbose"]
+        cache = options.get("cache", True)
+        verbose = options.get("verbose", False)
 
         self.resources = []
         managers = dict((("", self._default_root_manager),))
