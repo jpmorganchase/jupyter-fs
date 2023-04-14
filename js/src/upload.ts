@@ -39,21 +39,21 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 import { showErrorMessage, ToolbarButton  } from "@jupyterlab/apputils";
+import { IChangedArgs } from "@jupyterlab/coreutils";
 import { shouldOverwrite } from "@jupyterlab/docmanager";
 import { Contents } from "@jupyterlab/services";
-import { ArrayExt } from "@lumino/algorithm";
-import { ISignal, Signal } from "@lumino/signaling";
 import {
   ITranslator,
   nullTranslator,
   TranslationBundle,
 } from "@jupyterlab/translation";
 import { fileUploadIcon } from "@jupyterlab/ui-components";
+import { ArrayExt } from "@lumino/algorithm";
+import { IDisposable } from "@lumino/disposable";
+import { ISignal, Signal } from "@lumino/signaling";
+import { Content, ContentsModel } from "tree-finder";
 
 import type { ContentsProxy } from "./treefinder";
-import { IChangedArgs } from "@jupyterlab/coreutils";
-import { IDisposable } from "@lumino/disposable";
-import { Content, ContentsModel } from "tree-finder";
 import { getContentParent } from "./contents_utils";
 
 
