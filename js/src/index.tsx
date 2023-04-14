@@ -23,12 +23,12 @@ import { createCommands, idFromResource } from "./commands";
 import { FSComm, IFSOptions, IFSResource } from "./filesystem";
 import { FileUploadStatus } from "./progress";
 import { ContentsProxy, TreeFinderSidebar } from "./treefinder";
-import { ITreeFinderTracker } from "./tokens";
+import { ITreeFinderMain } from "./tokens";
 
 // tslint:disable: variable-name
 
 const BROWSER_ID = "jupyter-fs:plugin";
-export const browser: JupyterFrontEndPlugin<ITreeFinderTracker> = {
+export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
   autoStart: true,
   id: BROWSER_ID,
   requires: [
@@ -40,7 +40,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderTracker> = {
     ISettingRegistry,
     IThemeManager,
   ],
-  provides: ITreeFinderTracker,
+  provides: ITreeFinderMain,
 
   async activate(
     app: JupyterFrontEnd,
@@ -51,7 +51,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderTracker> = {
     router: IRouter,
     settingRegistry: ISettingRegistry,
     themeManager: IThemeManager,
-  ): Promise<ITreeFinderTracker> {
+  ): Promise<ITreeFinderMain> {
     const comm = new FSComm();
     const widgetMap : {[key: string]: TreeFinderSidebar} = {};
     let commands: IDisposable | undefined;
@@ -232,20 +232,20 @@ export const progressStatus: JupyterFrontEndPlugin<void> = {
     ITranslator,
   ],
   optional: [
-    ITreeFinderTracker,
+    ITreeFinderMain,
     IStatusBar,
   ],
   async activate(
     app: JupyterFrontEnd,
     translator: ITranslator,
-    tracker: ITreeFinderTracker | null,
+    main: ITreeFinderMain | null,
     statusbar: IStatusBar | null,
   ) {
-    if (!statusbar || !tracker) {
+    if (!statusbar || !main) {
       return;
     }
     const item = new FileUploadStatus({
-      tracker: tracker.tracker,
+      tracker: main.tracker,
       translator,
     });
     statusbar.registerStatusItem(
