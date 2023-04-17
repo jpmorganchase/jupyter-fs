@@ -160,7 +160,7 @@ def path_old_new(method_name, returns_model):
 
 # handlers for drive specifications in path strings, as in "fooDrive:bar/baz.buzz"
 def getDrive(path):
-    first, *_ = path.strip("/").split("/")
+    first = path.strip("/").split("/", 1)[0]
     return first.split(":", 1)[0]
 
 

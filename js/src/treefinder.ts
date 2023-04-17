@@ -484,7 +484,6 @@ export class TreeFinderSidebar extends Widget {
     this.url = url;
     this.title.icon = fileTreeIcon;
     this.title.caption = caption;
-    this.title.closable = true;
     this.addClass("jp-tree-finder-sidebar");
 
     this.toolbar = new Toolbar();
