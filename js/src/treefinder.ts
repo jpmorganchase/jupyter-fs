@@ -41,10 +41,13 @@ import { JupyterClipboard } from "./clipboard";
 import { commandIDs, idFromResource } from "./commands";
 import { ContentsProxy } from "./contents_proxy";
 import { revealPath } from "./contents_utils";
+import { DragDropWidget, TABLE_HEADER_MIME } from "./drag";
 import { IFSResource } from "./filesystem";
 import { fileTreeIcon } from "./icons";
 import { promptRename } from "./utils";
 import { Uploader, UploadButton } from "./upload";
+import { MimeData } from "@lumino/coreutils";
+import { DropAction } from "@lumino/dragdrop";
 import { ContentsManager } from "@jupyterlab/services";
 
 
@@ -80,20 +83,23 @@ export class TreeFinderTracker extends WidgetTracker<TreeFinderSidebar> {
   private _finders = new Map<string, TreeFinderSidebar>();
 }
 
-export class TreeFinderWidget extends Widget {
+export class TreeFinderWidget extends DragDropWidget {
   constructor({
     app,
     columns,
     rootPath = "",
     translator,
+    settings
   }: TreeFinderWidget.IOptions) {
     const { commands, serviceManager: { contents } } = app;
 
     const node = document.createElement<ContentsProxy.IJupyterContentRow>("tree-finder-panel");
-    super({ node });
+    const acceptedDropMimeTypes = [TABLE_HEADER_MIME];
+    super({ node, acceptedDropMimeTypes });
     this.addClass("jp-tree-finder");
 
     this.contentsProxy = new ContentsProxy(contents as ContentsManager, rootPath);
+    this.settings = settings;
 
     this.translator = translator || nullTranslator;
     this._trans = this.translator.load("jupyterlab");
@@ -104,6 +110,50 @@ export class TreeFinderWidget extends Widget {
     // CAREFUL: tree-finder currently REQUIRES the node to be added to the DOM before init can be called!
     this._ready = this.nodeInit();
     this._ready.catch(reason => showErrorMessage("Failed to init browser", reason as string));
+  }
+
+  protected move(mimeData: MimeData, target: HTMLElement): DropAction {
+    const source = mimeData.getData(TABLE_HEADER_MIME) as (keyof ContentsProxy.IJupyterContentRow);
+    const dest = target.innerText as (keyof ContentsProxy.IJupyterContentRow);
+    void this._reorderColumns(source, dest)
+    void this.nodeInit();
+    return "move";
+  }
+
+  protected addMimeData(handle: HTMLElement, mimeData: MimeData): void {
+    const columnName = handle.innerText;
+    mimeData.setData(TABLE_HEADER_MIME, columnName);
+  }
+
+  protected getDragImage(handle: HTMLElement): HTMLElement | null {
+    let target = this.findDragTarget(handle);
+    let img = null;
+    if (target) {
+      img = target.cloneNode(true) as HTMLElement;
+      img.classList.add('jp-thead-drag-image');
+    }
+    return img;
+  }
+
+  /**
+   * Reorders the columns according to given inputs and saves to user settings
+   * If `source` is dragged from left to right, it will be inserted to the right side of `dest`
+   * Else if `source` is dragged from right to left, it will be inserted to the left side of `dest`
+   */
+  private async _reorderColumns(source: (keyof ContentsProxy.IJupyterContentRow), dest: (keyof ContentsProxy.IJupyterContentRow)) {
+    const sIndex = this._columns.indexOf(source);
+    const dIndex = this._columns.indexOf(dest);
+
+    if (sIndex < dIndex) {
+      this._columns.splice(dIndex + 1, 0, source);
+      this._columns.splice(sIndex, 1);
+    } 
+    else if (sIndex > dIndex) {
+      this._columns.splice(sIndex, 1);
+      this._columns.splice(dIndex, 0, source);
+    }
+
+    await this.settings?.set("display_columns", this._columns);
   }
 
   draw() {
@@ -145,6 +195,15 @@ export class TreeFinderWidget extends Widget {
         // Fix focus and tabbing
         let lastSelectIdx = this.model?.selectedLast ? this.model?.contents.indexOf(this.model.selectedLast) : -1;
         for (const rowHeader of grid.querySelectorAll<HTMLTableCellElement>("tr > th")) {
+          const tableHeader = rowHeader.querySelector<HTMLSpanElement>("span.tf-header-name");
+
+          if (tableHeader) {
+            // If tableheader is path, do not make it draggable
+            if (tableHeader.innerText !== 'path') {
+              tableHeader.classList.add(this.dragHandleClass);
+            }
+          }
+
           const nameElement = rowHeader.querySelector<HTMLSpanElement>("span.rt-group-name");
           // Ensure we can tab to all items
           nameElement?.setAttribute("tabindex", "0");
@@ -224,6 +283,7 @@ export class TreeFinderWidget extends Widget {
         this.evtKeydown(event as KeyboardEvent);
         break;
       case "dragenter":
+        this.evtNativeDragOverEnter(event as DragEvent);
       case "dragover":
         this.evtNativeDragOverEnter(event as DragEvent);
         break;
@@ -235,6 +295,7 @@ export class TreeFinderWidget extends Widget {
         this.evtNativeDrop(event as DragEvent);
         break;
       default:
+        super.handleEvent(event);
         break;
     }
   }
@@ -406,6 +467,7 @@ export namespace TreeFinderWidget {
     rootPath: string;
 
     translator?: ITranslator;
+    settings?: ISettingRegistry.ISettings;
   }
 }
 
@@ -417,6 +479,7 @@ export class TreeFinderSidebar extends Widget {
     rootPath = "",
     caption = "TreeFinder",
     id = "jupyterlab-tree-finder",
+    settings
   }: TreeFinderSidebar.IOptions) {
     super();
     this.id = id;
@@ -429,7 +492,7 @@ export class TreeFinderSidebar extends Widget {
     this.toolbar = new Toolbar();
     this.toolbar.addClass("jp-tree-finder-toolbar");
 
-    this.treefinder = new TreeFinderWidget({ app, rootPath, columns });
+    this.treefinder = new TreeFinderWidget({ app, rootPath, columns, settings });
 
     this.layout = new PanelLayout();
     (this.layout as PanelLayout).addWidget(this.toolbar);
@@ -524,6 +587,7 @@ export namespace TreeFinderSidebar {
     caption?: string;
     id?: string;
     translator?: ITranslator;
+    settings?: ISettingRegistry.ISettings;
   }
 
   export interface ISidebarProps extends IOptions {
@@ -534,6 +598,7 @@ export namespace TreeFinderSidebar {
     router: IRouter;
 
     side?: string;
+    settings?: ISettingRegistry.ISettings;
   }
 
   export function sidebarFromResource(resource: IFSResource, props: TreeFinderSidebar.ISidebarProps): TreeFinderSidebar {
@@ -555,13 +620,14 @@ export namespace TreeFinderSidebar {
     restorer,
     url,
     columns,
+    settings,
 
     rootPath = "",
     caption = "TreeFinder",
     id = "jupyterlab-tree-finder",
     side = "left",
   }: TreeFinderSidebar.ISidebarProps): TreeFinderSidebar {
-    const widget = new TreeFinderSidebar({ app, rootPath, columns, caption, id, url });
+    const widget = new TreeFinderSidebar({ app, rootPath, columns, caption, id, url, settings });
     void widget.treefinder.ready.then(() => tracker.add(widget));
     restorer.add(widget, widget.id);
     app.shell.add(widget, side);

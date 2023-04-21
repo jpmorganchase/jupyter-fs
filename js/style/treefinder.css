@@ -88,6 +88,12 @@ tree-finder-panel tree-finder-grid table {
   font-weight: 500;
 }
 
+.jp-thead-drag-image {
+  color: var(--jp-ui-font-color1);
+  font-size: var(--jp-ui-font-size1);
+  font-weight: 500; 
+}
+
 .jp-tree-finder .tf-filter-input {
   background-color: transparent;
   color: var(--jp-ui-font-color1);

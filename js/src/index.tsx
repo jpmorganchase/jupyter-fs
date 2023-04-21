@@ -76,6 +76,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
       restorer,
       router,
       columns,
+      settings,
     };
 
     function refreshWidgets({ resources, options }: {resources: IFSResource[]; options: IFSOptions}) {
@@ -93,7 +94,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
         const id = idFromResource(r);
         let w = widgetMap[id];
         if (!w || w.isDisposed) {
-          const sidebarProps = { ...sharedSidebarProps, url: r.url };
+          const sidebarProps = { ...sharedSidebarProps, url: r.url, settings: settings! };
           w = TreeFinderSidebar.sidebarFromResource(r, sidebarProps);
           widgetMap[id] = w;
         } else {
