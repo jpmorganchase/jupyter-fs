@@ -10,7 +10,8 @@ import { WidgetTracker, showErrorMessage } from "@jupyterlab/apputils";
 import { Drive } from "@jupyterlab/services";
 import { ClipboardModel, ContentsModel, IContentRow, Path } from "tree-finder";
 
-import type { ContentsProxy, TreeFinderSidebar } from "./treefinder";
+import type { ContentsProxy } from "./contents_proxy";
+import type { TreeFinderSidebar } from "./treefinder";
 import { getRefreshTargets } from "./contents_utils";
 
 export class JupyterClipboard {

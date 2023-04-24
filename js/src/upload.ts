@@ -53,7 +53,7 @@ import { IDisposable } from "@lumino/disposable";
 import { ISignal, Signal } from "@lumino/signaling";
 import { Content, ContentsModel } from "tree-finder";
 
-import type { ContentsProxy } from "./treefinder";
+import type { ContentsProxy } from "./contents_proxy";
 import { getContentParent } from "./contents_utils";
 
 

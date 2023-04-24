@@ -28,7 +28,8 @@ import { Content, Path } from "tree-finder";
 import { JupyterClipboard } from "./clipboard";
 import { TreeFinderSidebar } from "./treefinder";
 import type { IFSResource } from "./filesystem";
-import type { ContentsProxy, TreeFinderTracker } from "./treefinder";
+import type { ContentsProxy } from "./contents_proxy";
+import type { TreeFinderTracker } from "./treefinder";
 import { getContentParent, getRefreshTargets, revealAndSelectPath } from "./contents_utils";
 import { ISettingRegistry } from "@jupyterlab/settingregistry";
 

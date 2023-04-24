@@ -20,9 +20,10 @@ import * as ReactDOM from "react-dom";
 
 import { AskDialog, askRequired } from "./auth";
 import { createCommands, idFromResource } from "./commands";
+import { ContentsProxy } from "./contents_proxy";
 import { FSComm, IFSOptions, IFSResource } from "./filesystem";
 import { FileUploadStatus } from "./progress";
-import { ContentsProxy, TreeFinderSidebar } from "./treefinder";
+import { TreeFinderSidebar } from "./treefinder";
 import { ITreeFinderMain } from "./tokens";
 
 // tslint:disable: variable-name
