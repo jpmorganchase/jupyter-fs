@@ -266,11 +266,22 @@ class FSManager(FileContentsManager):
         model["size"] = size
 
         try:
-            model["writable"] = info.permissions.check("u_w")  # TODO check
-        except (errors.MissingInfoNamespace,):
-            # use default if access namespace is missing
-            model["writable"] = self._default_writable
-        except OSError:
+            # The `access` namespace does not have the facilities for actually checking
+            # whether the current user can read/exec the dir, so we use systempath
+            # and do a syscall. This is slightly expensive, so ideally we could avoid this
+            import os
+
+            syspath = self._pyfilesystem_instance.getsyspath(path)
+            model["writable"] = os.access(syspath, os.W_OK)
+
+        except NoSysPath:
+            try:
+                # Fall back on "u_w" check, even if we don't know if our user == owner...
+                model["writable"] = info.permissions.check("u_w")
+            except (errors.MissingInfoNamespace,):
+                # use default if access namespace is missing
+                model["writable"] = self._default_writable
+        except (OSError, PermissionDenied):
             self.log.error("Failed to check write permissions on %s", path)
             model["writable"] = False
         except AttributeError:
