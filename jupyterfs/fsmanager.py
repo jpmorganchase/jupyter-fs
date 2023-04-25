@@ -297,7 +297,7 @@ class FSManager(FileContentsManager):
         if not self._pyfilesystem_instance.isdir(path):
             raise web.HTTPError(404, four_o_four)
         elif not self.allow_hidden and self.is_hidden(path):
-            self.log.info("Refusing to serve hidden directory %r, via 404 Error", path)
+            self.log.debug("Refusing to serve hidden directory %r, via 404 Error", path)
             raise web.HTTPError(404, four_o_four)
 
         model = self._base_model(path)
@@ -323,6 +323,10 @@ class FSManager(FileContentsManager):
                             )
                 except PermissionDenied as e:
                     pass  # Don't provide clues about protected files
+                except web.HTTPError as e:
+                    # ignore http errors: they are already logged, and shouldn't prevent
+                    # us from listing other entries
+                    pass
                 except Exception as e:
                     self.log.warning("Error stat-ing %s: %s", os_path, e)
             model["format"] = "json"
