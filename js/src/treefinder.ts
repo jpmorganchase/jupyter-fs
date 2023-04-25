@@ -32,7 +32,7 @@ import {
 } from "@jupyterlab/ui-components";
 // import JSZip from "jszip";
 import { ArrayExt } from "@lumino/algorithm";
-import { CommandRegistry } from '@lumino/commands';
+import { CommandRegistry } from "@lumino/commands";
 import { Message } from "@lumino/messaging";
 import { PanelLayout, Widget } from "@lumino/widgets";
 import { Content, ContentsModel, Format, IContentRow, Path, TreeFinderGridElement, TreeFinderPanelElement } from "tree-finder";

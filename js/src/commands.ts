@@ -8,6 +8,7 @@
  */
 
 import { JupyterFrontEnd } from "@jupyterlab/application";
+import { Dialog, showDialog } from "@jupyterlab/apputils";
 import {
   closeIcon,
   copyIcon,
@@ -156,7 +157,28 @@ export function createCommands(
       isEnabled: () => currentWidgetSelectionIsWritable(tracker),
     }),
     app.commands.addCommand(commandIDs.delete, {
-      execute: args => clipboard.model.deleteSelection(tracker.currentWidget!.treefinder.model!),
+      execute: async args => {
+        const treefinder = tracker.currentWidget!.treefinder;
+        const model = treefinder.model!;
+        const message =
+        model.selection.length === 1
+            ? `Are you sure you want to permanently delete: ${model.selection[0].name}?`
+            : `Are you sure you want to permanently delete the ${model.selection.length} selected items?`;
+        const result = await showDialog({
+          title: "Delete",
+          body: message,
+          buttons: [
+            Dialog.cancelButton({ label: "Cancel" }),
+            Dialog.warnButton({ label: "Delete" }),
+          ],
+          // By default focus on "Cancel" to protect from accidental deletion
+          defaultButton: 0,
+        });
+
+        if (!treefinder.isDisposed && result.button.accept) {
+          clipboard.model.deleteSelection(model);
+        }
+      },
       icon: closeIcon.bindprops({ stylesheet: "menuItem" }),
       label: "Delete",
       isEnabled: () => currentWidgetSelectionIsWritable(tracker),
