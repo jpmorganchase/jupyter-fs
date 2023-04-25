@@ -32,6 +32,7 @@ import type { ContentsProxy } from "./contents_proxy";
 import type { TreeFinderTracker } from "./treefinder";
 import { getContentParent, getRefreshTargets, revealAndSelectPath } from "./contents_utils";
 import { ISettingRegistry } from "@jupyterlab/settingregistry";
+import { showErrorMessage } from "@jupyterlab/apputils";
 
 // define the command ids as a constant tuple
 export const commandNames = [
@@ -228,10 +229,16 @@ export function createCommands(
           target = await getContentParent(target, model.root);
         }
         const path = Path.fromarray(target.row.path);
-        const row = await widget.treefinder.contentsProxy.newUntitled({
-          type: "directory",
-          path,
-        });
+        let row: ContentsProxy.IJupyterContentRow;
+        try {
+          row = await widget.treefinder.contentsProxy.newUntitled({
+            type: "directory",
+            path,
+          });
+        } catch (e) {
+          showErrorMessage("Could not create folder", e);
+          return;
+        }
         target.invalidate();
         const content = await revealAndSelectPath(model, row.path);
         // Is this really needed?

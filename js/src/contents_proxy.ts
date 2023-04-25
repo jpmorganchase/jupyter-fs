@@ -1,4 +1,5 @@
 
+import { showErrorMessage } from "@jupyterlab/apputils";
 import { Contents, ContentsManager } from "@jupyterlab/services";
 import { IContentRow, Path } from "tree-finder";
 
@@ -75,7 +76,16 @@ export namespace ContentsProxy {
       kind,
       ...rest,
       ...(kind === "dir" ? {
-        getChildren: async () => (await contentsManager.get(pathWithDrive, { content: true })).content.map((c: Contents.IModel) => toJupyterContentRow(c, contentsManager, drive)),
+        getChildren: async () => {
+          let contents: Contents.IModel;
+          try {
+            contents = await contentsManager.get(pathWithDrive, { content: true });
+          } catch (error) {
+            showErrorMessage("Failed to get directory contents", error);
+            return [];
+          }
+          return (contents.content as Contents.IModel[]).map(c => toJupyterContentRow(c, contentsManager, drive));
+        },
       }: {}),
     };
   }

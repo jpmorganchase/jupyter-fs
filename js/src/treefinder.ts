@@ -101,6 +101,7 @@ export class TreeFinderWidget extends Widget {
     this.rootPath = rootPath === "" ? rootPath : rootPath + ":";
     // CAREFUL: tree-finder currently REQUIRES the node to be added to the DOM before init can be called!
     this._ready = this.nodeInit();
+    this._ready.catch(reason => showErrorMessage("Failed to init browser", reason));
   }
 
   draw() {
