@@ -241,20 +241,17 @@ class FSManager(FileContentsManager):
             # size of file
             size = info.size
         except (errors.MissingInfoNamespace,):
-            self.log.warning("Unable to get size.")
             size = None
 
         # Use the Unix epoch as a fallback so we don't crash.
         try:
             last_modified = info.modified or EPOCH_START
         except (errors.MissingInfoNamespace,):
-            self.log.warning("Invalid `modified` for %s", path)
             last_modified = EPOCH_START
 
         try:
             created = info.created or last_modified
         except (errors.MissingInfoNamespace,):
-            self.log.warning("Invalid `created` for %s", path)
             created = EPOCH_START
 
         # Create the base model.
