@@ -481,6 +481,7 @@ export class TreeFinderSidebar extends Widget {
   }: TreeFinderSidebar.IOptions) {
     super();
     this.id = id;
+    this.node.classList.add("jfs-mod-notRenaming");
     this.url = url;
     this.title.icon = fileTreeIcon;
     this.title.caption = caption;
@@ -674,44 +675,48 @@ export namespace TreeFinderSidebar {
     return widget;
   }
 
-  export function doRename(widget: TreeFinderSidebar, oldContent: Content<ContentsProxy.IJupyterContentRow>): Promise<ContentsProxy.IJupyterContentRow> {
-    const textNode = document.querySelector(".tf-mod-select .rt-tree-container .rt-group-name")!.firstChild as HTMLElement;
+  export async function doRename(widget: TreeFinderSidebar, oldContent: Content<ContentsProxy.IJupyterContentRow>): Promise<ContentsProxy.IJupyterContentRow> {
+    if (widget.node.classList.contains("jfs-mod-renaming")) {
+      return oldContent.row;
+    }
+    const textNode = widget.node.querySelector("tr.tf-mod-select .rt-tree-container .rt-group-name")!.firstChild as HTMLElement;
     const original = textNode.textContent!.replace(/(.*)\/$/, "$1");
     const editNode = document.createElement("input");
     editNode.value = original;
-    return promptRename(textNode, editNode, original).then(
-      newName => {
-        textNode.parentElement?.focus();
-        if (!newName || newName === oldContent.name) {
-          return oldContent.row;
-        }
-        if (!isValidFileName(newName)) {
+    try {
+      widget.node.classList.replace("jfs-mod-notRenaming", "jfs-mod-renaming");
+      const newName = await promptRename(textNode, editNode, original);
+      textNode.parentElement?.focus();
+      if (!newName || newName === oldContent.name) {
+        return oldContent.row;
+      }
+      if (!isValidFileName(newName)) {
+        void showErrorMessage(
+          "Rename Error",
+          Error(newName +' is not a valid name. Names must have nonzero length, and cannot include "/", "\\", or ":"')
+        );
+        return oldContent.row;
+      }
+      const oldPath = oldContent.getPathAtDepth(1).join("/");
+      const newPath = oldPath.slice(0, -1 * original.length) + newName;
+      const suffix = textNode.textContent!.endsWith("/") ? "/" : "";
+      let newContent;
+      try {
+        newContent = await widget.treefinder.contentsProxy.rename(oldPath + suffix, newPath + suffix);
+      } catch(error) {
+        if (error !== "File not renamed") {
           void showErrorMessage(
             "Rename Error",
-            Error(newName +' is not a valid name. Names must have nonzero length, and cannot include "/", "\\", or ":"')
+            error
           );
-          return oldContent.row;
         }
-        const oldPath = oldContent.getPathAtDepth(1).join("/");
-        const newPath = oldPath.slice(0, -1 * original.length) + newName;
-        const suffix = textNode.textContent!.endsWith("/") ? "/" : "";
-        const promise = widget.treefinder.contentsProxy.rename(oldPath + suffix, newPath + suffix);
-        return promise
-          .catch(error => {
-            if (error !== "File not renamed") {
-              void showErrorMessage(
-                "Rename Error",
-                error
-              );
-            }
-            return oldContent.row;
-          })
-          .then(newContent => {
-            textNode.textContent = newName + suffix;
-            return newContent;
-          });
+        newContent = oldContent.row;
       }
-    );
+      textNode.textContent = newName + suffix;
+      return newContent;
+    } finally {
+      widget.node.classList.replace("jfs-mod-renaming", "jfs-mod-notRenaming");
+    }
   }
 
   /**
@@ -727,7 +732,7 @@ export namespace TreeFinderSidebar {
     const grid = treefinder.node.querySelector("tree-finder-grid") as TreeFinderGridElement<ContentsProxy.IJupyterContentRow>;
     await grid.draw();
     // Check if new row (selection) in view (if outside virtual window, it will fail):
-    if (!document.querySelector(".tf-mod-select .rt-tree-container .rt-group-name")) {
+    if (!treefinder.node.querySelector(".tf-mod-select .rt-tree-container .rt-group-name")) {
       // We need to scroll the selection into view!
       const rowIdx = model.contents.findIndex(s => s.pathstr === pathstr);
       if (rowIdx !== -1) {

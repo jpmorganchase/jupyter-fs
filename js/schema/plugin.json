@@ -31,7 +31,7 @@
     {
       "command": "treefinder:delete",
       "keys": ["Delete"],
-      "selector": ".jp-tree-finder-sidebar"
+      "selector": ".jp-tree-finder-sidebar.jfs-mod-notRenaming"
     }
   ],
 
