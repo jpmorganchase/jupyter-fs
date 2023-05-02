@@ -124,23 +124,34 @@ export class TreeFinderWidget extends Widget {
         doWindowResize: true,
         showFilter: true,
       },
-      modelOptions: {
-        columnNames: this.columns,
-      },
-    })).then(() => {
-      const grid = this.node.querySelector<TreeFinderGridElement<ContentsProxy.IJupyterContentRow>>("tree-finder-grid");
-      grid?.addStyleListener(() => {
-        let lastSelectIdx = this.model?.selectedLast ? this.model?.contents.indexOf(this.model.selectedLast) : -1;
-        for (const rowHeader of grid.querySelectorAll<HTMLTableCellElement>("tr > th")) {
-          const nameElement = rowHeader.querySelector<HTMLSpanElement>("span.rt-group-name");
-          // Ensure we can tab to all items
-          nameElement?.setAttribute("tabindex", "0");
-          // Ensure last selected element retains focus after redraw:
-          if (nameElement && lastSelectIdx !== -1) {
-            const meta = grid.getMeta(rowHeader);
-            if (meta && meta.y === lastSelectIdx) {
-              nameElement.focus();
-              lastSelectIdx = -1;
+        modelOptions: {
+          columnNames: this.columns,
+        },
+      })).then(() => {
+        const grid = this.node.querySelector<TreeFinderGridElement<ContentsProxy.IJupyterContentRow>>("tree-finder-grid");
+        grid?.addStyleListener(() => {
+          // Fix corner cleanup (workaround for underlying bug where we end up with two resize handles)
+          const resizeSpans = grid.querySelectorAll(`thead tr > th:first-child > span.rt-column-resize`);
+          const nHeaderRows = grid.querySelectorAll("thead tr").length;
+          if (resizeSpans.length > nHeaderRows) {
+            // something went wrong, and we ended up with double resize handles. Clear the classes from the first one:
+            for (const span of grid.querySelectorAll(`thead tr > th:first-child > span.rt-column-resize:first-child`)) {
+              span.removeAttribute("class");
+            }
+          }
+
+          // Fix focus and tabbing
+          let lastSelectIdx = this.model?.selectedLast ? this.model?.contents.indexOf(this.model.selectedLast) : -1;
+          for (const rowHeader of grid.querySelectorAll<HTMLTableCellElement>("tr > th")) {
+            const nameElement = rowHeader.querySelector<HTMLSpanElement>("span.rt-group-name");
+            // Ensure we can tab to all items
+            nameElement?.setAttribute("tabindex", "0");
+            // Ensure last selected element retains focus after redraw:
+            if (nameElement && lastSelectIdx !== -1) {
+              const meta = grid.getMeta(rowHeader);
+              if (meta && meta.y === lastSelectIdx) {
+                nameElement.focus();
+                lastSelectIdx = -1;
             }
           }
         }
