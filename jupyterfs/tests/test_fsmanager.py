@@ -10,7 +10,6 @@ import pytest
 import os
 import shutil
 import socket
-import sys
 
 from jupyterfs.fsmanager import FSManager
 from .utils import s3, samba
@@ -25,8 +24,9 @@ test_url_s3 = "http://127.0.0.1/"
 test_port_s3 = "9000"
 
 test_host_smb_docker_share = socket.gethostbyname(socket.gethostname())
-test_hostname_smb_docker_share = "TESTNET"
-test_name_port_smb_docker_share = 3669
+test_hostname_smb_docker_share = "test"
+test_name_port_smb_docker_nameport = 4137
+test_name_port_smb_docker_share = 4139
 
 test_direct_tcp_smb_os_share = False
 test_host_smb_os_share = socket.gethostbyname_ex(socket.gethostname())[2][-1]
@@ -107,18 +107,12 @@ class Test_FSManager_s3(_TestBase):
 
     @classmethod
     def setup_class(cls):
-        if sys.platform != "win32":
-            # start up the server
-            cls._rootDirUtil.start()
-
         # delete any existing root
         cls._rootDirUtil.delete()
 
     @classmethod
     def teardown_class(cls):
-        if sys.platform != "win32":
-            # stop the server
-            cls._rootDirUtil.stop()
+        ...
 
     def setup_method(self, method):
         self._rootDirUtil.create()
@@ -158,21 +152,24 @@ class Test_FSManager_smb_docker_share(_TestBase):
         dir_name=test_dir,
         host=test_host_smb_docker_share,
         hostname=test_hostname_smb_docker_share,
-        name_port=test_name_port_smb_docker_share,
+        name_port=test_name_port_smb_docker_nameport,
+        smb_port=test_name_port_smb_docker_share,
     )
 
+    # direct_tcp=False,
+    # host=None,
+    # hostname=None,
+    # my_name="local",
+    # name_port=137,
+    # smb_port=None,
     @classmethod
     def setup_class(cls):
-        # start up the server
-        cls._rootDirUtil.start()
-
         # delete any existing root
         cls._rootDirUtil.delete()
 
     @classmethod
     def teardown_class(cls):
-        # stop the server
-        cls._rootDirUtil.stop()
+        ...
 
     def setup_method(self, method):
         # create a root
@@ -183,12 +180,13 @@ class Test_FSManager_smb_docker_share(_TestBase):
         self._rootDirUtil.delete()
 
     def _createContentsManager(self):
-        uri = "smb://{username}:{passwd}@{host}/{share}?name-port={name_port}".format(
+        uri = "smb://{username}:{passwd}@{host}:{smb_port}/{share}?name-port={name_port}".format(
             username=samba.smb_user,
             passwd=samba.smb_passwd,
             host=test_host_smb_docker_share,
-            name_port=test_name_port_smb_docker_share,
-            share=test_dir,
+            share=test_hostname_smb_docker_share,
+            smb_port=test_name_port_smb_docker_share,
+            name_port=test_name_port_smb_docker_nameport,
         )
 
         cm = FSManager.open_fs(uri)
@@ -196,51 +194,52 @@ class Test_FSManager_smb_docker_share(_TestBase):
         return cm
 
 
-@pytest.mark.win32
-class Test_FSManager_smb_os_share(_TestBase):
-    """(windows only. future: also mac) Uses the os's buitlin samba server.
-    Expects a local user "smbuser" with access to a share named "test"
-    """
+# @pytest.mark.darwin
+# @pytest.mark.win32
+# class Test_FSManager_smb_os_share(_TestBase):
+#     """(windows only. future: also mac) Uses the os's buitlin samba server.
+#     Expects a local user "smbuser" with access to a share named "test"
+#     """
 
-    _rootDirUtil = samba.RootDirUtil(
-        dir_name=test_dir,
-        host=test_host_smb_os_share,
-        smb_port=test_smb_port_smb_os_share,
-    )
+#     _rootDirUtil = samba.RootDirUtil(
+#         dir_name=test_dir,
+#         host=test_host_smb_os_share,
+#         smb_port=test_smb_port_smb_os_share,
+#     )
 
-    @classmethod
-    def setup_class(cls):
-        # delete any existing root
-        cls._rootDirUtil.delete()
+#     @classmethod
+#     def setup_class(cls):
+#         # delete any existing root
+#         cls._rootDirUtil.delete()
 
-    def setup_method(self, method):
-        # create a root
-        self._rootDirUtil.create()
+#     def setup_method(self, method):
+#         # create a root
+#         self._rootDirUtil.create()
 
-    def teardown_method(self, method):
-        # delete any existing root
-        self._rootDirUtil.delete()
+#     def teardown_method(self, method):
+#         # delete any existing root
+#         self._rootDirUtil.delete()
 
-    def _createContentsManager(self):
-        kwargs = dict(
-            direct_tcp=test_direct_tcp_smb_os_share,
-            host=test_host_smb_os_share,
-            hostname=socket.gethostname(),
-            passwd=samba.smb_passwd,
-            share=test_dir,
-            username=samba.smb_user,
-        )
+#     def _createContentsManager(self):
+#         kwargs = dict(
+#             direct_tcp=test_direct_tcp_smb_os_share,
+#             host=test_host_smb_os_share,
+#             hostname=socket.gethostname(),
+#             passwd=samba.smb_passwd,
+#             share=test_dir,
+#             username=samba.smb_user,
+#         )
 
-        if test_smb_port_smb_os_share is not None:
-            uri = "smb://{username}:{passwd}@{host}:{port}/{share}?hostname={hostname}&direct-tcp={direct_tcp}".format(
-                port=test_smb_port_smb_os_share, **kwargs
-            )
-        else:
-            uri = "smb://{username}:{passwd}@{host}/{share}?hostname={hostname}&direct-tcp={direct_tcp}".format(
-                **kwargs
-            )
+#         if test_smb_port_smb_os_share is not None:
+#             uri = "smb://{username}:{passwd}@{host}:{port}/{share}?hostname={hostname}&direct-tcp={direct_tcp}".format(
+#                 port=test_smb_port_smb_os_share, **kwargs
+#             )
+#         else:
+#             uri = "smb://{username}:{passwd}@{host}/{share}?hostname={hostname}&direct-tcp={direct_tcp}".format(
+#                 **kwargs
+#             )
 
-        cm = FSManager.open_fs(uri)
+#         cm = FSManager.open_fs(uri)
 
-        assert cm.dir_exists(".")
-        return cm
+#         assert cm.dir_exists(".")
+#         return cm

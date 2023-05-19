@@ -1,0 +1,26 @@
+version: '2'
+services:
+  s3proxy:
+    image: andrewgaul/s3proxy:sha-ba0fd6d
+    ports:
+      - 9000:9000
+    volumes:
+      - ./:/workdir
+    environment:
+      - S3PROXY_AUTHORIZATION=aws-v2-or-v4
+      - S3PROXY_IDENTITY=s3_local
+      - S3PROXY_CREDENTIAL=s3_local
+      - S3PROXY_ENDPOINT=http://0.0.0.0:9000
+      - S3PROXY_CORS_ALLOW_ALL=true
+      - S3PROXY_IGNORE_UNKNOWN_HEADERS=true
+      - JCLOUDS_PROVIDER=filesystem
+      - JCLOUDS_FILESYSTEM_BASEDIR=/workdir
+
+  samba:
+    image: dperson/samba:latest
+    ports:
+      - 4137:137/udp
+      - 4138:138/udp
+      - 4139:139/tcp
+      - 4445:445/tcp
+    command: '-n -S -s "test;/mnt;yes;no;yes;;;;" -u "smbuser;smbuser" -p'

@@ -14,6 +14,7 @@ import {
   ToolbarButton,
   WidgetTracker, /*Clipboard, Dialog, IWindowResolver, showDialog*/
 } from "@jupyterlab/apputils";
+
 // import { PathExt, URLExt } from "@jupyterlab/coreutils";
 import { IDocumentManager, isValidFileName /*renameFile*/ } from "@jupyterlab/docmanager";
 // import { DocumentRegistry } from "@jupyterlab/docregistry";
@@ -130,7 +131,7 @@ export class TreeFinderWidget extends Widget {
     super({ node });
     this.addClass("jp-tree-finder");
 
-    this.cm = new JupyterContents(contents, rootPath);
+    this.cm = new JupyterContents(contents as ContentsManager, rootPath);
 
     rootPath = rootPath === "" ? rootPath : rootPath + ":";
     void this.cm.get(rootPath).then(root => this.node.init({
@@ -207,8 +208,8 @@ export class TreeFinderSidebar extends Widget {
     this.treefinder = new TreeFinderWidget({ app, rootPath });
 
     this.layout = new PanelLayout();
-    this.layout.addWidget(this.toolbar);
-    this.layout.addWidget(this.treefinder);
+    (this.layout as PanelLayout).addWidget(this.toolbar);
+    (this.layout as PanelLayout).addWidget(this.treefinder);
   }
 
   restore() { // restore expansion prior to rebuild
@@ -285,7 +286,6 @@ export class TreeFinderSidebar extends Widget {
   treefinder: TreeFinderWidget;
 
   readonly commandIDs: TreeFinderSidebar.ICommandIDs;
-  readonly layout: PanelLayout;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -500,7 +500,7 @@ export namespace TreeFinderSidebar {
         const newPath = oldPath.slice(0, -1 * original.length) + newName;
         const promise = widget.treefinder.cm.rename(oldPath, newPath);
         return promise
-          .catch(error => {
+          .catch((error: string) => {
             if (error !== "File not renamed") {
               void showErrorMessage(
                 "Rename Error",

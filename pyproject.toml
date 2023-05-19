@@ -1,10 +1,128 @@
 [build-system]
-requires = ["jupyter_packaging~=0.7.9", "jupyterlab>=3.0.0rc13,==3.*", "setuptools>=40.8.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = [
+    "hatchling>=1.3.1",
+    "hatch-jupyter-builder",
+    "jupyterlab>=4,<5",
+]
+build-backend = "hatchling.build"
 
-[tool.pyright]
-exclude = ["**/node_modules",
-    "**/__pycache__"
+[project]
+name = "jupyter-fs"
+description = "A Filesystem-like mult-contents manager backend for Jupyter"
+version = "0.4.0"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.7"
+authors = [
+    { name = "Tim Paine", email = "t.paine154@gmail.com" },
+]
+keywords = [
+    "Jupyter",
+    "JupyterLab",
+    "Extensions",
+    "IPython",
+    "Filesystem",
+    "Tree",
+    "Filetree",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: Jupyter",
+    "Framework :: Jupyter :: JupyterLab",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: Apache Software License",
+]
+dependencies = [
+    "fs>=2.4.11",
+    "fs-s3fs>=1.1.1",
+    "fs.smbfs>=0.6.3",
+    "jupyterlab>=4,<5",
+    "jupyter_server>=2,<3",
 ]
 
-venv = "jup-test"
+[project.optional-dependencies]
+develop = [
+    # Test deps
+    "boto3",
+    "fs-miniofs",
+    "pysmb",
+    "pytest",
+    "pytest-cov",
+    "pytest-sugar",
+    "pytest-xdist",
+    # Other deps
+    "black>=23",
+    "bump2version>=1.0.0",
+    "check-manifest",
+    "ruff",
+]
+
+test = [
+    "boto3",
+    "docker",
+    "fs-miniofs",
+    "mock",
+    "pysmb",
+    "pytest",
+    "pytest-cov",
+    "pytest-sugar",
+    "pytest-xdist",
+]
+
+[project.urls]
+repository = "https://github.com/jpmorganchase/jupyter-fs"
+homepage = "https://github.com/jpmorganchase/jupyter-fs"
+
+[tool.check-manifest]
+ignore = [
+	"jupyterfs/labextension/**",
+	"jupyterfs/nbextension/**",
+	"js/**"
+]
+
+[tool.hatch.build]
+artifacts = [
+    "jupyterfs/labextension"
+]
+
+[tool.hatch.build.targets.wheel.shared-data]
+"jupyterfs/labextension" = "share/jupyter/labextensions/jupyter-fs"
+"jupyterfs/labextension/schemas/jupyter-fs/plugin.json" = "share/jupyter/lab/schemas/jupyter-fs/plugin.json"
+"jupyterfs/extension/install.json" = "share/jupyter/labextensions/jupyter-fs/install.json"
+"jupyterfs/extension/jupyter_server_config.d/jupyterfs.json" = "etc/jupyter/jupyter_server_config.d/jupyterfs.json"
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+    ".github",
+    "binder",
+    "docs",
+]
+
+[tool.hatch.build.hooks.jupyter-builder]
+build-function = "hatch_jupyter_builder.npm_builder"
+ensured-targets = [
+    "jupyterfs/labextension/package.json",
+]
+skip-if-exists = [
+    "jupyterfs/labextension/package.json",
+]
+dependencies = [
+    "hatch-jupyter-builder>=0.5.0",
+]
+
+[tool.hatch.build.hooks.jupyter-builder.build-kwargs]
+path = "js"
+build_cmd = "build"
+npm = "jlpm"
+
+[tool.ruff]
+line-length = 150
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
