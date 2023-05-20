@@ -33,7 +33,7 @@ __all__ = ["MetaManager", "MetaManagerHandler"]
 
 class MetaManager(ContentsManager):
     copy_pat = re.compile(r"\-Copy\d*\.")
-    
+
     @default("files_handler_params")
     def _files_handler_params_default(self):
         return {"path": self.root_dir}
