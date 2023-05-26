@@ -197,8 +197,17 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
       }
     }
 
-    // initial setup when DOM attachment of custom elements is complete.
-    void app.started.then(refresh);
+    // when ready, restore using command
+    const refreshed = refresh();
+    void restorer.restore(TreeFinderSidebar.tracker, {
+      command: commandIDs.restore,
+      args: widget => ({
+        id: widget.id,
+        rootPath: widget.treefinder.model?.root.pathstr,
+      }),
+      name: widget => widget.id,
+      when: refreshed,
+    });
 
     if (settings) {
       // rerun setup whenever relevant settings change
@@ -222,6 +231,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
       `;
     }
 
+    let initialThemeLoad = true;
     themeManager.themeChanged.connect(() => {
       // Update SVG icon fills (since we put them in pseudo-elements we cannot style with CSS)
       const primary = getComputedStyle(document.documentElement).getPropertyValue("--jp-ui-font-color1");
@@ -231,9 +241,19 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
       );
 
       // Refresh widgets in case font/border sizes etc have changed
-      void Promise.all(Object.keys(widgetMap).map(
-        key => widgetMap[key].treefinder.nodeInit()
-      ));
+      if (initialThemeLoad) {
+        initialThemeLoad = false;
+        void app.restored.then(() => {
+          // offset it by a timeout to ensure we clear the initial async stack
+          setTimeout(() => void Object.keys(widgetMap).map(
+            key => widgetMap[key].treefinder.nodeInit()
+          ), 0);
+        });
+      } else {
+        Object.keys(widgetMap).map(
+          key => widgetMap[key].treefinder.nodeInit()
+        );
+      }
     });
 
     style.textContent = iconStyleContent(folderIcon.svgstr, fileIcon.svgstr);

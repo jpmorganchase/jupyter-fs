@@ -31,7 +31,7 @@ import { TreeFinderSidebar } from "./treefinder";
 import type { IFSResource } from "./filesystem";
 import type { ContentsProxy } from "./contents_proxy";
 import type { TreeFinderTracker } from "./treefinder";
-import { getContentParent, getRefreshTargets, revealAndSelectPath, splitPathstrDrive } from "./contents_utils";
+import { getContentParent, getRefreshTargets, openDirRecursive, revealAndSelectPath, splitPathstrDrive } from "./contents_utils";
 import { ISettingRegistry } from "@jupyterlab/settingregistry";
 import { showErrorMessage } from "@jupyterlab/apputils";
 import { getAllSnippets, instantiateSnippet, Snippet } from "./snippets";
@@ -51,6 +51,7 @@ export const commandNames = [
   // "navigate",
   "copyFullPath",
   "copyRelativePath",
+  "restore",
   "toggleColumnPath",
   "toggleColumn",
 ] as const;
@@ -324,6 +325,24 @@ export function createStaticCommands(
       label: "path",
       isEnabled: () => false,
       isToggled: () => true,
+    }),
+    app.commands.addCommand(commandIDs.restore, {
+      execute: async args => {
+        const rootPath = args.rootPath as string;
+        const dirsToOpen = rootPath.split("/");
+        const sidebar = tracker.findByDrive(args.id as string);
+        if (!sidebar) {
+          throw new Error(`Could not restore JupyterFS browser: ${args.id}`);
+        }
+        const treefinderwidget = sidebar.treefinder;
+        const model = treefinderwidget.model!;
+
+        // If preferredDir not specified, proceed with the restore
+        if (!sidebar.preferredDir) {
+          await openDirRecursive(model, dirsToOpen);
+          await tracker.save(sidebar);
+        }
+      },
     }),
   ].reduce((set: DisposableSet, d) => {
     set.add(d); return set;

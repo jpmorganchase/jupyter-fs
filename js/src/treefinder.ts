@@ -199,8 +199,9 @@ export class TreeFinderWidget extends DragDropWidget {
   }
 
   async nodeInit() {
-    // The contents of root passed to node.init is not (currently) considered, so do not ask for it..
-    await this.contentsProxy.get(this.rootPath, { content: false }).then(root => this.node.init({
+    // The contents of root passed to node.init is not (currently) considered, so do not ask for it.
+    const root = await this.contentsProxy.get(this.rootPath, { content: false });
+    await this.node.init({
       root,
       gridOptions: {
         columnFormatters: {
@@ -214,71 +215,74 @@ export class TreeFinderWidget extends DragDropWidget {
       modelOptions: {
         columnNames: this.columns,
       },
-    })).then(() => {
-      const grid = this.node.querySelector<TreeFinderGridElement<ContentsProxy.IJupyterContentRow>>("tree-finder-grid");
-      grid?.addStyleListener(() => {
-        // Set root-level load indicator
-        grid.classList.toggle("jfs-mod-loading", this._initialLoad);
-
-        // Fix corner cleanup (workaround for underlying bug where we end up with two resize handles)
-        const resizeSpans = grid.querySelectorAll(`thead tr > th:first-child > span.rt-column-resize`);
-        const nHeaderRows = grid.querySelectorAll("thead tr").length;
-        if (resizeSpans.length > nHeaderRows) {
-          // something went wrong, and we ended up with double resize handles. Clear the classes from the first one:
-          for (const span of grid.querySelectorAll(`thead tr > th:first-child > span.rt-column-resize:first-child`)) {
-            span.removeAttribute("class");
-          }
-        }
-
-        // Fix focus and tabbing
-        let lastSelectIdx = this.model?.selectedLast ? this.model?.contents.indexOf(this.model.selectedLast) : -1;
-        const lostFocus = document.activeElement === document.body;
-        for (const rowHeader of grid.querySelectorAll<HTMLTableCellElement>("tr > th")) {
-          const tableHeader = rowHeader.querySelector<HTMLSpanElement>("span.tf-header-name");
-
-          if (tableHeader) {
-            // If tableheader is path, do not make it draggable
-            if (tableHeader.innerText !== "path") {
-              tableHeader.classList.add(this.dragHandleClass);
-            }
-          }
-
-          const nameElement = rowHeader.querySelector<HTMLSpanElement>("span.rt-group-name");
-          // Ensure we can tab to all items
-          nameElement?.setAttribute("tabindex", "0");
-          // Ensure last selected element retains focus after redraw:
-          if (lostFocus && nameElement && lastSelectIdx !== -1) {
-            const meta = grid.getMeta(rowHeader);
-            if (meta && meta.y === lastSelectIdx) {
-              nameElement.focus();
-              lastSelectIdx = -1;
-            }
-          }
-
-          // Add "loading" indicator for folders that are fetching children
-          if (nameElement) {
-            const meta = grid.getMeta(rowHeader);
-            const content = meta?.y ? this.model?.contents[meta.y] : undefined;
-            if (content) {
-              rowHeader.classList.toggle("jfs-mod-loading", !!nameElement && (this._expanding.get(content.pathstr) || 0) > 0);
-            }
-          }
-        }
-      });
-      if (this.uploader) {
-        this.uploader.model = this.model!;
-      } else {
-        this.uploader = new Uploader({
-          contentsProxy: this.contentsProxy,
-          model: this.model!,
-        });
-      }
-      this.model!.openSub.subscribe(rows => rows.forEach(row => {
-        if (!row.getChildren) {
-          void this._commands.execute("docmanager:open", { path: Path.fromarray(row.path) });
-        }
-      }));
     });
+
+    const grid = this.node.querySelector<TreeFinderGridElement<ContentsProxy.IJupyterContentRow>>("tree-finder-grid");
+    grid?.addStyleListener(() => {
+      // Set root-level load indicator
+      grid.classList.toggle("jfs-mod-loading", this._initialLoad);
+
+      // Fix corner cleanup (workaround for underlying bug where we end up with two resize handles)
+      const resizeSpans = grid.querySelectorAll(`thead tr > th:first-child > span.rt-column-resize`);
+      const nHeaderRows = grid.querySelectorAll("thead tr").length;
+      if (resizeSpans.length > nHeaderRows) {
+        // something went wrong, and we ended up with double resize handles. Clear the classes from the first one:
+        for (const span of grid.querySelectorAll(`thead tr > th:first-child > span.rt-column-resize:first-child`)) {
+          span.removeAttribute("class");
+        }
+      }
+
+      // Fix focus and tabbing
+      let lastSelectIdx = this.model?.selectedLast ? this.model?.contents.indexOf(this.model.selectedLast) : -1;
+      const lostFocus = document.activeElement === document.body;
+      for (const rowHeader of grid.querySelectorAll<HTMLTableCellElement>("tr > th")) {
+        const tableHeader = rowHeader.querySelector<HTMLSpanElement>("span.tf-header-name");
+
+        if (tableHeader) {
+          // If tableheader is path, do not make it draggable
+          if (tableHeader.innerText !== "path") {
+            tableHeader.classList.add(this.dragHandleClass);
+          }
+        }
+
+        const nameElement = rowHeader.querySelector<HTMLSpanElement>("span.rt-group-name");
+        // Ensure we can tab to all items
+        nameElement?.setAttribute("tabindex", "0");
+        // Ensure last selected element retains focus after redraw:
+        if (lostFocus && nameElement && lastSelectIdx !== -1) {
+          const meta = grid.getMeta(rowHeader);
+          if (meta && meta.y === lastSelectIdx) {
+            nameElement.focus();
+            lastSelectIdx = -1;
+          }
+        }
+
+        // Add "loading" indicator for folders that are fetching children
+        if (nameElement) {
+          const meta = grid.getMeta(rowHeader);
+          const content = meta?.y ? this.model?.contents[meta.y] : undefined;
+          if (content) {
+            rowHeader.classList.toggle("jfs-mod-loading", !!nameElement && (this._expanding.get(content.pathstr) || 0) > 0);
+          }
+        }
+      }
+    });
+    if (this.uploader) {
+      this.uploader.model = this.model!;
+    } else {
+      this.uploader = new Uploader({
+        contentsProxy: this.contentsProxy,
+        model: this.model!,
+      });
+    }
+    this.model!.openSub.subscribe(rows => rows.forEach(row => {
+      if (!row.getChildren) {
+        void this._commands.execute("docmanager:open", { path: Path.fromarray(row.path) });
+      } else {
+        const widget = TreeFinderSidebar.tracker.findByDrive(this.parent!.id)!;
+        void TreeFinderSidebar.tracker.save(widget);
+      }
+    }));
   }
 
   get columns(): Array<keyof ContentsProxy.IJupyterContentRow> {
@@ -598,6 +602,7 @@ export class TreeFinderSidebar extends Widget {
     caption = "TreeFinder",
     id = "jupyterlab-tree-finder",
     settings,
+    preferredDir,
   }: TreeFinderSidebar.IOptions) {
     super();
     this.id = id;
@@ -609,6 +614,7 @@ export class TreeFinderSidebar extends Widget {
 
     this.toolbar = new Toolbar();
     this.toolbar.addClass("jp-tree-finder-toolbar");
+    this.preferredDir = preferredDir;
 
     this.treefinder = new TreeFinderWidget({ app, rootPath, columns, settings });
 
@@ -619,26 +625,6 @@ export class TreeFinderSidebar extends Widget {
 
   restore() { // restore expansion prior to rebuild
     void this.treefinder.ready.then(() => this.treefinder.refresh());
-    // const array: Array<Promise<any>> = [];
-    // Object.keys(this.controller).forEach(key => {
-    //   if (this.controller[key].open && (key !== "")) {
-    //     const promise = this.cm.get(this.basepath + key);
-    //     promise.catch(res => {
-    //       // eslint-disable-next-line no-console
-    //       console.log(res);
-    //     });
-    //     array.push(promise);
-    //   }
-    // });
-    // Promise.all(array).then(results => {
-    //   for (const r in results) {
-    //     const row_element = this.node.querySelector("[id='" + u_btoa(results[r].path.replace(this.basepath, "")) + "']");
-    //     this.buildTableContents(results[r].content, 1 + results[r].path.split("/").length, row_element);
-    //   }
-    // }).catch(reasons => {
-    //   // eslint-disable-next-line no-console
-    //   console.log(reasons);
-    // });
   }
 
   async download(path: string, folder: boolean): Promise<void> {
@@ -683,6 +669,7 @@ export class TreeFinderSidebar extends Widget {
     this.treefinder.draw();
   }
 
+  preferredDir: string | undefined;
   toolbar: Toolbar;
   treefinder: TreeFinderWidget;
 
@@ -691,7 +678,7 @@ export class TreeFinderSidebar extends Widget {
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace TreeFinderSidebar {
-  const namespace = "jupyter-fs:TreeFinder";
+  const namespace = "jupyter-fs-treefinder";
 
   export const tracker = new TreeFinderTracker({ namespace });
   export const clipboard = new JupyterClipboard(tracker);
@@ -700,13 +687,12 @@ export namespace TreeFinderSidebar {
     app: JupyterFrontEnd;
     columns: Array<keyof ContentsProxy.IJupyterContentRow>;
     url: string;
-
-    preferredDir?: string;
     rootPath?: string;
     caption?: string;
     id?: string;
     translator?: ITranslator;
     settings?: ISettingRegistry.ISettings;
+    preferredDir?: string;
   }
 
   export interface ISidebarProps extends IOptions {
@@ -715,7 +701,6 @@ export namespace TreeFinderSidebar {
     resolver: IWindowResolver;
     restorer: ILayoutRestorer;
     router: IRouter;
-
     side?: string;
     settings?: ISettingRegistry.ISettings;
   }
@@ -748,9 +733,8 @@ export namespace TreeFinderSidebar {
     id = "jupyterlab-tree-finder",
     side = "left",
   }: TreeFinderSidebar.ISidebarProps): TreeFinderSidebar {
-    const widget = new TreeFinderSidebar({ app, rootPath, columns, caption, id, url, settings });
+    const widget = new TreeFinderSidebar({ app, rootPath, columns, caption, id, url, settings, preferredDir });
     void widget.treefinder.ready.then(() => tracker.add(widget));
-    restorer.add(widget, widget.id);
     app.shell.add(widget, side);
 
     const new_file_button = new ToolbarButton({
