@@ -67,7 +67,7 @@ async function activate(
   async function refreshWidgets({ resources, options }: {resources: IFSResource[]; options: IFSOptions}) {
     if (options.verbose) {
       // eslint-disable-next-line no-console
-      console.info(`jupyter-fs frontend received resources:\n${resources}`);
+      console.info(`jupyter-fs frontend received resources:\n${JSON.stringify(resources)}`);
     }
 
     // create the fs resource frontends (ie FileTree instances)

@@ -1,0 +1,127 @@
+name: Build Status
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+    paths-ignore:
+      - docs/
+      - AUTHORS
+      - CONTRIBUTING.md
+      - LICENSE
+      - README.md
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  checks: write
+  pull-requests: write
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        # TODO more later
+        # os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: [3.9]
+        node-version: [16.x]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: "pip"
+        cache-dependency-path: "pyproject.toml"
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'yarn'
+        cache-dependency-path: yarn.lock
+
+    - name: Install yarn
+      run: npm install -g yarn
+
+    - name: Install dependencies
+      run: make develop
+
+    - name: Setup Linux testing infra
+      run: make setup-infra-ubuntu DOCKER=docker
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+
+    - name: Setup Mac testing infra
+      run: make setup-infra-mac
+      if: ${{ matrix.os == 'macos-latest' }}
+
+    - name: Setup Windows testing infra
+      run: make setup-infra-win
+      if: ${{ matrix.os == 'windows-latest' }}
+
+    - name: Setup common testing infra
+      run: make setup-infra-common
+
+    - name: Lint
+      run: make lint
+
+    - name: Checks
+      run: make checks
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+
+    - name: Test
+      run: make tests
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+
+    - name: Teardown Linux testing infra
+      run: make teardown-infra-ubuntu DOCKER=docker
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+
+    - name: Teardown Mac testing infra
+      run: make teardown-infra-mac
+      if: ${{ matrix.os == 'macos-latest' }}
+
+    - name: Teardown Windows testing infra
+      run: make teardown-infra-win
+      if: ${{ matrix.os == 'windows-latest' }}
+
+    - name: Teardown common testing infra
+      run: make teardown-infra-common
+
+    - name: Upload test results (Python)
+      uses: actions/upload-artifact@v3
+      with:
+        name: pytest-results-${{ matrix.os }}-${{ matrix.python-version }}
+        path: junit.xml
+      if: ${{ always() }}
+
+    - name: Upload test results (JS)
+      uses: actions/upload-artifact@v3
+      with:
+        name: pytest-results-${{ matrix.os }}-${{ matrix.python-version }}
+        path: js/junit.xml
+      if: ${{ always() }}
+
+    - name: Publish Unit Test Results
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      with:
+        files: |
+            **/junit.xml
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+
+    - name: Upload coverage
+      uses: codecov/codecov-action@v3
+
+    - name: Twine check
+      run: make dist

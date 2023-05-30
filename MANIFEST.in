@@ -1,29 +1,36 @@
-# general project files
-include .bumpversion.cfg
-include CONTRIBUTING.md
-include install.json
 include LICENSE
-include Makefile
 include README.md
+include CONTRIBUTING.md
 
-# python pkg files
-include jupyter-config/jupyter_server_config.d/jupyterfs.json
-include jupyterfs/browser-test.js
+include .bumpversion.cfg
 include pyproject.toml
-include setup.cfg
+include Makefile
 
-graft labextension
+graft jupyterfs
 
-# javascript pkg files
-include js/package.json
-include js/ts*.json
-
-graft js/src
-graft js/style
-prune js/build
+# grab js
+graft js
+prune js/coverage
 prune js/dist
+prune js/docs
 prune js/lib
-prune **/node_modules
+prune js/node_modules
+prune js/yarn.lock
+
+# get rid of binder
+prune binder
+
+# get rid of docs
+prune docs
+
+# get rid of examples
+prune examples
+
+# get rid of test and lint artifacts
+prune .pytest_cache
+prune .ruff_cache
+prune .mypy_cache
+prune .jupyter
 
 # Patterns to exclude from any directory
 global-exclude *~
@@ -31,5 +38,3 @@ global-exclude *.pyc
 global-exclude *.pyo
 global-exclude .git
 global-exclude .ipynb_checkpoints
-global-exclude tsconfig.tsbuildinfo
-global-exclude yarn.lock

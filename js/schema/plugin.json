@@ -27,7 +27,7 @@
           "enum": ["ask", "env", false],
           "default": "ask"
         },
-	"defaultWritable": {
+        "defaultWritable": {
           "description": "Fallback for determining if resource is writeable. Used only if the underlying PyFilesystem does not provide this information (eg S3)",
           "type": "boolean",
           "default": true
