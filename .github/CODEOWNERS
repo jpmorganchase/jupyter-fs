@@ -1,9 +1,0 @@
-# Each line is a file pattern followed by one or more owners.​
-
-# The order matters with a later match taking precedence,​
-
-# Default Code Owners will be your maintainer team. ​
-
-# Set a review when someone opens a pull request.​
-
-*       @jpmorganchase/jupyte_maintainer
