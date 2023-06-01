@@ -9,7 +9,7 @@ build:  ## build python/javascript
 	python -m build .
 
 develop:  ## install to site-packages in editable mode
-	python -m pip install --upgrade build docker-compose "jupyterlab>=3.5,<4" pip setuptools twine wheel
+	python -m pip install --upgrade build docker-compose jupyterlab pip setuptools twine wheel
 	python -m pip install -vvv .[develop]
 
 install:  ## install to site-packages
