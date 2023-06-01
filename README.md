@@ -1,12 +1,11 @@
 <p align="center">
-<img alt="jupyter-fs" src="https://raw.githubusercontent.com/jpmorganchase/jupyter-fs/main/docs/brand-icon.svg" width="400">
+<img alt="jupyter-fs" src="https://raw.githubusercontent.com/timkpaine/jupyter-fs/main/docs/brand-icon.svg" width="400">
 </p>
 
 #
 
 <p>
-<a href="https://dev.azure.com/tpaine154/jupyter/_apis/build/status/jpmorganchase.jupyter-fs?branchName=main"><img alt="azure ci status" src="https://dev.azure.com/tpaine154/jupyter/_apis/build/status/jpmorganchase.jupyter-fs?branchName=main"></a>
-<a href="https://ci.appveyor.com/project/telamonian/jupyter-fs/branch/main"><img alt="appveyor ci status (telamonian fork)" src="https://ci.appveyor.com/api/projects/status/d8flhw12vpvgime4/branch/main?svg=true"></a>
+<a href="https://github.com/timkpaine/jupyter-fs/actions?query=workflow%3A%22Build+Status%22"><img alt="build status" src="https://github.com/timkpaine/jupyter-fs/workflows/Build%20Status/badge.svg?branch=main"></a>
 <a href="https://pypi.python.org/pypi/jupyter-fs"><img alt="pypi package" src="https://img.shields.io/pypi/v/jupyter-fs.svg"></a>
 <a href="https://www.npmjs.com/package/jupyter-fs"><img alt="npm package" src="https://img.shields.io/npm/v/jupyter-fs.svg"></a>
 </p>
@@ -69,7 +68,7 @@ Add specifications for additional contents managers in your user settings (in th
 
 You should see your new filebrowsers pop up in the left-hand sidebar instantly when you save your settings:
 
-![](https://raw.githubusercontent.com/jpmorganchase/jupyter-fs/master/docs/osfs_example.png)
+![](https://raw.githubusercontent.com/timkpaine/jupyter-fs/main/docs/osfs_example.png)
 
 
 ## Use with auth/credentials
@@ -91,7 +90,7 @@ Any stretch of a `"url"` that is enclosed in double-brackets `{{VAR}}` will be t
 
 When you save the above `"resouces"` config, a dialog box will pop asking for the `username` and `passwd` values:
 
-![](https://raw.githubusercontent.com/jpmorganchase/jupyter-fs/master/docs/remote_example.png)
+![](https://raw.githubusercontent.com/timkpaine/jupyter-fs/main/docs/remote_example.png)
 
 Once you enter those values and hit ok, the new filebrowsers will then immediately appear in the sidebar:
 
@@ -160,10 +159,10 @@ Any filesystem resources specified in any server-side config file will be merged
 
 ## Development
 
-See [CONTRIBUTING.md](https://github.com/jpmorganchase/jupyter-fs/blob/master/CONTRIBUTING.md) for guidelines.
+See [CONTRIBUTING.md](https://github.com/timkpaine/jupyter-fs/blob/main/CONTRIBUTING.md) for guidelines.
 
 
 ## License
 
 This software is licensed under the Apache 2.0 license. See the
-[LICENSE](https://github.com/jpmorganchase/jupyter-fs/blob/master/LICENSE) and [AUTHORS](https://github.com/jpmorganchase/jupyter-fs/blob/master/AUTHORS) files for details.
+[LICENSE](https://github.com/timkpaine/jupyter-fs/blob/main/LICENSE) and [AUTHORS](https://github.com/timkpaine/jupyter-fs/blob/main/AUTHORS) files for details.
