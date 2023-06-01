@@ -82,7 +82,6 @@ homepage = "https://github.com/jpmorganchase/jupyter-fs"
 [tool.check-manifest]
 ignore = [
 	"jupyterfs/labextension/**",
-	"jupyterfs/nbextension/**",
 	"js/**"
 ]
 
