@@ -27,4 +27,5 @@ class TestExtension:
         m = MagicMock()
         h = MetaManagerHandler(app, m)
         h._transforms = []
+        h.current_user = h._jupyter_current_user = "blerg"
         h.get()

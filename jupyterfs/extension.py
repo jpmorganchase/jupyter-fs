@@ -23,7 +23,7 @@ _mm_config_warning_msg = """Misconfiguration of MetaManager. Please add:
 to your Notebook Server config."""
 
 
-def _jupyter_server_extension_paths():
+def _jupyter_server_extension_points():
     return [{"module": "jupyterfs.extension"}]
 
 
@@ -42,8 +42,9 @@ def _load_jupyter_server_extension(serverapp):
         warnings.warn(_mm_config_warning_msg)
         return
 
+    serverapp.contents_manager_class = MetaManager
     resources_url = "jupyterfs/resources"
-    print(
+    serverapp.log.info(
         "Installing jupyter-fs resources handler on path %s"
         % url_path_join(base_url, resources_url)
     )

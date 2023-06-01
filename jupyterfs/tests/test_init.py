@@ -7,9 +7,9 @@
 #
 
 # for Coverage
-from jupyterfs.extension import _jupyter_server_extension_paths
+from jupyterfs.extension import _jupyter_server_extension_points
 
 
 class TestInit:
     def test__jupyter_server_extension_paths(self):
-        assert _jupyter_server_extension_paths() == [{"module": "jupyterfs.extension"}]
+        assert _jupyter_server_extension_points() == [{"module": "jupyterfs.extension"}]
