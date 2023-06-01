@@ -106,10 +106,13 @@ class MetaManager(AsyncContentsManager):
                             urlSubbed,
                             default_writable=default_writable,
                             parent=self,
-                            **self._pyfs_kw
+                            **self._pyfs_kw,
                         )
                     except (FSError, OpenerError, ParseError):
-                        self.log.exception("Failed to create manager for resource %r", resource.get('name'))
+                        self.log.exception(
+                            "Failed to create manager for resource %r",
+                            resource.get("name"),
+                        )
                         continue
                     init = True
 
@@ -242,10 +245,14 @@ class MetaManagerHandler(APIHandler):
 
     def _validate_resource(self, resource):
         for validator in self.fsconfig.resource_validators:
-            if re.fullmatch(validator, resource['url']) is not None:
+            if re.fullmatch(validator, resource["url"]) is not None:
                 break
         else:
-            self.log.warning("Resource failed validation: %r vs %r", resource['url'], self.fsconfig.resource_validators)
+            self.log.warning(
+                "Resource failed validation: %r vs %r",
+                resource["url"],
+                self.fsconfig.resource_validators,
+            )
             return False
         return True
 
@@ -285,7 +292,7 @@ class MetaManagerHandler(APIHandler):
                 resources = list((*self.fsconfig.resources, *valid_resources))
             else:
                 resources = valid_resources
-            
+
         self.finish(
             json.dumps(self.contents_manager.initResource(*resources, options=options))
         )

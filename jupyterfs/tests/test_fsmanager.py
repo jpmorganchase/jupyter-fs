@@ -14,7 +14,6 @@ import socket
 
 import tornado.web
 
-from jupyterfs.fsmanager import FSManager
 from .utils import s3, samba
 from .utils.client import ContentsClient
 
@@ -49,25 +48,17 @@ _test_file_model = {
 configs = [
     {
         "ServerApp": {
-            "jpserver_extensions": {
-                "jupyterfs.extension": True
-            },
-            "contents_manager_class": "jupyterfs.metamanager.MetaManager"
+            "jpserver_extensions": {"jupyterfs.extension": True},
+            "contents_manager_class": "jupyterfs.metamanager.MetaManager",
         },
-        "ContentsManager": {
-            "allow_hidden": True
-        }
+        "ContentsManager": {"allow_hidden": True},
     },
     {
         "ServerApp": {
-            "jpserver_extensions": {
-                "jupyterfs.extension": True
-            },
-            "contents_manager_class": "jupyterfs.metamanager.MetaManager"
+            "jpserver_extensions": {"jupyterfs.extension": True},
+            "contents_manager_class": "jupyterfs.metamanager.MetaManager",
         },
-        "ContentsManager": {
-            "allow_hidden": False
-        }
+        "ContentsManager": {"allow_hidden": False},
     },
 ]
 
@@ -81,12 +72,12 @@ class _TestBase:
 
     @pytest.mark.parametrize("jp_server_config", configs)
     async def test_write_read(self, jp_fetch, resource_uri, jp_server_config):
-        allow_hidden = jp_server_config['ContentsManager']['allow_hidden']
+        allow_hidden = jp_server_config["ContentsManager"]["allow_hidden"]
 
         cc = ContentsClient(jp_fetch)
 
-        resources = await cc.set_resources([{'url': resource_uri}])
-        drive = resources[0]['drive']
+        resources = await cc.set_resources([{"url": resource_uri}])
+        drive = resources[0]["drive"]
 
         fpaths = [
             f"{drive}:{test_fname}",
@@ -113,7 +104,11 @@ class _TestBase:
             assert test_content == (await cc.get(p))["content"]
 
         for p in hidden_paths:
-            ctx = nullcontext() if allow_hidden else pytest.raises(tornado.httpclient.HTTPClientError)
+            ctx = (
+                nullcontext()
+                if allow_hidden
+                else pytest.raises(tornado.httpclient.HTTPClientError)
+            )
             with ctx as c:
                 # save to root and tips
                 await cc.save(p, _test_file_model)
@@ -122,7 +117,7 @@ class _TestBase:
 
             if not allow_hidden:
                 assert c.value.code == 400
-                
+
 
 class Test_FSManager_osfs(_TestBase):
     """No extra setup required for this test suite"""
@@ -145,7 +140,6 @@ class Test_FSManager_osfs(_TestBase):
         yield f"osfs://{tmp_path}"
 
 
-@pytest.mark.skipif(not s3.has_docker_env(), reason="docker env required")
 class Test_FSManager_s3(_TestBase):
     """Tests on an instance of s3proxy running in a docker
     Manual startup of equivalent docker:
@@ -229,31 +223,31 @@ class Test_FSManager_smb_docker_share(_TestBase):
         # delete any existing root
         self._rootDirUtil.delete()
 
-# @pytest.mark.darwin
-# @pytest.mark.win32
-# class Test_FSManager_smb_os_share(_TestBase):
-#     """(windows only. future: also mac) Uses the os's buitlin samba server.
-#     Expects a local user "smbuser" with access to a share named "test"
-#     """
+    # @pytest.mark.darwin
+    # @pytest.mark.win32
+    # class Test_FSManager_smb_os_share(_TestBase):
+    #     """(windows only. future: also mac) Uses the os's buitlin samba server.
+    #     Expects a local user "smbuser" with access to a share named "test"
+    #     """
 
-#     _rootDirUtil = samba.RootDirUtil(
-#         dir_name=test_dir,
-#         host=test_host_smb_os_share,
-#         smb_port=test_smb_port_smb_os_share,
-#     )
+    #     _rootDirUtil = samba.RootDirUtil(
+    #         dir_name=test_dir,
+    #         host=test_host_smb_os_share,
+    #         smb_port=test_smb_port_smb_os_share,
+    #     )
 
-#     @classmethod
-#     def setup_class(cls):
-#         # delete any existing root
-#         cls._rootDirUtil.delete()
+    #     @classmethod
+    #     def setup_class(cls):
+    #         # delete any existing root
+    #         cls._rootDirUtil.delete()
 
-#     def setup_method(self, method):
-#         # create a root
-#         self._rootDirUtil.create()
+    #     def setup_method(self, method):
+    #         # create a root
+    #         self._rootDirUtil.create()
 
-#     def teardown_method(self, method):
-#         # delete any existing root
-#         self._rootDirUtil.delete()
+    #     def teardown_method(self, method):
+    #         # delete any existing root
+    #         self._rootDirUtil.delete()
 
     @pytest.fixture
     def resource_uri(self):

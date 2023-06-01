@@ -153,19 +153,20 @@ class FSManager(FileContentsManager):
         try:
             info = self._pyfilesystem_instance.getinfo(path, namespaces=("stat",))
             # Check Windows flag:
-            if info.get("stat", 'st_file_attributes', 0) & stat.FILE_ATTRIBUTE_HIDDEN:
+            if info.get("stat", "st_file_attributes", 0) & stat.FILE_ATTRIBUTE_HIDDEN:
                 return True
             # Check Mac flag
-            if info.get("stat", 'st_flags', 0) & stat.UF_HIDDEN:
+            if info.get("stat", "st_flags", 0) & stat.UF_HIDDEN:
                 return True
-            if info.get('basic', 'is_dir'):
+            if info.get("basic", "is_dir"):
                 # The `access` namespace does not have the facilities for actually checking
                 # whether the current user can read/exec the dir, so we use systempath
                 import os
+
                 syspath = self._pyfilesystem_instance.getsyspath(path)
                 if not os.access(syspath, os.X_OK | os.R_OK):
                     return True
-              
+
         except ResourceNotFound:
             pass  # if path does not exist (and no leading .), it is not considered hidden
         except NoSysPath:
@@ -182,7 +183,7 @@ class FSManager(FileContentsManager):
             hidden (bool): Whether the path or any of its parents are hidden.
         """
         ppath = pathlib.PurePosixPath(path)
-        # Path checks are quick, so we do it first to avoid unnecessary stat calls 
+        # Path checks are quick, so we do it first to avoid unnecessary stat calls
         if any(part.startswith(".") for part in ppath.parts):
             return True
         while ppath.parents:
@@ -190,7 +191,6 @@ class FSManager(FileContentsManager):
                 return True
             ppath = ppath.parent
         return False
-
 
     def file_exists(self, path):
         """Returns True if the file exists, else returns False.
@@ -277,9 +277,7 @@ class FSManager(FileContentsManager):
         if not self._pyfilesystem_instance.isdir(path):
             raise web.HTTPError(404, four_o_four)
         elif not self.allow_hidden and self.is_hidden(path):
-            self.log.info("Refusing to serve hidden directory %r, via 404 Error",
-                path
-            )
+            self.log.info("Refusing to serve hidden directory %r, via 404 Error", path)
             raise web.HTTPError(404, four_o_four)
 
         model = self._base_model(path)
@@ -415,7 +413,7 @@ class FSManager(FileContentsManager):
     def _save_directory(self, path, model):
         """create a directory"""
         if not self.allow_hidden and self.is_hidden(path):
-            raise web.HTTPError(400, f'Cannot create directory {path!r}')
+            raise web.HTTPError(400, f"Cannot create directory {path!r}")
         if not self._pyfilesystem_instance.exists(path):
             self._pyfilesystem_instance.makedir(path)
         elif not self._pyfilesystem_instance.isdir(path):

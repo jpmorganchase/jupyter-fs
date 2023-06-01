@@ -11,7 +11,7 @@ from jupyter_server.transutils import _i18n
 from traitlets import Bool, List, Type, Unicode
 from traitlets.config import Configurable
 
-__all__ = ["Jupyterfs"]
+__all__ = ["JupyterFs"]
 
 
 class JupyterFs(Configurable):
@@ -40,5 +40,7 @@ class JupyterFs(Configurable):
     resource_validators = List(
         config=True,
         trait=Unicode(),
-        help=_i18n("regular expressions to match against resource URLs. At least one must match"),
+        help=_i18n(
+            "regular expressions to match against resource URLs. At least one must match"
+        ),
     )
