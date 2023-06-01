@@ -251,21 +251,12 @@ class Test_FSManager_smb_docker_share(_TestBase):
 
     @pytest.fixture
     def resource_uri(self):
-        kwargs = dict(
-            direct_tcp=test_direct_tcp_smb_os_share,
-            host=test_host_smb_os_share,
-            hostname=socket.gethostname(),
-            passwd=samba.smb_passwd,
-            share=test_dir,
+        uri = "smb://{username}:{passwd}@{host}:{smb_port}/{share}?name-port={name_port}".format(
             username=samba.smb_user,
+            passwd=samba.smb_passwd,
+            host=test_host_smb_docker_share,
+            share=test_hostname_smb_docker_share,
+            smb_port=test_name_port_smb_docker_share,
+            name_port=test_name_port_smb_docker_nameport,
         )
-
-        if test_smb_port_smb_os_share is not None:
-            uri = "smb://{username}:{passwd}@{host}:{port}/{share}?hostname={hostname}&direct-tcp={direct_tcp}".format(
-                port=test_smb_port_smb_os_share, **kwargs
-            )
-        else:
-            uri = "smb://{username}:{passwd}@{host}/{share}?hostname={hostname}&direct-tcp={direct_tcp}".format(
-                **kwargs
-            )
         yield uri
