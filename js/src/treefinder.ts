@@ -194,6 +194,7 @@ export class TreeFinderWidget extends DragDropWidget {
 
         // Fix focus and tabbing
         let lastSelectIdx = this.model?.selectedLast ? this.model?.contents.indexOf(this.model.selectedLast) : -1;
+        const lostFocus = document.activeElement === document.body;
         for (const rowHeader of grid.querySelectorAll<HTMLTableCellElement>("tr > th")) {
           const tableHeader = rowHeader.querySelector<HTMLSpanElement>("span.tf-header-name");
 
@@ -208,7 +209,7 @@ export class TreeFinderWidget extends DragDropWidget {
           // Ensure we can tab to all items
           nameElement?.setAttribute("tabindex", "0");
           // Ensure last selected element retains focus after redraw:
-          if (nameElement && lastSelectIdx !== -1) {
+          if (lostFocus && nameElement && lastSelectIdx !== -1) {
             const meta = grid.getMeta(rowHeader);
             if (meta && meta.y === lastSelectIdx) {
               nameElement.focus();
