@@ -379,12 +379,48 @@ export class TreeFinderWidget extends DragDropWidget {
   }
 
   protected evtKeydown(event: KeyboardEvent): void {
+    // handle any keys unaffacted by renaming status above this check:
+    if (this.parent?.node.classList.contains("jfs-mod-renaming")) {
+      return 
+    }
     switch (event.key) {
       case "ArrowDown":
       case "ArrowUp":
         event.stopPropagation();
         event.preventDefault();
         this.selectNeighbour(event.key === "ArrowUp" ? -1 : 1, event.shiftKey);
+        break;
+      case "ArrowLeft":
+        if (this.model?.selectedLast) {
+          event.stopPropagation();
+          event.preventDefault();
+          let selectedLast = this.model.selectedLast;
+          this.model.collapse(this.model.contents.indexOf(selectedLast));
+        }
+        break;
+      case "ArrowRight":
+        if (this.model?.selectedLast) {
+          event.stopPropagation();
+          event.preventDefault();
+          let selectedLast = this.model.selectedLast;
+          this.model.expand(this.model.contents.indexOf(selectedLast));
+        }
+        break;
+      case " ":  // space key
+        // Toggle expansion if dir
+        if (this.model?.selectedLast) {
+          event.stopPropagation();
+          event.preventDefault();
+          let selectedLast = this.model.selectedLast;
+          if (selectedLast.hasChildren) {
+            let selectedIdx = this.model.contents.indexOf(selectedLast);
+            if (selectedLast.isExpand) {
+              this.model.collapse(selectedIdx);
+            } else {
+              this.model.expand(selectedIdx);
+            }
+          }
+        }
         break;
     }
   }
