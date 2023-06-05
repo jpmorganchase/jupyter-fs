@@ -40,7 +40,7 @@ import { Content, ContentsModel, Format, Path, TreeFinderGridElement, TreeFinder
 import { JupyterClipboard } from "./clipboard";
 import { commandIDs, idFromResource } from "./commands";
 import { ContentsProxy } from "./contents_proxy";
-import { revealPath } from "./contents_utils";
+import { getContentParent, revealPath } from "./contents_utils";
 import { DragDropWidget, TABLE_HEADER_MIME } from "./drag";
 import { IFSResource } from "./filesystem";
 import { fileTreeIcon } from "./icons";
@@ -395,7 +395,17 @@ export class TreeFinderWidget extends DragDropWidget {
           event.stopPropagation();
           event.preventDefault();
           let selectedLast = this.model.selectedLast;
-          this.model.collapse(this.model.contents.indexOf(selectedLast));
+          if (selectedLast.isExpand) {
+            this.model.collapse(this.model.contents.indexOf(selectedLast));
+          } else if (!event.shiftKey) {
+            // navigate the selection to the next up, if no selection modifiers
+            void getContentParent(selectedLast, this.model.root).then(parent => {
+              if (parent != this.model?.root) {
+                this.model?.selectionModel.select(parent);
+                return TreeFinderSidebar.scrollIntoView(this, parent.pathstr);
+              }
+            });
+          }
         }
         break;
       case "ArrowRight":
@@ -403,7 +413,17 @@ export class TreeFinderWidget extends DragDropWidget {
           event.stopPropagation();
           event.preventDefault();
           let selectedLast = this.model.selectedLast;
-          this.model.expand(this.model.contents.indexOf(selectedLast));
+          if (!selectedLast.isExpand) {
+            this.model.expand(this.model.contents.indexOf(selectedLast));
+          } else if (!event.shiftKey && selectedLast.hasChildren) {
+            // navigate the selection to the first child, if no selection modifiers
+            void selectedLast.getChildren().then(children => {
+              if (children && children.length > 0) {
+                this.model?.selectionModel.select(children[0])
+                return TreeFinderSidebar.scrollIntoView(this, children[0].pathstr);
+              }
+            });
+          }
         }
         break;
       case " ":  // space key
