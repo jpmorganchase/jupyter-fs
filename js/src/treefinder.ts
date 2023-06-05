@@ -395,16 +395,19 @@ export class TreeFinderWidget extends DragDropWidget {
           event.stopPropagation();
           event.preventDefault();
           let selectedLast = this.model.selectedLast;
-          if (selectedLast.isExpand) {
-            this.model.collapse(this.model.contents.indexOf(selectedLast));
-          } else if (!event.shiftKey) {
-            // navigate the selection to the next up, if no selection modifiers
-            void getContentParent(selectedLast, this.model.root).then(parent => {
-              if (parent != this.model?.root) {
-                this.model?.selectionModel.select(parent);
-                return TreeFinderSidebar.scrollIntoView(this, parent.pathstr);
-              }
-            });
+          // don't allow expansion or up/down nav if in select range mode:
+          if (!event.shiftKey) {
+            if (selectedLast.isExpand) {
+              this.model.collapse(this.model.contents.indexOf(selectedLast));
+            } else {
+              // navigate the selection to the next up (exluding to root)
+              void getContentParent(selectedLast, this.model.root).then(parent => {
+                if (parent != this.model?.root) {
+                  this.model?.selectionModel.select(parent);
+                  return TreeFinderSidebar.scrollIntoView(this, parent.pathstr);
+                }
+              });
+            }
           }
         }
         break;
@@ -413,16 +416,19 @@ export class TreeFinderWidget extends DragDropWidget {
           event.stopPropagation();
           event.preventDefault();
           let selectedLast = this.model.selectedLast;
-          if (!selectedLast.isExpand) {
-            this.model.expand(this.model.contents.indexOf(selectedLast));
-          } else if (!event.shiftKey && selectedLast.hasChildren) {
-            // navigate the selection to the first child, if no selection modifiers
-            void selectedLast.getChildren().then(children => {
-              if (children && children.length > 0) {
-                this.model?.selectionModel.select(children[0])
-                return TreeFinderSidebar.scrollIntoView(this, children[0].pathstr);
-              }
-            });
+          // don't allow expansion or up/down nav if in select range mode:
+          if (!event.shiftKey) {
+            if (!selectedLast.isExpand) {
+              this.model.expand(this.model.contents.indexOf(selectedLast));
+            } else if (selectedLast.hasChildren) {
+              // navigate the selection to the first child
+              void selectedLast.getChildren().then(children => {
+                if (children && children.length > 0) {
+                  this.model?.selectionModel.select(children[0])
+                  return TreeFinderSidebar.scrollIntoView(this, children[0].pathstr);
+                }
+              });
+            }
           }
         }
         break;
