@@ -39,6 +39,7 @@ class JupyterFs(Configurable):
 
     resource_validators = List(
         config=True,
+        default_value=[".*"],
         trait=Unicode(),
         help=_i18n(
             "regular expressions to match against resource URLs. At least one must match"
