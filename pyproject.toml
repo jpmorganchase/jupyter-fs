@@ -56,6 +56,8 @@ develop = [
     "pytest-cov",
     "pytest-sugar",
     "pytest-xdist",
+    "pytest-asyncio",
+    "pytest-jupyter[server]",
     # Other deps
     "black>=23",
     "bump2version>=1.0.0",
