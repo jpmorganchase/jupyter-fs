@@ -1,102 +1,139 @@
-PIP := pip
-PYTHON := python
+DOCKER := podman
 YARN := jlpm
 
-testjs: ## Make js tests
+###############
+# Build Tools #
+###############
+.PHONY: build develop install
+build:  ## build python/javascript
+	python -m build .
+
+develop:  ## install to site-packages in editable mode
+	python -m pip install --upgrade build docker-compose "jupyterlab>=3.5,<4" pip setuptools twine wheel
+	python -m pip install -vvv .[develop]
+
+install:  ## install to site-packages
+	python -m pip install .
+
+###########
+# Testing #
+###########
+.PHONY: setup-infra-ubuntu setup-infra-mac setup-infra-win setup-infra-common teardown-infra-ubuntu teardown-infra-mac teardown-infra-win teardown-infra-common dockerup dockerdown dockerlogs testpy testjs test tests
+
+setup-infra-ubuntu: dockerup
+
+setup-infra-mac:
+	ci/mac/add_etc_hosts.sh
+	ci/mac/enable_sharing.sh
+
+setup-infra-win:
+
+setup-infra-common:
+	. ci/generate_jupyter_config.sh
+
+teardown-infra-ubuntu: dockerdown
+
+teardown-infra-mac:
+
+teardown-infra-win:
+
+teardown-infra-common:
+
+dockerup:
+	${DOCKER}-compose -f ci/docker-compose.yml up -d
+
+dockerdown:
+	${DOCKER}-compose -f ci/docker-compose.yml down || echo "can't teardown docker compose"
+
+dockerlogs:
+	${DOCKER}-compose -f ci/docker-compose.yml logs
+
+testpy: ## Clean and Make unit tests
+	python -m pytest -v jupyterfs/tests --junitxml=junit.xml --cov=jupyterfs --cov-report=xml:.coverage.xml --cov-branch --cov-fail-under=20 --cov-report term-missing
+
+testjs: ## Clean and Make js tests
 	cd js; ${YARN} test
 
-testpy: ## Make py tests
-	${PYTHON} -m pytest -v jupyterfs/tests --cov=jupyterfs --cov-branch --junitxml=python_junit.xml --cov-report=xml
+test: tests
+tests: testpy testjs ## run the tests
 
-testbrowser:
-	cd js; ${YARN} test:browser
+###########
+# Linting #
+###########
+.PHONY: lintpy lintjs lint fixpy fixjs fix format
 
-test: ## run all tests
-	make testjs
-	make testpy
-	make testbrowser
+lintpy:  ## Black/flake8 python
+	python -m ruff jupyterfs setup.py
+	python -m black --check jupyterfs setup.py
 
-lintjs: ## run linter
+lintjs:  ## ESlint javascript
 	cd js; ${YARN} lint
 
-lintpy: ## run linter
-	${PYTHON} -m black jupyterfs setup.py docs/conf.py --check
-	${PYTHON} -m flake8 jupyterfs setup.py docs/conf.py
+lint: lintpy lintjs  ## run linter
 
-lint: ## run linter
-	make lintjs
-	make lintpy
+fixpy:  ## Black python
+	python -m ruff jupyterfs setup.py --fix
+	python -m black jupyterfs/ setup.py
 
-fixjs:  ## run tslint fix
+fixjs:  ## ESlint Autofix JS
 	cd js; ${YARN} fix
 
-fixpy:  ## run black
-	${PYTHON} -m black jupyterfs/ setup.py docs/conf.py
+fix: fixpy fixjs  ## run black/tslint fix
+format: fix
 
-fix:  ## run black/tslint fix
-	make fixjs
-	make fixpy
+#################
+# Other Checks #
+#################
+.PHONY: check checks check-manifest semgrep
+
+check: checks
+
+checks: check-manifest  ## run security, packaging, and other checks
+
+check-manifest:  ## run manifest checker for sdist
+	check-manifest -v
+
+semgrep:  ## run semgrep
+	semgrep ci --config auto
+
+################
+# Distribution #
+################
+.PHONY: dist publishpy publishjs publish
+
+dist: build  ## create dists
+	python -m twine check dist/*
+
+publishpy:  ## dist to pypi
+	python -m twine upload dist/* --skip-existing
+
+publishjs:  ## dist to npm
+	cd js; npm publish || echo "can't publish - might already exist"
+
+publish: dist publishpy publishjs  ## dist to pypi and npm
+
+############
+# Cleaning #
+############
+.PHONY: clean
 
 clean: ## clean the repository
-	## python tmp state
 	find . -name "__pycache__" | xargs  rm -rf
 	find . -name "*.pyc" | xargs rm -rf
 	find . -name ".ipynb_checkpoints" | xargs  rm -rf
-	## binder/repo2docker mess
-	rm -rf binder/.[!.]* binder/*.ipynb
-	## build state
-	cd js; ${YARN} clean:slate
-	rm -rf *.egg-info *junit.xml .*-log.txt .jupyter/ .local/ .pytest_cache/ build/ coverage* dist/ MANIFEST node_modules/ pip-wheel-metadata jupyterfs/labextension
-	# make -C ./docs clean
-	## package lock files
-	# rm -rf package-lock.json yarn-lock.json js/package-lock.json js/yarn-lock.json
+	rm -rf .coverage coverage *.xml build dist *.egg-info lib node_modules .pytest_cache *.egg-info
+	rm -rf jupyterfs/labextension jupyterfs/nbextension/static/index*
+	cd js && ${YARN} clean
+	git clean -fd
 
-dev_install: dev_serverextension dev_labextension ## set up the repo for active development
-	# verify
-	${PYTHON} -m jupyter serverextension list
-	${PYTHON} -m jupyter server extension list
-	${PYTHON} -m jupyter labextension list
-
-dev_labextension:  ## build and install labextension for active development
-	${PYTHON} -m jupyter labextension develop --overwrite .
-
-dev_serverextension:  ## install and enable serverextension for active development
-	${PIP} install -e .[dev]
-	${PYTHON} -m jupyter server extension enable --py jupyterfs.extension
-
-docs:  ## make documentation
-	make -C ./docs html
-	open ./docs/_build/html/index.html
-
-install:  ## do standard install of both server/labextension to site-packages
-	${PIP} install .
-
-js:  ## build javascript
-	cd js; ${YARN} integrity
-	cd js; ${YARN} build
-
-dist: clean ## create dists
-	${PYTHON} setup.py sdist bdist_wheel
-
-publish: dist  ## dist to pypi and npm
-	twine check dist/* && twine upload dist/*
-	cd js; npm publish
-
-publishdry: dist  ## dry-run dist to pypi and npm
-	twine check dist/*
-	cd js; npm publish --dry-run
-
-publishtest: dist  ## release to test pypi, dry-run npm publish
-	twine check dist/* && twine upload --repository-url https://test.pypi.org/legacy/ dist/*
-	cd js; npm publish --dry-run
-
-
+###########
+# Helpers #
+###########
 # Thanks to Francoise at marmelab.com for this
 .DEFAULT_GOAL := help
+.PHONY: help
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 print-%:
 	@echo '$*=$($*)'
-
-.PHONY: clean dev_install dev_labextension dev_serverextension dist docs help install js test tests

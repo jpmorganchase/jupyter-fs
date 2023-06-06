@@ -1,6 +1,6 @@
 {
   "name": "jupyter-fs",
-  "version": "0.4.0-alpha.0",
+  "version": "0.4.0",
   "description": "A Filesystem-like mult-contents manager backend for Jupyter",
   "author": "The jupyter-fs authors",
   "license": "Apache-2.0",
@@ -78,6 +78,7 @@
     "eslint-plugin-unicorn": "^45.0.1",
     "isomorphic-fetch": "^3.0.0",
     "jest": "^26",
+    "jest-junit": "^16.0.0",
     "jest-raw-loader": "^1.0.1",
     "mkdirp": "^1.0.4",
     "rimraf": "^3.0.2",

@@ -6,6 +6,7 @@
 # the Apache License 2.0.  The full license can be found in the LICENSE file.
 #
 from ._version import __version__  # noqa: F401
+from .extension import _jupyter_server_extension_points
 
 import json
 from pathlib import Path

@@ -6,84 +6,16 @@
 # This file is part of the jupyter-fs library, distributed under the terms of
 # the Apache License 2.0.  The full license can be found in the LICENSE file.
 
-import atexit
-import docker
 import os
-import shutil
-import signal
 from smb.SMBConnection import SMBConnection
 import socket
-import sys
-import time
 
-__all__ = ["smb_user", "smb_passwd", "startServer", "RootDirUtil"]
+__all__ = ["smb_user", "smb_passwd", "RootDirUtil"]
 
 smb_user = "smbuser"
 smb_passwd = "smbuser"
 
 _dir = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
-
-
-def startServer(name_port=137):
-    ports = dict(
-        (
-            ("137/udp", name_port),
-            ("138/udp", 138),
-            ("139/tcp", 139),
-            ("445/tcp", 445),
-        )
-    )
-
-    # init docker
-    docker_client = docker.from_env(version="auto")
-    docker_client.info()
-
-    # set up smb.conf
-    shutil.copy(os.path.join(_dir, "smb.conf.template"), os.path.join(_dir, "smb.conf"))
-
-    # run the docker container
-    smb_container = docker_client.containers.run(
-        "dperson/samba",
-        'samba.sh -n -p -u "{user};{passwd}"'.format(user=smb_user, passwd=smb_passwd),
-        detach=True,
-        ports=ports,
-        remove=True,
-        tmpfs={"/shared": "size=3G,uid=1000"},
-        tty=True,
-        volumes={
-            os.path.join(_dir, "smb.conf"): {
-                "bind": "/etc/samba/smb.conf",
-                "mode": "rw",
-            }
-        },
-        # network_mode='host',
-    )
-
-    def exitHandler():
-        try:
-            # will raise docker.errors.NotFound if container does not currently exist
-            docker_client.containers.get(smb_container.id)
-
-            smb_container.kill()
-            # smb_container.remove()
-        except docker.errors.NotFound:
-            pass
-
-    atexit.register(exitHandler)
-
-    # wait for samba to start up
-    timeout = 0
-    while True:
-        if b"daemon 'smbd' finished starting up" in smb_container.logs():
-            break
-
-        if timeout >= 100:
-            raise RuntimeError("docker dperson/samba timed out while starting up")
-
-        timeout += 1
-        time.sleep(1)
-
-    return smb_container, exitHandler
 
 
 class RootDirUtil:
@@ -106,16 +38,12 @@ class RootDirUtil:
         self.name_port = name_port
         self.smb_port = smb_port
 
-        self._container = None
-        self._container_exit_handler = None
-
     def exists(self):
         conn = self.resource()
 
         return self.dir_name in conn.listShares()
 
     def create(self):
-        """taken care of by smb.conf"""
         pass
 
     def _delete(self, path, conn):
@@ -152,35 +80,3 @@ class RootDirUtil:
             assert conn.connect(self.host)
 
         return conn
-
-    def start(self):
-        self._container, self._container_exit_handler = startServer(
-            name_port=self.name_port
-        )
-
-    def stop(self):
-        if self._container is not None:
-            self._container_exit_handler()
-
-        self._container = None
-        self._container_exit_handler = None
-
-
-if __name__ == "__main__":
-    container, _ = startServer(name_port=3669)
-
-    def sigHandler(signo, frame):
-        sys.exit(0)
-
-    # make sure the atexit-based docker cleanup runs on ctrl-c
-    signal.signal(signal.SIGINT, sigHandler)
-    signal.signal(signal.SIGTERM, sigHandler)
-
-    old_log = ""
-    while True:
-        new_log = container.logs()
-        if old_log != new_log:
-            print(new_log)
-            old_log = new_log
-
-        time.sleep(1)

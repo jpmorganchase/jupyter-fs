@@ -140,7 +140,7 @@ class FSManager(FileContentsManager):
             hidden (bool): Whether the path exists and is hidden.
         """
         # TODO hidden
-        return self._pyfilesystem_instance.exists(path)
+        return not self._pyfilesystem_instance.exists(path)
 
     def file_exists(self, path):
         """Returns True if the file exists, else returns False.
