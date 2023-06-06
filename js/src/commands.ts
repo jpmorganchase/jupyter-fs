@@ -218,7 +218,9 @@ export function createCommands(
       },
       icon: downloadIcon,
       label: "Download",
-      isEnabled: () => !!(tracker.currentWidget?.treefinder.model?.selection),
+      isEnabled: () => !!(
+        tracker.currentWidget?.treefinder.model?.selection?.some(s => !s.hasChildren)
+      ),
     }),
     app.commands.addCommand(commandIDs.create_folder, {
       execute: async args =>  {
