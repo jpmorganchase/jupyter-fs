@@ -103,7 +103,7 @@ export class TreeFinderWidget extends Widget {
     this.rootPath = rootPath === "" ? rootPath : rootPath + ":";
     // CAREFUL: tree-finder currently REQUIRES the node to be added to the DOM before init can be called!
     this._ready = this.nodeInit();
-    this._ready.catch(reason => showErrorMessage("Failed to init browser", reason));
+    this._ready.catch(reason => showErrorMessage("Failed to init browser", reason as string));
   }
 
   draw() {
@@ -432,8 +432,8 @@ export class TreeFinderSidebar extends Widget {
     this.treefinder = new TreeFinderWidget({ app, rootPath, columns });
 
     this.panel_layout = new PanelLayout();
-    (this.panel_layout as PanelLayout).addWidget(this.toolbar);
-    (this.panel_layout as PanelLayout).addWidget(this.treefinder);
+    this.panel_layout.addWidget(this.toolbar);
+    this.panel_layout.addWidget(this.treefinder);
   }
 
   restore() { // restore expansion prior to rebuild
@@ -646,7 +646,7 @@ export namespace TreeFinderSidebar {
         if (error !== "File not renamed") {
           void showErrorMessage(
             "Rename Error",
-            error
+            error as string
           );
         }
         newContent = oldContent.row;
@@ -669,6 +669,7 @@ export namespace TreeFinderSidebar {
     const model = treefinder.model!;
     await model.flatten();
     const grid = treefinder.node.querySelector("tree-finder-grid") as TreeFinderGridElement<ContentsProxy.IJupyterContentRow>;
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     await grid.draw();
     // Check if new row (selection) in view (if outside virtual window, it will fail):
     if (!treefinder.node.querySelector(".tf-mod-select .rt-tree-container .rt-group-name")) {
@@ -676,7 +677,7 @@ export namespace TreeFinderSidebar {
       const rowIdx = model.contents.findIndex(s => s.pathstr === pathstr);
       if (rowIdx !== -1) {
         // TODO: Should we perform a minimum scroll, or do we always want entry as close to the top of the view as possible?
-        grid.scrollToCell(0, rowIdx, 1, model.contents.length);
+        await grid.scrollToCell(0, rowIdx, 1, model.contents.length);
       }
     }
   }

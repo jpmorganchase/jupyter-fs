@@ -236,7 +236,7 @@ export function createCommands(
             path,
           });
         } catch (e) {
-          void showErrorMessage("Could not create folder", e);
+          void showErrorMessage("Could not create folder", e as string);
           return;
         }
         target.invalidate();

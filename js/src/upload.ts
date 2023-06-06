@@ -110,7 +110,7 @@ export class UploadButton extends ToolbarButton {
     void Promise.all(pending).catch(error => {
       void showErrorMessage(
         this._trans._p("showErrorMessage", "Upload Error"),
-        error
+        error as string
       );
     });
   };
