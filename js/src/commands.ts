@@ -164,8 +164,8 @@ export function createCommands(
         const model = treefinder.model!;
         const message =
         model.selection.length === 1
-            ? `Are you sure you want to permanently delete: ${model.selection[0].name}?`
-            : `Are you sure you want to permanently delete the ${model.selection.length} selected items?`;
+          ? `Are you sure you want to permanently delete: ${model.selection[0].name}?`
+          : `Are you sure you want to permanently delete the ${model.selection.length} selected items?`;
         const result = await showDialog({
           title: "Delete",
           body: message,
@@ -236,7 +236,7 @@ export function createCommands(
             path,
           });
         } catch (e) {
-          showErrorMessage("Could not create folder", e);
+          void showErrorMessage("Could not create folder", e);
           return;
         }
         target.invalidate();

@@ -117,7 +117,7 @@ class FSManager(FileContentsManager):
     @classmethod
     def init_fs(cls, pyfs_class, *args, **kwargs):
         return cls(pyfs_class(*args, **kwargs))
-        
+
     @contextmanager
     def perm_to_403(self, path=None):
         """context manager for turning permission errors into 403."""
@@ -321,9 +321,9 @@ class FSManager(FileContentsManager):
                             contents.append(
                                 self.get(path="%s/%s" % (path, name), content=False)
                             )
-                except PermissionDenied as e:
+                except PermissionDenied:
                     pass  # Don't provide clues about protected files
-                except web.HTTPError as e:
+                except web.HTTPError:
                     # ignore http errors: they are already logged, and shouldn't prevent
                     # us from listing other entries
                     pass
@@ -554,7 +554,7 @@ class FSManager(FileContentsManager):
     def delete_file(self, path):
         """Delete file at path."""
         path = path.strip("/")
-        
+
         with self.perm_to_403(path):
             if not self._pyfilesystem_instance.exists(path):
                 raise web.HTTPError(404, "File or directory does not exist: %s" % path)

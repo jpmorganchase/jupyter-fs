@@ -81,7 +81,7 @@ export namespace ContentsProxy {
           try {
             contents = await contentsManager.get(pathWithDrive, { content: true });
           } catch (error) {
-            showErrorMessage("Failed to get directory contents", error);
+            void showErrorMessage("Failed to get directory contents", error);
             return [];
           }
           return (contents.content as Contents.IModel[]).map(c => toJupyterContentRow(c, contentsManager, drive));

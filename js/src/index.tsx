@@ -183,7 +183,6 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
     if (settings) {
       // rerun setup whenever relevant settings change
       settings.changed.connect(() => {
-        console.log("Settings has changed.. refreshing!");
         void refresh();
       });
     }
