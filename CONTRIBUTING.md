@@ -79,6 +79,10 @@ By default, the `jlpm run build` command generates the source maps for this exte
 jupyter lab build --minimize=False
 ```
 
+### Running tests
+
+To run the Python tests either run `make testpy` or run pytest directly with `pytests jupyterfs/tests`. To run the JS tests, either run `make testjs` or run `jlpm test` inside the `js` folder.
+
 ## Do a Release
 
 1. Have access to `jupyter-fs` on pypi and npmjs
