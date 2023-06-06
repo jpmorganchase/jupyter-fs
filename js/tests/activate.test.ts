@@ -1,9 +1,10 @@
 import "isomorphic-fetch";
 
-import { _activate } from "../src/index";
+import { browser, progressStatus } from "../src/index";
 
 describe("Checks activate", () => {
   test("Check activate", () => {
-    expect(_activate);
+    expect(browser);
+    expect(progressStatus);
   });
 });
