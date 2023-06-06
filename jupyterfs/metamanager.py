@@ -12,11 +12,13 @@ import re
 from traitlets import default
 from tornado import web
 
+from fs.errors import FSError
+from fs.opener.errors import OpenerError, ParseError
 from jupyter_server.base.handlers import APIHandler
 from jupyter_server.services.contents.manager import AsyncContentsManager
 
 from .auth import substituteAsk, substituteEnv, substituteNone
-from .config import Jupyterfs as JupyterfsConfig
+from .config import JupyterFs as JupyterFsConfig
 from .fsmanager import FSManager
 from .pathutils import (
     path_first_arg,
@@ -40,7 +42,7 @@ class MetaManager(AsyncContentsManager):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._jupyterfsConfig = JupyterfsConfig(config=self.config)
+        self._jupyterfsConfig = JupyterFsConfig(config=self.config)
 
         self._kwargs = kwargs
         self._pyfs_kw = {}
@@ -99,9 +101,19 @@ class MetaManager(AsyncContentsManager):
                 else:
                     # create new cm
                     default_writable = resource.get("defaultWritable", True)
-                    managers[_hash] = FSManager(
-                        urlSubbed, default_writable=default_writable, **self._pyfs_kw
-                    )
+                    try:
+                        managers[_hash] = FSManager(
+                            urlSubbed,
+                            default_writable=default_writable,
+                            parent=self,
+                            **self._pyfs_kw,
+                        )
+                    except (FSError, OpenerError, ParseError):
+                        self.log.exception(
+                            "Failed to create manager for resource %r",
+                            resource.get("name"),
+                        )
+                        continue
                     init = True
 
             # assemble resource from spec + hash
@@ -221,11 +233,28 @@ class MetaManagerHandler(APIHandler):
     _jupyterfsConfig = None
 
     @property
-    def config_resources(self):
+    def fsconfig(self):
+        # TODO: This pattern will not pick up changes to config after this!
         if self._jupyterfsConfig is None:
-            self._jupyterfsConfig = JupyterfsConfig(config=self.config)
+            self._jupyterfsConfig = JupyterFsConfig(config=self.config)
 
-        return self._jupyterfsConfig.resources
+        return self._jupyterfsConfig
+
+    def _config_changed(self):
+        self._jupyterfsConfig
+
+    def _validate_resource(self, resource):
+        for validator in self.fsconfig.resource_validators:
+            if re.fullmatch(validator, resource["url"]) is not None:
+                break
+        else:
+            self.log.warning(
+                "Resource failed validation: %r vs %r",
+                resource["url"],
+                self.fsconfig.resource_validators,
+            )
+            return False
+        return True
 
     @web.authenticated
     async def get(self):
@@ -252,10 +281,17 @@ class MetaManagerHandler(APIHandler):
         body = self.get_json_body()
         options = body["options"]
 
-        if "_addServerside" in options and options["_addServerside"]:
-            resources = list((*self.config_resources, *body["resources"]))
+        if not self.fsconfig.allow_user_resources:
+            if body["resources"]:
+                self.log.warning("User not allowed to configure resources, ignoring")
+            resources = self.fsconfig.resources
         else:
-            resources = body["resources"]
+            client_resources = body["resources"]
+            valid_resources = list(filter(self._validate_resource, client_resources))
+            if "_addServerside" in options and options["_addServerside"]:
+                resources = list((*self.fsconfig.resources, *valid_resources))
+            else:
+                resources = valid_resources
 
         self.finish(
             json.dumps(self.contents_manager.initResource(*resources, options=options))

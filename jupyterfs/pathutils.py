@@ -39,7 +39,7 @@ def _resolve_path(path, manager_dict):
     Returns:
         tuple: prefix of contents manager, instance of contents manager, relative path to request from contents manager
     """
-    parts = path.strip("/").split(":")
+    parts = path.strip("/").split(":", 1)
     if len(parts) == 1:
         # Try to find use the root manager, if one was supplied.
         mgr = manager_dict.get("")
@@ -56,7 +56,7 @@ def _resolve_path(path, manager_dict):
         # Try to find a sub-manager for the first subdirectory.
         mgr = manager_dict.get(parts[0])
         if mgr is not None:
-            return parts[0], mgr, "/".join(parts[1:])
+            return parts[0], mgr, parts[1]
 
         raise HTTPError(
             404,
@@ -149,12 +149,9 @@ def path_old_new(method_name, returns_model):
 
     async def _wrapper(self, old_path, new_path, *args, **kwargs):
         old_prefix, old_mgr, old_mgr_path = _resolve_path(old_path, self._managers)
-        new_prefix, new_mgr, new_mgr_path = _resolve_path(
-            new_path,
-            self._managers,
-        )
+        new_prefix, new_mgr, new_mgr_path = _resolve_path(new_path, self._managers)
         if old_mgr is not new_mgr:
-            # TODO: Consider supporting this via get+delete+save.
+            # TODO: Consider supporting this via get+save+delete.
             raise HTTPError(
                 400,
                 "Can't move files between backends yet ({old} -> {new})".format(

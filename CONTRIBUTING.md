@@ -12,6 +12,10 @@ If you have any questions about the contribution process, please feel free to se
 
 Note: You will need NodeJS to build the extension package.
 
+```bash
+pip install -e .[dev]
+```
+
 The `jlpm` command is JupyterLab's pinned version of
 [yarn](https://yarnpkg.com/) that is installed with JupyterLab. You may use
 `yarn` or `npm` in lieu of `jlpm` below.
@@ -20,12 +24,16 @@ The `jlpm` command is JupyterLab's pinned version of
 # Clone the repo to your local environment
 # Change directory to the jupyter-fs directory
 # Install package in development mode
-make dev_install
+jlpm
+cd js
+jlpm build
+cd ..
+jlpm develop
 ```
 
 ### Configure
 
-You'll need to set the contents manager class in the jupyter server config. Paste the following json:
+You'll need to set the contents manager class in the jupyter server config. Paste the following json into your config:
 
 ```json
 {
@@ -33,6 +41,12 @@ You'll need to set the contents manager class in the jupyter server config. Past
     "contents_manager_class": "jupyterfs.metamanager.MetaManager"
   }
 }
+```
+
+or run lab with
+
+```bash
+jupyter lab --ServerApp.contents_manager_class="jupyterfs.metamanager.MetaManager"
 ```
 
 into a file named `${CONFIG}/jupyter_server_config.json`, where `CONFIG` is any of the config paths returned by the `jupyter --paths` command.

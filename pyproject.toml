@@ -53,7 +53,9 @@ develop = [
     "fs-miniofs",
     "pysmb",
     "pytest",
+    "pytest-asyncio",
     "pytest-cov",
+    "pytest-jupyter[server]",
     "pytest-sugar",
     "pytest-xdist",
     # Other deps
@@ -70,7 +72,9 @@ test = [
     "mock",
     "pysmb",
     "pytest",
+    "pytest-asyncio",
     "pytest-cov",
+    "pytest-jupyter[server]",
     "pytest-sugar",
     "pytest-xdist",
 ]
