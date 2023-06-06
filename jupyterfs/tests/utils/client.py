@@ -1,4 +1,3 @@
-
 import json
 
 from pathlib import PurePosixPath
@@ -11,11 +10,13 @@ class ContentsClient:
     async def set_resources(self, resources):
         rep = await self.fetch(
             "/jupyterfs/resources",
-            method='POST',
-            body=json.dumps({
-                'options': {},
-                'resources': resources,
-            })
+            method="POST",
+            body=json.dumps(
+                {
+                    "options": {},
+                    "resources": resources,
+                }
+            ),
         )
         return json.loads(rep.body)
 
@@ -27,15 +28,15 @@ class ContentsClient:
             return
         rep = await self.fetch(
             f"/api/contents/{path.strip('/')}",
-            method='PUT',
-            body=json.dumps({'type': 'directory'}),
+            method="PUT",
+            body=json.dumps({"type": "directory"}),
         )
         return json.loads(rep.body)
 
     async def save(self, path, model):
         rep = await self.fetch(
             f"/api/contents/{path}",
-            method='PUT',
+            method="PUT",
             body=json.dumps(model),
         )
         return json.loads(rep.body)

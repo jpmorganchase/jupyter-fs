@@ -14,7 +14,6 @@ import socket
 
 import tornado.web
 
-from jupyterfs.fsmanager import FSManager
 from .utils import s3, samba
 from .utils.client import ContentsClient
 
@@ -49,25 +48,17 @@ _test_file_model = {
 configs = [
     {
         "ServerApp": {
-            "jpserver_extensions": {
-                "jupyterfs.extension": True
-            },
-            "contents_manager_class": "jupyterfs.metamanager.MetaManager"
+            "jpserver_extensions": {"jupyterfs.extension": True},
+            "contents_manager_class": "jupyterfs.metamanager.MetaManager",
         },
-        "ContentsManager": {
-            "allow_hidden": True
-        }
+        "ContentsManager": {"allow_hidden": True},
     },
     {
         "ServerApp": {
-            "jpserver_extensions": {
-                "jupyterfs.extension": True
-            },
-            "contents_manager_class": "jupyterfs.metamanager.MetaManager"
+            "jpserver_extensions": {"jupyterfs.extension": True},
+            "contents_manager_class": "jupyterfs.metamanager.MetaManager",
         },
-        "ContentsManager": {
-            "allow_hidden": False
-        }
+        "ContentsManager": {"allow_hidden": False},
     },
 ]
 
@@ -81,12 +72,12 @@ class _TestBase:
 
     @pytest.mark.parametrize("jp_server_config", configs)
     async def test_write_read(self, jp_fetch, resource_uri, jp_server_config):
-        allow_hidden = jp_server_config['ContentsManager']['allow_hidden']
+        allow_hidden = jp_server_config["ContentsManager"]["allow_hidden"]
 
         cc = ContentsClient(jp_fetch)
 
-        resources = await cc.set_resources([{'url': resource_uri}])
-        drive = resources[0]['drive']
+        resources = await cc.set_resources([{"url": resource_uri}])
+        drive = resources[0]["drive"]
 
         fpaths = [
             f"{drive}:{test_fname}",
@@ -113,7 +104,11 @@ class _TestBase:
             assert test_content == (await cc.get(p))["content"]
 
         for p in hidden_paths:
-            ctx = nullcontext() if allow_hidden else pytest.raises(tornado.httpclient.HTTPClientError)
+            ctx = (
+                nullcontext()
+                if allow_hidden
+                else pytest.raises(tornado.httpclient.HTTPClientError)
+            )
             with ctx as c:
                 # save to root and tips
                 await cc.save(p, _test_file_model)

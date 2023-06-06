@@ -48,7 +48,7 @@ async function activate(
   themeManager: IThemeManager,
 ) {
   const comm = new FSComm();
-  let widgetMap : {[key: string]: IDisposable} = {};
+  const widgetMap : {[key: string]: IDisposable} = {};
   const sidebarProps: TreeFinderSidebar.ISidebarProps = {
     app,
     manager,
@@ -76,10 +76,10 @@ async function activate(
     // create the fs resource frontends (ie FileTree instances)
     for (const r of resources) {
       // make one composite disposable for all fs resource frontends
-      let w = widgetMap[r.drive!];
+      let w = widgetMap[r.drive];
       if (!w || w.isDisposed) {
-        const w = TreeFinderSidebar.sidebarFromResource(r, sidebarProps);
-        widgetMap[r.drive!] = w;
+        w = TreeFinderSidebar.sidebarFromResource(r, sidebarProps);
+        widgetMap[r.drive] = w;
       }
     }
   }
@@ -90,8 +90,8 @@ async function activate(
     const options: IFSOptions = settings.composite.options as any;
 
     function cleanup() {
-      let keys = resources.map(r => r.drive);
-      for (let key of Object.keys(widgetMap)) {
+      const keys = resources.map(r => r.drive);
+      for (const key of Object.keys(widgetMap)) {
         if (keys.indexOf(key) === -1) {
           widgetMap[key].dispose();
           delete widgetMap[key];
@@ -159,7 +159,7 @@ async function activate(
 
   // Inject lab icons
   const style = document.createElement("style");
-  style.setAttribute('id', 'jupyter-fs-icon-inject');
+  style.setAttribute("id", "jupyter-fs-icon-inject");
 
   // Hackish, but needed since free-finder insists on pseudo elements for icons.
   function iconStyleContent(folderStr: string, fileStr: string) {
@@ -169,16 +169,16 @@ async function activate(
       --tf-dir-icon: url('data:image/svg+xml,${encodeURIComponent(folderStr)}');
       --tf-file-icon: url('data:image/svg+xml,${encodeURIComponent(fileStr)}');
     }
-    `
+    `;
   }
 
   themeManager.themeChanged.connect(() => {
-    const primary = getComputedStyle(document.documentElement).getPropertyValue('--jp-ui-font-color1');
+    const primary = getComputedStyle(document.documentElement).getPropertyValue("--jp-ui-font-color1");
     style.textContent = iconStyleContent(
       folderIcon.svgstr.replace(/fill="([^"]{0,7})"/, `fill="${primary}"`),
       fileIcon.svgstr.replace(/fill="([^"]{0,7})"/, `fill="${primary}"`)
     );
-  })
+  });
 
   style.textContent = iconStyleContent(folderIcon.svgstr, fileIcon.svgstr);
 
