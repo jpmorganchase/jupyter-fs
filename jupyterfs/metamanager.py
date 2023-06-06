@@ -8,12 +8,14 @@
 from hashlib import md5
 import json
 import re
+
+from traitlets import default
 from tornado import web
 
 from fs.errors import FSError
 from fs.opener.errors import OpenerError, ParseError
 from jupyter_server.base.handlers import APIHandler
-from jupyter_server.services.contents.manager import ContentsManager
+from jupyter_server.services.contents.manager import AsyncContentsManager
 
 from .auth import substituteAsk, substituteEnv, substituteNone
 from .config import JupyterFs as JupyterFsConfig
@@ -31,8 +33,12 @@ from .pathutils import (
 __all__ = ["MetaManager", "MetaManagerHandler"]
 
 
-class MetaManager(ContentsManager):
+class MetaManager(AsyncContentsManager):
     copy_pat = re.compile(r"\-Copy\d*\.")
+
+    @default("files_handler_params")
+    def _files_handler_params_default(self):
+        return {"path": self.root_dir}
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -144,7 +150,7 @@ class MetaManager(ContentsManager):
     def root_dir(self):
         return self.root_manager.root_dir
 
-    def copy(self, from_path, to_path=None):
+    async def copy(self, from_path, to_path=None):
         """Copy an existing file and return its new model.
 
         If to_path not specified, it will be the parent directory of from_path.
@@ -207,7 +213,7 @@ class MetaManager(ContentsManager):
     get = path_first_arg("get", True)
     delete = path_first_arg("delete", False)
 
-    get_kernel_path = path_first_arg("get_kernel_path", False)
+    get_kernel_path = path_first_arg("get_kernel_path", False, sync=True)
 
     create_checkpoint = path_first_arg("create_checkpoint", False)
     list_checkpoints = path_first_arg("list_checkpoints", False)

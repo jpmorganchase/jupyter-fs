@@ -13,14 +13,13 @@ module.exports = {
   testPathIgnorePatterns: ["/lib/", "/node_modules/"],
   testRegex: "tests\/.*\.test\.ts[x]?$",  // eslint-disable-line no-useless-escape
   transform: {
-    "\\.tsx?$": "ts-jest",
+    "\\.tsx?$": [
+      "ts-jest", {
+        // in tsconfig.test.json, rootDir is parent of both tests and src dirs
+        tsconfig: "tsconfig.test.json",
+      },
+    ],
     "\\.jsx?$": "babel-jest",
   },
   transformIgnorePatterns: [`node_modules/(?!(${esModules}))`],
-  globals: {
-    "ts-jest": {
-      // in tsconfig.test.json, rootDir is parent of both tests and src dirs
-      tsconfig: "tsconfig.test.json",
-    },
-  },
 };

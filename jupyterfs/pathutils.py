@@ -89,15 +89,25 @@ def _get_arg(argname, args, kwargs):
 
 
 # Dispatch decorators.
-def path_first_arg(method_name, returns_model):
+def path_first_arg(method_name, returns_model, sync=False):
     """Decorator for methods that accept path as a first argument,
     e.g. manager.get(path, ...)"""
 
-    def _wrapper(self, *args, **kwargs):
-        path, args = _get_arg("path", args, kwargs)
-        _, mgr, mgr_path = _resolve_path(path, self._managers)
-        result = getattr(mgr, method_name)(mgr_path, *args, **kwargs)
-        return result
+    if sync:
+
+        def _wrapper(self, *args, **kwargs):
+            path, args = _get_arg("path", args, kwargs)
+            _, mgr, mgr_path = _resolve_path(path, self._managers)
+            result = getattr(mgr, method_name)(mgr_path, *args, **kwargs)
+            return result
+
+    else:
+
+        async def _wrapper(self, *args, **kwargs):
+            path, args = _get_arg("path", args, kwargs)
+            _, mgr, mgr_path = _resolve_path(path, self._managers)
+            result = getattr(mgr, method_name)(mgr_path, *args, **kwargs)
+            return result
 
     return _wrapper
 
@@ -106,7 +116,7 @@ def path_second_arg(method_name, first_argname, returns_model):
     """Decorator for methods that accept path as a second argument.
     e.g. manager.save(model, path, ...)"""
 
-    def _wrapper(self, *args, **kwargs):
+    async def _wrapper(self, *args, **kwargs):
         other, args = _get_arg(first_argname, args, kwargs)
         path, args = _get_arg("path", args, kwargs)
         _, mgr, mgr_path = _resolve_path(path, self._managers)
@@ -123,7 +133,7 @@ def path_kwarg(method_name, path_default, returns_model):
     e.g. manager.file_exists(path='')
     """
 
-    def _wrapper(self, path=path_default, **kwargs):
+    async def _wrapper(self, path=path_default, **kwargs):
         _, mgr, mgr_path = _resolve_path(path, self._managers)
         result = getattr(mgr, method_name)(path=mgr_path, **kwargs)
         return result
@@ -137,7 +147,7 @@ def path_old_new(method_name, returns_model):
     e.g. manager.rename(old_path, new_path)
     """
 
-    def _wrapper(self, old_path, new_path, *args, **kwargs):
+    async def _wrapper(self, old_path, new_path, *args, **kwargs):
         old_prefix, old_mgr, old_mgr_path = _resolve_path(old_path, self._managers)
         new_prefix, new_mgr, new_mgr_path = _resolve_path(new_path, self._managers)
         if old_mgr is not new_mgr:

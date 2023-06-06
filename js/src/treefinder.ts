@@ -16,6 +16,7 @@ import {
   ToolbarButton,
   WidgetTracker, /*Clipboard, Dialog, IWindowResolver, showDialog*/
 } from "@jupyterlab/apputils";
+
 // import { PathExt, URLExt } from "@jupyterlab/coreutils";
 import { IDocumentManager, isValidFileName /*renameFile*/ } from "@jupyterlab/docmanager";
 // import { DocumentRegistry } from "@jupyterlab/docregistry";
@@ -44,6 +45,7 @@ import { IFSResource } from "./filesystem";
 import { fileTreeIcon } from "./icons";
 import { promptRename } from "./utils";
 import { Uploader, UploadButton } from "./upload";
+import { ContentsManager } from "@jupyterlab/services";
 
 
 export class TreeFinderTracker extends WidgetTracker<TreeFinderSidebar> {
@@ -91,7 +93,7 @@ export class TreeFinderWidget extends Widget {
     super({ node });
     this.addClass("jp-tree-finder");
 
-    this.contentsProxy = new ContentsProxy(contents, rootPath);
+    this.contentsProxy = new ContentsProxy(contents as ContentsManager, rootPath);
 
     this.translator = translator || nullTranslator;
     this._trans = this.translator.load("jupyterlab");
@@ -429,9 +431,9 @@ export class TreeFinderSidebar extends Widget {
 
     this.treefinder = new TreeFinderWidget({ app, rootPath, columns });
 
-    this.layout = new PanelLayout();
-    this.layout.addWidget(this.toolbar);
-    this.layout.addWidget(this.treefinder);
+    this.panel_layout = new PanelLayout();
+    (this.panel_layout as PanelLayout).addWidget(this.toolbar);
+    (this.panel_layout as PanelLayout).addWidget(this.treefinder);
   }
 
   restore() { // restore expansion prior to rebuild
@@ -503,7 +505,7 @@ export class TreeFinderSidebar extends Widget {
   toolbar: Toolbar;
   treefinder: TreeFinderWidget;
 
-  readonly layout: PanelLayout;
+  readonly panel_layout: PanelLayout;
   readonly url: string;
 }
 
