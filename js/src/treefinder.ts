@@ -431,9 +431,9 @@ export class TreeFinderSidebar extends Widget {
 
     this.treefinder = new TreeFinderWidget({ app, rootPath, columns });
 
-    this.panel_layout = new PanelLayout();
-    this.panel_layout.addWidget(this.toolbar);
-    this.panel_layout.addWidget(this.treefinder);
+    this.layout = new PanelLayout();
+    (this.layout as PanelLayout).addWidget(this.toolbar);
+    (this.layout as PanelLayout).addWidget(this.treefinder);
   }
 
   restore() { // restore expansion prior to rebuild
@@ -505,7 +505,6 @@ export class TreeFinderSidebar extends Widget {
   toolbar: Toolbar;
   treefinder: TreeFinderWidget;
 
-  readonly panel_layout: PanelLayout;
   readonly url: string;
 }
 
