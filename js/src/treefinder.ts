@@ -40,7 +40,7 @@ import { Content, ContentsModel, Format, Path, TreeFinderGridElement, TreeFinder
 import { JupyterClipboard } from "./clipboard";
 import { commandIDs, idFromResource } from "./commands";
 import { ContentsProxy } from "./contents_proxy";
-import { getContentParent, getRefreshTargets, revealPath } from "./contents_utils";
+import { getContentParent, revealPath } from "./contents_utils";
 import { DragDropWidget, TABLE_HEADER_MIME } from "./drag";
 import { IFSResource } from "./filesystem";
 import { fileTreeIcon } from "./icons";
@@ -115,13 +115,7 @@ export class TreeFinderWidget extends DragDropWidget {
       //       Currently we hard-code the refresh here, but should be moved upstream!
       const contentsModel = this.model!;
       contentsModel.renamerSub.subscribe(async ({ name, target }) => {
-        const destination = target.row;
-        let toRefresh = getRefreshTargets<ContentsProxy.IJupyterContentRow>(
-          [destination],
-          contentsModel.root,
-          true
-        );
-        contentsModel.refreshSub.next(toRefresh);
+        contentsModel.sort();
       });
     })
   }
