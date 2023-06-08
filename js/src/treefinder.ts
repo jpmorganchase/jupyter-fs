@@ -40,7 +40,7 @@ import { Content, ContentsModel, Format, Path, TreeFinderGridElement, TreeFinder
 import { JupyterClipboard } from "./clipboard";
 import { commandIDs, idFromResource } from "./commands";
 import { ContentsProxy } from "./contents_proxy";
-import { getContentParent, revealPath } from "./contents_utils";
+import { getContentParent, getRefreshTargets, revealPath } from "./contents_utils";
 import { DragDropWidget, TABLE_HEADER_MIME } from "./drag";
 import { IFSResource } from "./filesystem";
 import { fileTreeIcon } from "./icons";
@@ -110,6 +110,20 @@ export class TreeFinderWidget extends DragDropWidget {
     // CAREFUL: tree-finder currently REQUIRES the node to be added to the DOM before init can be called!
     this._ready = this.nodeInit();
     this._ready.catch(reason => showErrorMessage("Failed to init browser", reason as string));
+    this._ready.then(() => {
+      // TODO: Model state of TreeFinderWidget should be updated by renamerSub process.
+      //       Currently we hard-code the refresh here, but should be moved upstream!
+      const contentsModel = this.model!;
+      contentsModel.renamerSub.subscribe(async ({ name, target }) => {
+        const destination = target.row;
+        let toRefresh = getRefreshTargets<ContentsProxy.IJupyterContentRow>(
+          [destination],
+          contentsModel.root,
+          true
+        );
+        contentsModel.refreshSub.next(toRefresh);
+      });
+    })
   }
 
   protected move(mimeData: MimeData, target: HTMLElement): DropAction {

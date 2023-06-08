@@ -68,7 +68,7 @@ export namespace ContentsProxy {
   export function toJupyterContentRow(row: Contents.IModel, contentsManager: ContentsManager, drive?: string): IJupyterContentRow {
     const { path, type, ...rest } = row;
 
-    const pathWithDrive = toFullPath(path, drive);
+    const pathWithDrive = toFullPath(path, drive).replace(/\/$/, "");
     const kind = type === "directory" ? "dir" : type;
 
     return {
