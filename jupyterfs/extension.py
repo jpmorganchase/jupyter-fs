@@ -42,7 +42,14 @@ def _load_jupyter_server_extension(serverapp):
         warnings.warn(_mm_config_warning_msg)
         return
 
-    serverapp.contents_manager_class = MetaManager
+    if isinstance(serverapp.contents_manager_class, type) and not issubclass(
+        serverapp.contents_manager_class, MetaManager
+    ):
+        serverapp.contents_manager_class = MetaManager
+        serverapp.log.info(
+            "Configuring jupyter-fs manager as the content manager class"
+        )
+
     resources_url = "jupyterfs/resources"
     serverapp.log.info(
         "Installing jupyter-fs resources handler on path %s"
