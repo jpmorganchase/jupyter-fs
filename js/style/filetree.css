@@ -104,3 +104,7 @@
 .filetree-header.modified {
   border-right: none;
 }
+
+.jfs-mod-native-drop {
+  background: var(--tf-row-hover-background);
+}

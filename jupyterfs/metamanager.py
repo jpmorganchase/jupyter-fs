@@ -63,8 +63,8 @@ class MetaManager(AsyncContentsManager):
     def initResource(self, *resources, options={}):
         """initialize one or more (name, url) tuple representing a PyFilesystem resource specification"""
         # handle options
-        cache = "cache" not in options or options["cache"]
-        verbose = "verbose" in options and options["verbose"]
+        cache = options.get("cache", True)
+        verbose = options.get("verbose", False)
 
         self.resources = []
         managers = dict((("", self._default_root_manager),))
@@ -178,9 +178,9 @@ class MetaManager(AsyncContentsManager):
         if to_path is None:
             to_path = from_dir
         if self.dir_exists(to_path):
-            name = self.copy_pat.sub(".", from_name)
+            name = self.copy_pat.sub(".", stripDrive(from_name))
             # ensure that any drives are stripped from the resulting filename
-            to_name = stripDrive(self.increment_filename(name, to_path, insert="-Copy"))
+            to_name = self.increment_filename(name, to_path, insert="-Copy")
             # separate path and filename with a slash if to_path is not just a drive string
             to_path = ("{0}{1}" if isDrive(to_path) else "{0}/{1}").format(
                 to_path, to_name
@@ -244,16 +244,17 @@ class MetaManagerHandler(APIHandler):
         self._jupyterfsConfig
 
     def _validate_resource(self, resource):
-        for validator in self.fsconfig.resource_validators:
-            if re.fullmatch(validator, resource["url"]) is not None:
-                break
-        else:
-            self.log.warning(
-                "Resource failed validation: %r vs %r",
-                resource["url"],
-                self.fsconfig.resource_validators,
-            )
-            return False
+        if self.fsconfig.resource_validators:
+            for validator in self.fsconfig.resource_validators:
+                if re.fullmatch(validator, resource["url"]) is not None:
+                    break
+            else:
+                self.log.warning(
+                    "Resource failed validation: %r vs %r",
+                    resource["url"],
+                    self.fsconfig.resource_validators,
+                )
+                return False
         return True
 
     @web.authenticated

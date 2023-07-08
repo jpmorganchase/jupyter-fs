@@ -7,6 +7,34 @@
   "type": "object",
   "additionalProperties": false,
 
+  "jupyter.lab.shortcuts": [
+    {
+      "command": "treefinder:copy",
+      "keys": ["Ctrl C"],
+      "selector": ".jp-tree-finder-sidebar"
+    },
+    {
+      "command": "treefinder:cut",
+      "keys": ["Ctrl X"],
+      "selector": ".jp-tree-finder-sidebar"
+    },
+    {
+      "command": "treefinder:paste",
+      "keys": ["Ctrl V"],
+      "selector": ".jp-tree-finder-sidebar"
+    },
+    {
+      "command": "treefinder:rename",
+      "keys": ["F2"],
+      "selector": ".jp-tree-finder-sidebar"
+    },
+    {
+      "command": "treefinder:delete",
+      "keys": ["Delete"],
+      "selector": ".jp-tree-finder-sidebar.jfs-mod-notRenaming"
+    }
+  ],
+
   "definitions": {
     "resource": {
       "description": "Specification for an fs resource",
@@ -38,12 +66,14 @@
 
   "properties": {
     "resources": {
+      "title": "Resources",
       "description": "The list of fs resource specifications",
       "items": { "$ref": "#/definitions/resource" },
       "type": "array",
       "default": []
     },
     "options": {
+      "title": "Options",
       "description": "Global options for jupyter-fs",
       "type": "object",
       "additionalProperties": false,
@@ -60,6 +90,18 @@
         }
       },
       "default": {}
+    },
+    "display_columns": {
+      "title": "Display Columns",
+      "description": "The list of columns that will be displayed",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["size", "last_modified", "writable", "mimetype"]
+      },
+      "default": ["size"],
+      "maxItems": 4,
+      "uniqueItems": true
     }
   }
 }

@@ -223,32 +223,6 @@ class Test_FSManager_smb_docker_share(_TestBase):
         # delete any existing root
         self._rootDirUtil.delete()
 
-    # @pytest.mark.darwin
-    # @pytest.mark.win32
-    # class Test_FSManager_smb_os_share(_TestBase):
-    #     """(windows only. future: also mac) Uses the os's buitlin samba server.
-    #     Expects a local user "smbuser" with access to a share named "test"
-    #     """
-
-    #     _rootDirUtil = samba.RootDirUtil(
-    #         dir_name=test_dir,
-    #         host=test_host_smb_os_share,
-    #         smb_port=test_smb_port_smb_os_share,
-    #     )
-
-    #     @classmethod
-    #     def setup_class(cls):
-    #         # delete any existing root
-    #         cls._rootDirUtil.delete()
-
-    #     def setup_method(self, method):
-    #         # create a root
-    #         self._rootDirUtil.create()
-
-    #     def teardown_method(self, method):
-    #         # delete any existing root
-    #         self._rootDirUtil.delete()
-
     @pytest.fixture
     def resource_uri(self):
         uri = "smb://{username}:{passwd}@{host}:{smb_port}/{share}?name-port={name_port}".format(
@@ -260,3 +234,52 @@ class Test_FSManager_smb_docker_share(_TestBase):
             name_port=test_name_port_smb_docker_nameport,
         )
         yield uri
+
+
+# @pytest.mark.darwin
+# @pytest.mark.win32
+# class Test_FSManager_smb_os_share(_TestBase):
+#     """(windows only. future: also mac) Uses the os's buitlin samba server.
+#     Expects a local user "smbuser" with access to a share named "test"
+#     """
+
+#     _rootDirUtil = samba.RootDirUtil(
+#         dir_name=test_dir,
+#         host=test_host_smb_os_share,
+#         smb_port=test_smb_port_smb_os_share,
+#     )
+
+#     @classmethod
+#     def setup_class(cls):
+#         # delete any existing root
+#         cls._rootDirUtil.delete()
+
+#     def setup_method(self, method):
+#         # create a root
+#         self._rootDirUtil.create()
+
+#     def teardown_method(self, method):
+#         # delete any existing root
+#         self._rootDirUtil.delete()
+
+#    @pytest.fixture
+#    def resource_uri(self):
+#         kwargs = dict(
+#             direct_tcp=test_direct_tcp_smb_os_share,
+#             host=test_host_smb_os_share,
+#             hostname=socket.gethostname(),
+#             passwd=samba.smb_passwd,
+#             share=test_dir,
+#             username=samba.smb_user,
+#         )
+
+#         if test_smb_port_smb_os_share is not None:
+#             uri = "smb://{username}:{passwd}@{host}:{port}/{share}?hostname={hostname}&direct-tcp={direct_tcp}".format(
+#                 port=test_smb_port_smb_os_share, **kwargs
+#             )
+#         else:
+#             uri = "smb://{username}:{passwd}@{host}/{share}?hostname={hostname}&direct-tcp={direct_tcp}".format(
+#                 **kwargs
+#             )
+
+#        yield uri

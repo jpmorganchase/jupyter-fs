@@ -6,10 +6,11 @@
 # the Apache License 2.0.  The full license can be found in the LICENSE file.
 #
 from base64 import encodebytes, decodebytes
+from contextlib import contextmanager
 from datetime import datetime
 from fs import errors, open_fs
 from fs.base import FS
-from fs.errors import NoSysPath, ResourceNotFound
+from fs.errors import NoSysPath, ResourceNotFound, PermissionDenied
 import fs.path
 import mimetypes
 import pathlib
@@ -117,6 +118,15 @@ class FSManager(FileContentsManager):
     def init_fs(cls, pyfs_class, *args, **kwargs):
         return cls(pyfs_class(*args, **kwargs))
 
+    @contextmanager
+    def perm_to_403(self, path=None):
+        """context manager for turning permission errors into 403."""
+        try:
+            yield
+        except PermissionDenied as e:
+            path = path or e.path or "unknown file"
+            raise web.HTTPError(403, "Permission denied: %r" % path) from e
+
     def __init__(self, pyfs, *args, default_writable=True, parent=None, **kwargs):
         super().__init__(parent=parent)
         self._default_writable = default_writable
@@ -171,6 +181,8 @@ class FSManager(FileContentsManager):
             pass  # if path does not exist (and no leading .), it is not considered hidden
         except NoSysPath:
             pass  # if we rely on syspath, and FS does not have it, assume not hidden
+        except PermissionDenied:
+            pass  # if we are not allowed to stat the object, we treat it as if it is visible
         except Exception:
             self.log.exception(f"Failed to check if path is hidden: {path!r}")
         return False
@@ -229,20 +241,17 @@ class FSManager(FileContentsManager):
             # size of file
             size = info.size
         except (errors.MissingInfoNamespace,):
-            self.log.warning("Unable to get size.")
             size = None
 
         # Use the Unix epoch as a fallback so we don't crash.
         try:
             last_modified = info.modified or EPOCH_START
         except (errors.MissingInfoNamespace,):
-            self.log.warning("Invalid `modified` for %s", path)
             last_modified = EPOCH_START
 
         try:
             created = info.created or last_modified
         except (errors.MissingInfoNamespace,):
-            self.log.warning("Invalid `created` for %s", path)
             created = EPOCH_START
 
         # Create the base model.
@@ -257,11 +266,22 @@ class FSManager(FileContentsManager):
         model["size"] = size
 
         try:
-            model["writable"] = info.permissions.check("u_w")  # TODO check
-        except (errors.MissingInfoNamespace,):
-            # use default if access namespace is missing
-            model["writable"] = self._default_writable
-        except OSError:
+            # The `access` namespace does not have the facilities for actually checking
+            # whether the current user can read/exec the dir, so we use systempath
+            # and do a syscall. This is slightly expensive, so ideally we could avoid this
+            import os
+
+            syspath = self._pyfilesystem_instance.getsyspath(path)
+            model["writable"] = os.access(syspath, os.W_OK)
+
+        except NoSysPath:
+            try:
+                # Fall back on "u_w" check, even if we don't know if our user == owner...
+                model["writable"] = info.permissions.check("u_w")
+            except (errors.MissingInfoNamespace,):
+                # use default if access namespace is missing
+                model["writable"] = self._default_writable
+        except (OSError, PermissionDenied):
             self.log.error("Failed to check write permissions on %s", path)
             model["writable"] = False
         except AttributeError:
@@ -277,7 +297,7 @@ class FSManager(FileContentsManager):
         if not self._pyfilesystem_instance.isdir(path):
             raise web.HTTPError(404, four_o_four)
         elif not self.allow_hidden and self.is_hidden(path):
-            self.log.info("Refusing to serve hidden directory %r, via 404 Error", path)
+            self.log.debug("Refusing to serve hidden directory %r, via 404 Error", path)
             raise web.HTTPError(404, four_o_four)
 
         model = self._base_model(path)
@@ -287,19 +307,28 @@ class FSManager(FileContentsManager):
             model["content"] = contents = []
             for name in self._pyfilesystem_instance.listdir(path):
                 os_path = fs.path.join(path, name)
-                if (
-                    not self._pyfilesystem_instance.islink(os_path)
-                    and not self._pyfilesystem_instance.isfile(os_path)
-                    and not self._pyfilesystem_instance.isdir(os_path)
-                ):
-                    self.log.debug("%s not a regular file", os_path)
-                    continue
+                try:
+                    if (
+                        not self._pyfilesystem_instance.islink(os_path)
+                        and not self._pyfilesystem_instance.isfile(os_path)
+                        and not self._pyfilesystem_instance.isdir(os_path)
+                    ):
+                        self.log.debug("%s not a regular file", os_path)
+                        continue
 
-                if self.should_list(name):
-                    if self.allow_hidden or not self._is_path_hidden(name):
-                        contents.append(
-                            self.get(path="%s/%s" % (path, name), content=False)
-                        )
+                    if self.should_list(name):
+                        if self.allow_hidden or not self._is_path_hidden(name):
+                            contents.append(
+                                self.get(path="%s/%s" % (path, name), content=False)
+                            )
+                except PermissionDenied:
+                    pass  # Don't provide clues about protected files
+                except web.HTTPError:
+                    # ignore http errors: they are already logged, and shouldn't prevent
+                    # us from listing other entries
+                    pass
+                except Exception as e:
+                    self.log.warning("Error stat-ing %s: %s", os_path, e)
             model["format"] = "json"
         return model
 
@@ -312,10 +341,11 @@ class FSManager(FileContentsManager):
                 If 'base64', the raw bytes contents will be encoded as base64.
                 If not specified, try to decode as UTF-8, and fall back to base64
         """
-        if not self._pyfilesystem_instance.isfile(path):
-            raise web.HTTPError(400, "Cannot read non-file %s" % path)
+        with self.perm_to_403(path):
+            if not self._pyfilesystem_instance.isfile(path):
+                raise web.HTTPError(400, "Cannot read non-file %s" % path)
 
-        bcontent = self._pyfilesystem_instance.readbytes(path)
+            bcontent = self._pyfilesystem_instance.readbytes(path)
 
         if format is None or format == "text":
             # Try to interpret as unicode if format is unknown or if unicode
@@ -412,21 +442,23 @@ class FSManager(FileContentsManager):
 
     def _save_directory(self, path, model):
         """create a directory"""
-        if not self.allow_hidden and self.is_hidden(path):
-            raise web.HTTPError(400, f"Cannot create directory {path!r}")
-        if not self._pyfilesystem_instance.exists(path):
-            self._pyfilesystem_instance.makedir(path)
-        elif not self._pyfilesystem_instance.isdir(path):
-            raise web.HTTPError(400, "Not a directory: %s" % (path))
-        else:
-            self.log.debug("Directory %r already exists", path)
+        with self.perm_to_403(path):
+            if not self.allow_hidden and self.is_hidden(path):
+                raise web.HTTPError(400, f"Cannot create directory {path!r}")
+            if not self._pyfilesystem_instance.exists(path):
+                self._pyfilesystem_instance.makedir(path)
+            elif not self._pyfilesystem_instance.isdir(path):
+                raise web.HTTPError(400, "Not a directory: %s" % (path))
+            else:
+                self.log.debug("Directory %r already exists", path)
 
     def _save_notebook(self, path, nb):
         """Save a notebook to an os_path."""
         s = nbformat.writes(nb, version=nbformat.NO_CONVERT)
-        self._pyfilesystem_instance.writetext(path, s)
+        with self.perm_to_403(path):
+            self._pyfilesystem_instance.writetext(path, s)
 
-    def _save_file(self, path, content, format):
+    def _save_file(self, path, content, format, chunk=None):
         """Save content of a generic file."""
         if format not in {"text", "base64"}:
             raise web.HTTPError(
@@ -442,10 +474,12 @@ class FSManager(FileContentsManager):
         except Exception as e:
             raise web.HTTPError(400, "Encoding error saving %s: %s" % (path, e))
 
-        if format == "text":
-            self._pyfilesystem_instance.writebytes(path, bcontent)
-        else:
-            self._pyfilesystem_instance.writebytes(path, bcontent)
+        with self.perm_to_403(path):
+            # Overwrite content if unchunked or for the first chunk
+            if chunk is None or chunk == 1:
+                self._pyfilesystem_instance.writebytes(path, bcontent)
+            else:
+                self._pyfilesystem_instance.appendbytes(path, bcontent)
 
     def save(self, model, path=""):
         """Save the file model and return the model with no content."""
@@ -456,8 +490,18 @@ class FSManager(FileContentsManager):
         if "content" not in model and model["type"] != "directory":
             raise web.HTTPError(400, "No file content provided")
 
+        chunk = model.get("chunk", None)
+        if chunk and model["type"] != "file":
+            raise web.HTTPError(
+                400,
+                'File type "{}" is not supported for chunked transfer'.format(
+                    model["type"]
+                ),
+            )
+
         self.log.debug("Saving %s", path)
-        self.run_pre_save_hooks(model=model, path=path)
+        if chunk is None or chunk == 1:
+            self.run_pre_save_hooks(model=model, path=path)
 
         try:
             if model["type"] == "notebook":
@@ -471,7 +515,7 @@ class FSManager(FileContentsManager):
                 #     self.create_checkpoint(path)
             elif model["type"] == "file":
                 # Missing format will be handled internally by _save_file.
-                self._save_file(path, model["content"], model.get("format"))
+                self._save_file(path, model["content"], model.get("format"), chunk)
             elif model["type"] == "directory":
                 self._save_directory(path, model)
             else:
@@ -493,51 +537,61 @@ class FSManager(FileContentsManager):
         if validation_message:
             model["message"] = validation_message
 
-        self.run_post_save_hooks(model=model, os_path=path)
+        if chunk is None or chunk == -1:
+            self.run_post_save_hooks(model=model, os_path=path)
 
         return model
+
+    def _is_non_empty_dir(self, path):
+        if self._pyfilesystem_instance.isdir(path):
+            # A directory containing only leftover checkpoints is
+            # considered empty.
+            cp_dir = getattr(self.checkpoints, "checkpoint_dir", None)
+            if set(self._pyfilesystem_instance.listdir(path)) - {cp_dir}:
+                return True
+        return False
 
     def delete_file(self, path):
         """Delete file at path."""
         path = path.strip("/")
-        if not self._pyfilesystem_instance.exists(path):
-            raise web.HTTPError(404, "File or directory does not exist: %s" % path)
 
-        def is_non_empty_dir(os_path):
+        with self.perm_to_403(path):
+            if not self._pyfilesystem_instance.exists(path):
+                raise web.HTTPError(404, "File or directory does not exist: %s" % path)
+
             if self._pyfilesystem_instance.isdir(path):
-                # A directory containing only leftover checkpoints is
-                # considered empty.
-                cp_dir = getattr(self.checkpoints, "checkpoint_dir", None)
-                if set(self._pyfilesystem_instance.listdir(path)) - {cp_dir}:
-                    return True
-            return False
-
-        if self._pyfilesystem_instance.isdir(path):
-            # Don't permanently delete non-empty directories.
-            if is_non_empty_dir(path):
-                raise web.HTTPError(400, "Directory %s not empty" % path)
-            self.log.debug("Removing directory %s", path)
-            self._pyfilesystem_instance.removetree(path)
-        else:
-            self.log.debug("Unlinking file %s", path)
-            self._pyfilesystem_instance.remove(path)
+                # Don't permanently delete non-empty directories.
+                if self._is_non_empty_dir(path):
+                    raise web.HTTPError(400, "Directory %s not empty" % path)
+                self.log.debug("Removing directory %s", path)
+                self._pyfilesystem_instance.removetree(path)
+            else:
+                self.log.debug("Unlinking file %s", path)
+                self._pyfilesystem_instance.remove(path)
 
     def rename_file(self, old_path, new_path):
-        """Rename a file."""
+        """Rename a file or directory."""
         old_path = old_path.strip("/")
         new_path = new_path.strip("/")
         if new_path == old_path:
             return
 
-        # Should we proceed with the move?
-        if self._pyfilesystem_instance.exists(
-            new_path
-        ):  # TODO and not samefile(old_os_path, new_os_path):
-            raise web.HTTPError(409, "File already exists: %s" % new_path)
+        with self.perm_to_403(new_path):
+            # Should we proceed with the move?
+            if self._pyfilesystem_instance.exists(
+                new_path
+            ):  # TODO and not samefile(old_os_path, new_os_path):
+                raise web.HTTPError(409, "File already exists: %s" % new_path)
 
-        # Move the file
+        # Move the file or directory
         try:
-            self._pyfilesystem_instance.move(old_path, new_path)
+            with self.perm_to_403():
+                if self.dir_exists(old_path):
+                    self.log.debug("Renaming directory %s to %s", old_path, new_path)
+                    self._pyfilesystem_instance.movedir(old_path, new_path, create=True)
+                else:
+                    self.log.debug("Renaming file %s to %s", old_path, new_path)
+                    self._pyfilesystem_instance.move(old_path, new_path)
         except web.HTTPError:
             raise
         except Exception as e:

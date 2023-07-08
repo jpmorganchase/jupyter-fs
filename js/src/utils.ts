@@ -12,33 +12,6 @@ import { Widget } from "@lumino/widgets";
 import { saveAs } from "file-saver";
 import JSZip from "jszip";
 
-export const CommandIDs = {
-  navigate: "filetree:navigate",
-
-  toggle: "filetree:toggle",
-
-  refresh: "filetree:refresh",
-
-  select: "filetree:select",
-
-  set_context: "filetree:set-context",
-
-  rename: "filetree:rename",
-
-  create_folder: "filetree:create-folder",
-
-  create_file: "filetree:create-file",
-
-  delete_op: "filetree:delete",
-
-  download: "filetree:download",
-
-  upload: "filetree:upload",
-
-  move: "filetree:move",
-
-  copy_path: "filetree:copy_path",
-};
 
 export const Patterns = {
   tree: new RegExp(`^${PageConfig.getOption("treeUrl")}([^?]+)`),
@@ -66,7 +39,7 @@ export function createOpenNode(): HTMLElement {
   return body;
 }
 
-export function doRename(
+export function promptRename(
   text: HTMLElement,
   edit: HTMLInputElement,
   original: string
