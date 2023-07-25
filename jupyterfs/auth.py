@@ -7,9 +7,9 @@
 #
 import os
 from string import Template
+import urllib.parse
 
 __all__ = [
-    "BraceTemplate",
     "DoubleBraceTemplate",
     "substituteAsk",
     "substituteEnv",
@@ -20,20 +20,6 @@ __all__ = [
 class _BaseTemplate(Template):
     def tokens(self):
         return [m[0] for m in self.pattern.findall(self.template)]
-
-
-class BraceTemplate(_BaseTemplate):
-    """Template subclass that will replace any '{VAR}'"""
-
-    delimiter = ""
-    pattern = r"""
-    (?:
-      [^{]{(?P<braced>\S+?)}[^}]    | # match anything in single braces
-      (?P<escaped>a^)              | # match nothing
-      (?P<named>a^)                | # match nothing
-      (?P<invalid>a^)                # match nothing
-    )
-    """
 
 
 class DoubleBraceTemplate(_BaseTemplate):
@@ -52,7 +38,9 @@ class DoubleBraceTemplate(_BaseTemplate):
 
 def substituteAsk(resource):
     if "tokenDict" in resource:
-        url = DoubleBraceTemplate(resource["url"]).substitute(resource.pop("tokenDict"))
+        url = DoubleBraceTemplate(resource["url"]).safe_substitute(
+            { k: urllib.parse.quote(v) for k, v in resource.pop("tokenDict").items() }
+        )
     else:
         url = resource["url"]
 
@@ -61,7 +49,7 @@ def substituteAsk(resource):
 
 
 def substituteEnv(resource):
-    url = DoubleBraceTemplate(resource["url"]).substitute(os.environ)
+    url = DoubleBraceTemplate(resource["url"]).safe_substitute(os.environ)
 
     # return the substituted string and the names of any missing vars
     return url, DoubleBraceTemplate(url).tokens()
