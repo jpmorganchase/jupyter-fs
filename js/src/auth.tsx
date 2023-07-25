@@ -20,6 +20,7 @@ import {
   TextField,
   InputAdornment,
   IconButton,
+  Tooltip,
 } from "@material-ui/core";
 import * as React from "react";
 
@@ -153,7 +154,11 @@ export class AskDialog<
         >
           <ExpansionPanelSummary className="jfs-ask jfs-ask-panel-summary">
             <Typography>{summary}</Typography>
-            {!reason && <Typography>{resource.url}</Typography>}
+            {!reason && 
+              <Tooltip title={resource.url}>
+                <Typography noWrap={true}>{resource.url}</Typography>
+              </Tooltip>
+            }
           </ExpansionPanelSummary>
           <ExpansionPanelDetails className="jfs-ask jfs-ask-panel-details">
             {inputs}
