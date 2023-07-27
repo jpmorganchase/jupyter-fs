@@ -18,6 +18,7 @@ import {
   filterListIcon,
   pasteIcon,
   refreshIcon,
+  fileIcon,
   newFolderIcon,
 } from "@jupyterlab/ui-components";
 import { DisposableSet, IDisposable } from "@lumino/disposable";
@@ -45,7 +46,7 @@ export const commandNames = [
   "rename",
   "download",
   "create_folder",
-  // "create_file",
+  "create_file",
   // "navigate",
   "copyFullPath",
   "copyRelativePath",
@@ -256,6 +257,40 @@ export function createCommands(
       label: "New Folder",
       isEnabled: () => !!tracker.currentWidget,
     }),
+    app.commands.addCommand(commandIDs.create_file, {
+      execute: async args =>  {
+        const widget = tracker.currentWidget!;
+        const model = widget.treefinder.model!;
+        let target = model.selectedLast ?? model.root;
+        if (!target.hasChildren) {
+          target = await getContentParent(target, model.root);
+        }
+        const path = Path.fromarray(target.row.path);
+        let row: ContentsProxy.IJupyterContentRow;
+        try {
+          row = await widget.treefinder.contentsProxy.newUntitled({
+            type: "file",
+            path,
+          });
+        } catch (e) {
+          showErrorMessage("Could not create file", e);
+          return;
+        }
+        target.invalidate();
+        const content = await revealAndSelectPath(model, row.path);
+        // Is this really needed?
+        model.refreshSub.next(getRefreshTargets([target.row], model.root));
+        // Scroll into view if not visible
+        await TreeFinderSidebar.scrollIntoView(widget.treefinder, content.pathstr);
+        const newContent = await TreeFinderSidebar.doRename(widget, content);
+        model.renamerSub.next( { name: newContent.name, target: content } );
+        // TODO: Model state of TreeFinderWidget should be updated by renamerSub process.
+        content.row = newContent;
+      },
+      icon: fileIcon,
+      label: "New File",
+      isEnabled: () => !!tracker.currentWidget,
+    }),
     app.commands.addCommand(commandIDs.refresh, {
       execute: args => {
         if (args["selection"]) {
@@ -353,6 +388,21 @@ export function createCommands(
     }),
     app.contextMenu.addItem({
       command: commandIDs.copyRelativePath,
+      selector,
+      rank: contextMenuRank++,
+    }),
+    app.contextMenu.addItem({
+      type: "separator",
+      selector,
+      rank: contextMenuRank++,
+    }),
+    app.contextMenu.addItem({
+      command: commandIDs.create_file,
+      selector,
+      rank: contextMenuRank++,
+    }),
+    app.contextMenu.addItem({
+      command: commandIDs.create_folder,
       selector,
       rank: contextMenuRank++,
     }),
