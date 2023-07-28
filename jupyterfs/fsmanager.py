@@ -232,7 +232,12 @@ class FSManager(FileContentsManager):
         return self._pyfilesystem_instance.exists(path)
 
     def _base_model(self, path, info=None):
-        """Build the common base of a contents model"""
+        """
+        Build the common base of a contents model
+        
+        if `info` passed, then that FS.Info object is used for values instead of getinfo on provided path
+        this saves a getinfo call and should speed up processing when used with scandir (which returns Info objs)
+        """
         if not info:
             info = self._pyfilesystem_instance.getinfo(
                 path, namespaces=["details", "access"]
@@ -293,6 +298,7 @@ class FSManager(FileContentsManager):
     def _dir_model(self, path, content=True, info=None):
         """Build a model for a directory
         if content is requested, will include a listing of the directory
+        if `info` passed, given to _base_model so it doesn't need to make getinfo request on `path`
         """
         four_o_four = "directory does not exist: %r" % path
 
@@ -308,16 +314,16 @@ class FSManager(FileContentsManager):
         if content:
             model["content"] = contents = []
 
-            for file_info in self._pyfilesystem_instance.scandir(path, namespaces=("basic", "access", "link", "details")):
+            for dir_entry in self._pyfilesystem_instance.scandir(path, namespaces=("basic", "access", "link", "details")):
                 try:
-                    if (not file_info.is_file and not file_info.is_dir and (file_info.has_namespace("link") and not file_info.is_link)):
+                    if (not dir_entry.is_file and not dir_entry.is_dir and (dir_entry.has_namespace("link") and not dir_entry.is_link)):
                         self.log.debug("%s not a regular file", path)
                         continue
 
-                    if self.should_list(file_info.name):
-                        if self.allow_hidden or not self._is_path_hidden(file_info.name):
+                    if self.should_list(dir_entry.name):
+                        if self.allow_hidden or not self._is_path_hidden(dir_entry.name):
                             contents.append(
-                                self.get(path="%s/%s" % (path, file_info.name), content=False, info=file_info)
+                                self.get(path="%s/%s" % (path, dir_entry.name), content=False, info=dir_entry)
                             )
                 except PermissionDenied:
                     pass  # Don't provide clues about protected files
@@ -326,7 +332,7 @@ class FSManager(FileContentsManager):
                     # us from listing other entries
                     pass
                 except Exception as e:
-                    self.log.warning("Error stat-ing %s: %s", file_info.make_path(path), e)
+                    self.log.warning("Error stat-ing %s: %s", dir_entry.make_path(path), e)
 
             model["format"] = "json"
         return model
@@ -372,6 +378,8 @@ class FSManager(FileContentsManager):
           If 'text', the contents will be decoded as UTF-8.
           If 'base64', the raw bytes contents will be encoded as base64.
           If not specified, try to decode as UTF-8, and fall back to base64
+        
+        if `info` passed, given to _base_model so it doesn't need to make getinfo request on `path`
         """
         model = self._base_model(path, info)
         model["type"] = "file"
@@ -397,6 +405,7 @@ class FSManager(FileContentsManager):
         """Build a notebook model
         if content is requested, the notebook content will be populated
         as a JSON structure (not double-serialized)
+        if `info` passed, given to _base_model so it doesn't need to make getinfo request on `path`
         """
         model = self._base_model(path, info)
         model["type"] = "notebook"
@@ -415,6 +424,8 @@ class FSManager(FileContentsManager):
             content (bool): Whether to include the contents in the reply
             type (str): The requested type - 'file', 'notebook', or 'directory'. Will raise HTTPError 400 if the content doesn't match.
             format (str): The requested format for file contents. 'text' or 'base64'. Ignored if this returns a notebook or directory model.
+            info (fs Info object): FS Info directly rather than path, if present no need to call getinfo on path -- combined with scandir should
+                                   improve efficiency saving some amount of network calls as needed info is cached in object
         Returns
             model (dict): the contents model. If content=True, returns the contents of the file or directory as well.
         """
