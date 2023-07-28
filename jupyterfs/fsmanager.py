@@ -314,12 +314,8 @@ class FSManager(FileContentsManager):
         if content:
             model["content"] = contents = []
 
-            for dir_entry in self._pyfilesystem_instance.scandir(path, namespaces=("basic", "access", "link", "details")):
+            for dir_entry in self._pyfilesystem_instance.scandir(path, namespaces=("basic", "access", "details")):
                 try:
-                    if (not dir_entry.is_file and not dir_entry.is_dir and (dir_entry.has_namespace("link") and not dir_entry.is_link)):
-                        self.log.debug("%s not a regular file", path)
-                        continue
-
                     if self.should_list(dir_entry.name):
                         if self.allow_hidden or not self._is_path_hidden(dir_entry.name):
                             contents.append(
