@@ -150,6 +150,7 @@ class FSManager(FileContentsManager):
         """Does the specific API style path correspond to a hidden node?
         Args:
             path (str): The path to check.
+            info (<Info>): FS Info object for file/dir at path
         Returns:
             hidden (bool): Whether the path is hidden.
         """
@@ -193,7 +194,7 @@ class FSManager(FileContentsManager):
         """Does the API style path correspond to a hidden directory or file?
         Args:
             path (str): The path to check.
-            info (<Info>): fs info object - if passed used instead of path
+            info (<Info>): FS Info object for file/dir at path
         Returns:
             hidden (bool): Whether the path or any of its parents are hidden.
         """
@@ -238,8 +239,7 @@ class FSManager(FileContentsManager):
         """
         Build the common base of a contents model
         
-        `info`: FS.Info object for file/dir -- used for values instead of getinfo on provided path
-        
+        info (<Info>): FS Info object for file/dir at path -- used for values and reduces needed network calls
         """
         try:
             # size of file
@@ -296,7 +296,7 @@ class FSManager(FileContentsManager):
     def _dir_model(self, path, info, content=True):
         """Build a model for a directory
         if content is requested, will include a listing of the directory
-        if `info` passed, given to _base_model so it doesn't need to make getinfo request on `path`
+        info (<Info>): FS Info object for file/dir at path
         """
         four_o_four = "directory does not exist: %r" % path
 
@@ -314,7 +314,7 @@ class FSManager(FileContentsManager):
         if content:
             model["content"] = contents = []
 
-            for dir_entry in self._pyfilesystem_instance.scandir(path, namespaces=("basic", "access", "details")):
+            for dir_entry in self._pyfilesystem_instance.scandir(path, namespaces=("basic", "access", "details", "stat")):
                 try:
                     if self.should_list(dir_entry.name):
                         if self.allow_hidden or not self._is_path_hidden(dir_entry.name, dir_entry):
@@ -341,7 +341,7 @@ class FSManager(FileContentsManager):
                 If 'text', the contents will be decoded as UTF-8.
                 If 'base64', the raw bytes contents will be encoded as base64.
                 If not specified, try to decode as UTF-8, and fall back to base64
-            info (<Info>): Info object for file at path
+            info (<Info>): FS Info object for file at path
         """
         with self.perm_to_403(path):
             if not info.is_file:
@@ -376,7 +376,7 @@ class FSManager(FileContentsManager):
           If 'base64', the raw bytes contents will be encoded as base64.
           If not specified, try to decode as UTF-8, and fall back to base64
         
-        info: fs object for file at path - by passing it avoid extra network requests
+        info (<Info>): FS Info object for file at path
         """
         model = self._base_model(path, info)
         model["type"] = "file"
@@ -402,7 +402,7 @@ class FSManager(FileContentsManager):
         """Build a notebook model
         if content is requested, the notebook content will be populated
         as a JSON structure (not double-serialized)
-        `info` fs object for file at path, passing it avoids extra network requests
+        info (<Info>): FS Info object for file at path
         """
         model = self._base_model(path, info)
         model["type"] = "notebook"
@@ -421,7 +421,7 @@ class FSManager(FileContentsManager):
             content (bool): Whether to include the contents in the reply
             type (str): The requested type - 'file', 'notebook', or 'directory'. Will raise HTTPError 400 if the content doesn't match.
             format (str): The requested format for file contents. 'text' or 'base64'. Ignored if this returns a notebook or directory model.
-            info (fs Info object): FS Info directly rather than path, if present no need to call getinfo on path
+            info (fs Info object): Optional FS Info. If present, it needs to include the following namespaces: "basic", "stat", "access", "details". Including it can avoid extraneous networkcalls.
         Returns
             model (dict): the contents model. If content=True, returns the contents of the file or directory as well.
         """
