@@ -98,15 +98,19 @@ export class TreeFinderWidget extends DragDropWidget {
     super({ node, acceptedDropMimeTypes });
     this.addClass("jp-tree-finder");
 
-    this.contentsProxy = new ContentsProxy(contents as ContentsManager, rootPath);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    this.contentsProxy = new ContentsProxy(contents as ContentsManager, rootPath, this.onGetChildren.bind(this));
     this.settings = settings;
 
     this.translator = translator || nullTranslator;
     this._trans = this.translator.load("jupyterlab");
-    this._commands = commands;
 
+    this._commands = commands;
+    this._expanding =  new Map<string, number>();
     this._columns = columns;
     this.rootPath = rootPath === "" ? rootPath : rootPath + ":";
+    this._initialLoad = true;
+
     // CAREFUL: tree-finder currently REQUIRES the node to be added to the DOM before init can be called!
     this._ready = this.nodeInit();
     void this._ready.catch(reason => showErrorMessage("Failed to init browser", reason as string));
@@ -143,6 +147,30 @@ export class TreeFinderWidget extends DragDropWidget {
     return img;
   }
 
+  protected onGetChildren(path: string, done: Promise<void>) {
+    if (this._initialLoad) {
+      const rootPathstr = Path.toarray(this.rootPath).join("/");
+      if (path === rootPathstr) {
+        done.finally(() => {
+          this._initialLoad = false;
+          this.draw();
+        });
+      }
+    }
+    this._expanding.set(path, (this._expanding.get(path) || 0) + 1);
+    // only redraw if bumped up from 0
+    if (this._expanding.get(path) === 1) {
+      this.draw();
+    }
+    done.finally(() => {
+      this._expanding.set(path, (this._expanding.get(path) || 1) - 1);
+      // only redraw if bumped down to 0
+      if (this._expanding.get(path) === 0) {
+        this.draw();
+      }
+    });
+  }
+
   /**
    * Reorders the columns according to given inputs and saves to user settings
    * If `source` is dragged from left to right, it will be inserted to the right side of `dest`
@@ -172,7 +200,8 @@ export class TreeFinderWidget extends DragDropWidget {
   }
 
   async nodeInit() {
-    await this.contentsProxy.get(this.rootPath).then(root => this.node.init({
+    // The contents of root passed to node.init is not (currently) considered, so do not ask for it..
+    await this.contentsProxy.get(this.rootPath, { content: false }).then(root => this.node.init({
       root,
       gridOptions: {
         columnFormatters: {
@@ -189,6 +218,9 @@ export class TreeFinderWidget extends DragDropWidget {
     })).then(() => {
       const grid = this.node.querySelector<TreeFinderGridElement<ContentsProxy.IJupyterContentRow>>("tree-finder-grid");
       grid?.addStyleListener(() => {
+        // Set root-level load indicator
+        grid.classList.toggle("jfs-mod-loading", this._initialLoad);
+
         // Fix corner cleanup (workaround for underlying bug where we end up with two resize handles)
         const resizeSpans = grid.querySelectorAll(`thead tr > th:first-child > span.rt-column-resize`);
         const nHeaderRows = grid.querySelectorAll("thead tr").length;
@@ -221,6 +253,15 @@ export class TreeFinderWidget extends DragDropWidget {
             if (meta && meta.y === lastSelectIdx) {
               nameElement.focus();
               lastSelectIdx = -1;
+            }
+          }
+
+          // Add "loading" indicator for folders that are fetching children
+          if (nameElement) {
+            const meta = grid.getMeta(rowHeader);
+            const content = meta?.y ? this.model?.contents[meta.y] : undefined;
+            if (content) {
+              rowHeader.classList.toggle("jfs-mod-loading", !!nameElement && (this._expanding.get(content.pathstr) || 0) > 0);
             }
           }
         }
@@ -528,6 +569,8 @@ export class TreeFinderWidget extends DragDropWidget {
   private _ready: Promise<void>;
   private _trans: TranslationBundle;
   private _commands: CommandRegistry;
+  private _expanding: Map<string, number>;
+  private _initialLoad: boolean;
 }
 
 export namespace TreeFinderWidget {
