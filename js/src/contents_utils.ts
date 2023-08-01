@@ -85,7 +85,7 @@ export async function revealAndSelectPath<T extends IContentRow>(contents: Conte
 export async function openDirRecursive<T extends IContentRow>(model: ContentsModel<T>, path: string[]) {
   for await (const node of walkPath(path, model.root)) {
     if (node.pathstr !== model.root.pathstr) {
-      model.openDir(node.row);
+      await model.openDir(node.row);
     }
   }
 }

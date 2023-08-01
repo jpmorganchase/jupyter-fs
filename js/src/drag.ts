@@ -52,49 +52,49 @@ The core team that coordinates development on GitHub can be found here:
 https://github.com/jupyter/.
 */
 
-'use strict';
+"use strict";
 
 import {
-  Widget
-} from '@lumino/widgets';
+  Widget,
+} from "@lumino/widgets";
 
 import type {
-  Message
-} from '@lumino/messaging';
+  Message,
+} from "@lumino/messaging";
 
 import {
-  MimeData
-} from '@lumino/coreutils';
+  MimeData,
+} from "@lumino/coreutils";
 
 import {
-  Drag, IDragEvent, DropAction, SupportedActions
-} from '@lumino/dragdrop';
+  Drag, IDragEvent, DropAction, SupportedActions,
+} from "@lumino/dragdrop";
 
 
 /**
  * The class name added to the DropWidget
  */
-const DROP_WIDGET_CLASS = 'jfs-DropWidget';
+const DROP_WIDGET_CLASS = "jfs-DropWidget";
 
 /**
  * The class name added to the DragWidget
  */
-const DRAG_WIDGET_CLASS = 'jfs-DragWidget';
+const DRAG_WIDGET_CLASS = "jfs-DragWidget";
 
 /**
  * The class name added to something which can be used to drag a box
  */
-const DRAG_HANDLE = 'jfs-mod-dragHandle';
+const DRAG_HANDLE = "jfs-mod-dragHandle";
 
 /**
  * The class name of the default drag handle
  */
-const DEFAULT_DRAG_HANDLE_CLASS = 'jfs-DragWidget-dragHandle';
+const DEFAULT_DRAG_HANDLE_CLASS = "jfs-DragWidget-dragHandle";
 
 /**
  * The class name added to a drop target.
  */
-const DROP_TARGET_CLASS = 'jfs-mod-dropTarget';
+const DROP_TARGET_CLASS = "jfs-mod-dropTarget";
 
 /**
  * The threshold in pixels to start a drag event.
@@ -104,7 +104,7 @@ const DRAG_THRESHOLD = 5;
 /**
  * The mime type for a table header drag object.
  */
-export const TABLE_HEADER_MIME = 'application/x-jupyterfs-thead';
+export const TABLE_HEADER_MIME = "application/x-jupyterfs-thead";
 
 
 /**
@@ -113,7 +113,7 @@ export const TABLE_HEADER_MIME = 'application/x-jupyterfs-thead';
  */
 export
 function belongsToUs(node: HTMLElement, parentClass: string,
-                     parentNode: HTMLElement): boolean {
+  parentNode: HTMLElement): boolean {
   let candidate: HTMLElement | null = node;
   // Traverse DOM until drag widget encountered:
   while (candidate && !candidate.classList.contains(parentClass)) {
@@ -132,9 +132,8 @@ function belongsToUs(node: HTMLElement, parentClass: string,
 export
 function findChild(parent: HTMLElement | HTMLElement[], node: HTMLElement): HTMLElement | null  {
   // Work our way up the DOM to an element which has this node as parent
-  let child: HTMLElement | null = null;
-  let parentIsArray = Array.isArray(parent);
-  let isDirectChild = (child: HTMLElement): boolean => {
+  const parentIsArray = Array.isArray(parent);
+  const isDirectChild = (child: HTMLElement): boolean => {
     if (parentIsArray) {
       return (parent as HTMLElement[]).indexOf(child) > -1;
     } else {
@@ -142,6 +141,7 @@ function findChild(parent: HTMLElement | HTMLElement[], node: HTMLElement): HTML
     }
   };
   let candidate: HTMLElement | null = node;
+  let child: HTMLElement | null = null;
   while (candidate && candidate !== parent) {
     if (isDirectChild(candidate)) {
       child = candidate;
@@ -206,20 +206,20 @@ abstract class DropWidget extends Widget {
    */
   handleEvent(event: Event): void {
     switch (event.type) {
-    case 'lm-dragenter':
-      this._evtDragEnter(event as IDragEvent);
-      break;
-    case 'lm-dragleave':
-      this._evtDragLeave(event as IDragEvent);
-      break;
-    case 'lm-dragover':
-      this._evtDragOver(event as IDragEvent);
-      break;
-    case 'lm-drop':
-      this.evtDrop(event as IDragEvent);
-      break;
-    default:
-      break;
+      case "lm-dragenter":
+        this._evtDragEnter(event as IDragEvent);
+        break;
+      case "lm-dragleave":
+        this._evtDragLeave(event as IDragEvent);
+        break;
+      case "lm-dragover":
+        this._evtDragOver(event as IDragEvent);
+        break;
+      case "lm-drop":
+        this.evtDrop(event as IDragEvent);
+        break;
+      default:
+        break;
     }
   }
 
@@ -250,7 +250,7 @@ abstract class DropWidget extends Widget {
       return null;
     }
 
-    if (this._isValidTargetHeader(input, mimeData.getData(TABLE_HEADER_MIME))) {
+    if (this._isValidTargetHeader(input, mimeData.getData(TABLE_HEADER_MIME) as string)) {
       input.classList.add(DROP_TARGET_CLASS);
     } else {
       return null;
@@ -258,7 +258,7 @@ abstract class DropWidget extends Widget {
 
     // No need to findChild for reordering of columns
     if (mimeData.types().includes(TABLE_HEADER_MIME)) {
-      return input; 
+      return input;
     } else {
       return findChild(this.node, input);
     }
@@ -288,7 +288,7 @@ abstract class DropWidget extends Widget {
 
     // If configured to, only accept internal moves:
     if (!this.validateSource(event)) {
-      event.dropAction = 'none';
+      event.dropAction = "none";
       event.preventDefault();
       event.stopPropagation();
       return;
@@ -301,22 +301,22 @@ abstract class DropWidget extends Widget {
    * Handle `after_attach` messages for the widget.
    */
   protected onAfterAttach(msg: Message): void {
-    let node = this.node;
-    node.addEventListener('lm-dragenter', this);
-    node.addEventListener('lm-dragleave', this);
-    node.addEventListener('lm-dragover', this);
-    node.addEventListener('lm-drop', this);
+    const node = this.node;
+    node.addEventListener("lm-dragenter", this);
+    node.addEventListener("lm-dragleave", this);
+    node.addEventListener("lm-dragover", this);
+    node.addEventListener("lm-drop", this);
   }
 
   /**
    * Handle `before_detach` messages for the widget.
    */
   protected onBeforeDetach(msg: Message): void {
-    let node = this.node;
-    node.removeEventListener('lm-dragenter', this);
-    node.removeEventListener('lm-dragleave', this);
-    node.removeEventListener('lm-dragover', this);
-    node.removeEventListener('lm-drop', this);
+    const node = this.node;
+    node.removeEventListener("lm-dragenter", this);
+    node.removeEventListener("lm-dragleave", this);
+    node.removeEventListener("lm-dragover", this);
+    node.removeEventListener("lm-drop", this);
   }
 
 
@@ -327,7 +327,7 @@ abstract class DropWidget extends Widget {
     if (!this.validateSource(event)) {
       return;
     }
-    let target = this.findDropTarget(event.target as HTMLElement, event.mimeData);
+    const target = this.findDropTarget(event.target as HTMLElement, event.mimeData);
     if (target === null) {
       return;
     }
@@ -354,7 +354,7 @@ abstract class DropWidget extends Widget {
       return;
     }
     this._clearDropTarget();
-    let target = this.findDropTarget(event.target as HTMLElement, event.mimeData);
+    const target = this.findDropTarget(event.target as HTMLElement, event.mimeData);
     if (target === null) {
       return;
     }
@@ -367,9 +367,9 @@ abstract class DropWidget extends Widget {
    * Checks if the target is a header, and it is not 'path' or itself
    */
   private _isValidTargetHeader(target: HTMLElement, draggedColumn: string) {
-    return target.classList.contains('tf-header-name') && 
-            target.innerText !== draggedColumn && 
-            target.innerText !== 'path'
+    return target.classList.contains("tf-header-name") &&
+            target.innerText !== draggedColumn &&
+            target.innerText !== "path";
   }
 
   /**
@@ -379,12 +379,12 @@ abstract class DropWidget extends Widget {
    * This function assumes there are only one active drop target
    */
   private _clearDropTarget(): void {
-    let elements = this.node.getElementsByClassName(DROP_TARGET_CLASS);
+    const elements = this.node.getElementsByClassName(DROP_TARGET_CLASS);
     if (elements.length) {
       (elements[0] as HTMLElement).classList.remove(DROP_TARGET_CLASS);
     }
   }
-};
+}
 
 /**
  * An internal base class for implementing drag operations on top
@@ -422,18 +422,18 @@ abstract class DragDropWidgetBase extends DropWidget {
    */
   handleEvent(event: Event): void {
     switch (event.type) {
-    case 'mousedown':
-      this._evtDragMousedown(event as MouseEvent);
-      break;
-    case 'mouseup':
-      this._evtDragMouseup(event as MouseEvent);
-      break;
-    case 'mousemove':
-      this._evtDragMousemove(event as MouseEvent);
-      break;
-    default:
-      super.handleEvent(event);
-      break;
+      case "mousedown":
+        this._evtDragMousedown(event as MouseEvent);
+        break;
+      case "mouseup":
+        this._evtDragMouseup(event as MouseEvent);
+        break;
+      case "mousemove":
+        this._evtDragMousemove(event as MouseEvent);
+        break;
+      default:
+        super.handleEvent(event);
+        break;
     }
   }
 
@@ -459,7 +459,7 @@ abstract class DragDropWidgetBase extends DropWidget {
    * The default implementation returns a clone of the drag target.
    */
   protected getDragImage(handle: HTMLElement): HTMLElement | null {
-    let target = this.findDragTarget(handle);
+    const target = this.findDragTarget(handle);
     if (target) {
       return target.cloneNode(true) as HTMLElement;
     }
@@ -477,8 +477,8 @@ abstract class DragDropWidgetBase extends DropWidget {
    * Handle `after_attach` messages for the widget.
    */
   protected onAfterAttach(msg: Message): void {
-    let node = this.node;
-    node.addEventListener('mousedown', this);
+    const node = this.node;
+    node.addEventListener("mousedown", this);
     super.onAfterAttach(msg);
   }
 
@@ -486,11 +486,11 @@ abstract class DragDropWidgetBase extends DropWidget {
    * Handle `before_detach` messages for the widget.
    */
   protected onBeforeDetach(msg: Message): void {
-    let node = this.node;
-    node.removeEventListener('click', this);
-    node.removeEventListener('dblclick', this);
-    document.removeEventListener('mousemove', this, true);
-    document.removeEventListener('mouseup', this, true);
+    const node = this.node;
+    node.removeEventListener("click", this);
+    node.removeEventListener("dblclick", this);
+    document.removeEventListener("mousemove", this, true);
+    document.removeEventListener("mouseup", this, true);
     super.onBeforeDetach(msg);
   }
 
@@ -504,7 +504,7 @@ abstract class DragDropWidgetBase extends DropWidget {
    */
   protected startDrag(handle: HTMLElement, clientX: number, clientY: number): void {
     // Create the drag image.
-    let dragImage = this.getDragImage(handle);
+    const dragImage = this.getDragImage(handle);
 
     // Set up the drag event.
     this.drag = new Drag({
@@ -512,14 +512,14 @@ abstract class DragDropWidgetBase extends DropWidget {
       mimeData: new MimeData(),
       supportedActions: this.defaultSupportedActions,
       proposedAction: this.defaultProposedAction,
-      source: this
+      source: this,
     });
     this.addMimeData(handle, this.drag.mimeData);
 
     // Start the drag and remove the mousemove listener.
-    this.drag.start(clientX, clientY).then(this.onDragComplete.bind(this));
-    document.removeEventListener('mousemove', this, true);
-    document.removeEventListener('mouseup', this, true);
+    void this.drag.start(clientX, clientY).then(this.onDragComplete.bind(this));
+    document.removeEventListener("mousemove", this, true);
+    document.removeEventListener("mouseup", this, true);
   }
 
   /**
@@ -547,7 +547,7 @@ abstract class DragDropWidgetBase extends DropWidget {
     }
     // Finally, check that handle does not belong to a nested drag widget
     if (handle !== null && !belongsToUs(
-        handle, DRAG_WIDGET_CLASS, this.node)) {
+      handle, DRAG_WIDGET_CLASS, this.node)) {
       // Handle belongs to a nested drag widget:
       handle = null;
     }
@@ -558,8 +558,8 @@ abstract class DragDropWidgetBase extends DropWidget {
    * Handle the `'mousedown'` event for the widget.
    */
   private _evtDragMousedown(event: MouseEvent): void {
-    let target = event.target as HTMLElement;
-    let handle = this._findDragHandle(target);
+    const target = event.target as HTMLElement;
+    const handle = this._findDragHandle(target);
     if (handle === null) {
       return;
     }
@@ -567,9 +567,9 @@ abstract class DragDropWidgetBase extends DropWidget {
     // Left mouse press for drag start.
     if (event.button === 0) {
       this._clickData = { pressX: event.clientX, pressY: event.clientY,
-                        handle: handle };
-      document.addEventListener('mouseup', this, true);
-      document.addEventListener('mousemove', this, true);
+        handle };
+      document.addEventListener("mouseup", this, true);
+      document.addEventListener("mousemove", this, true);
       event.preventDefault();
     }
   }
@@ -580,8 +580,8 @@ abstract class DragDropWidgetBase extends DropWidget {
    */
   private _evtDragMouseup(event: MouseEvent): void {
     if (event.button !== 0 || !this.drag) {
-      document.removeEventListener('mousemove', this, true);
-      document.removeEventListener('mouseup', this, true);
+      document.removeEventListener("mousemove", this, true);
+      document.removeEventListener("mouseup", this, true);
       this.drag = null;
       return;
     }
@@ -602,12 +602,12 @@ abstract class DragDropWidgetBase extends DropWidget {
     event.stopPropagation();
 
     // Check for a drag initialization.
-    let data = this._clickData;
+    const data = this._clickData;
     if (!data) {
-      throw new Error('Missing drag data');
+      throw new Error("Missing drag data");
     }
-    let dx = Math.abs(event.clientX - data.pressX);
-    let dy = Math.abs(event.clientY - data.pressY);
+    const dx = Math.abs(event.clientX - data.pressX);
+    const dy = Math.abs(event.clientY - data.pressY);
     if (dx < DRAG_THRESHOLD && dy < DRAG_THRESHOLD) {
       return;
     }
@@ -616,8 +616,8 @@ abstract class DragDropWidgetBase extends DropWidget {
     this._clickData = null;
   }
 
-  protected defaultSupportedActions: SupportedActions = 'all';
-  protected defaultProposedAction: DropAction = 'move';
+  protected defaultSupportedActions: SupportedActions = "all";
+  protected defaultProposedAction: DropAction = "move";
 
   /**
    * Data stored on mouse down to determine if drag treshold has
@@ -749,18 +749,18 @@ export abstract class DragDropWidget extends DragDropWidgetBase {
    * Override this if you need to handle other mime data than the default.
    */
   protected processDrop(dropTarget: HTMLElement, event: IDragEvent): void {
-    if (!DropWidget.isValidAction(event.supportedActions, 'move') ||
-        event.proposedAction === 'none') {
+    if (!DropWidget.isValidAction(event.supportedActions, "move") ||
+        event.proposedAction === "none") {
       // The default implementation only handles move action
       // OR Accept proposed none action, and perform no-op
-      event.dropAction = 'none';
+      event.dropAction = "none";
       event.preventDefault();
       event.stopPropagation();
       return;
     }
     if (!this.validateSource(event)) {
       // Source indicates external drop, incorrect use in subclass
-      throw new Error('Invalid source!');
+      throw new Error("Invalid source!");
     }
 
     // We have an acceptable drop, handle:
@@ -770,7 +770,6 @@ export abstract class DragDropWidget extends DragDropWidgetBase {
     event.dropAction = action;
   }
 }
-
 
 
 /**
@@ -804,16 +803,16 @@ namespace DropWidget {
   export
   function isValidAction(supported: SupportedActions, action: DropAction): boolean {
     switch (supported) {
-    case 'all':
-      return true;
-    case 'link-move':
-      return action === 'move' || action === 'link';
-    case 'copy-move':
-      return action === 'move' || action === 'copy';
-    case 'copy-link':
-      return action === 'link' || action === 'copy';
-    default:
-      return action === supported;
+      case "all":
+        return true;
+      case "link-move":
+        return action === "move" || action === "link";
+      case "copy-move":
+        return action === "move" || action === "copy";
+      case "copy-link":
+        return action === "link" || action === "copy";
+      default:
+        return action === supported;
     }
   }
 }
@@ -856,7 +855,7 @@ namespace DragWidget {
    */
   export
   function createDefaultHandle(): Widget {
-    let widget = new Widget();
+    const widget = new Widget();
     widget.addClass(DEFAULT_DRAG_HANDLE_CLASS);
     makeHandle(widget);
     return widget;
@@ -873,7 +872,6 @@ namespace DragDropWidget {
   interface IOptions extends DragWidget.IOptions, DropWidget.IOptions {
   }
 }
-
 
 
 export
@@ -898,7 +896,7 @@ abstract class FriendlyDragDrop extends DragDropWidget {
 
   get friends(): FriendlyDragDrop[] {
     if (this._groupId === undefined) {
-      throw new Error('Uninitialized drag-drop group');
+      throw new Error("Uninitialized drag-drop group");
     }
     return FriendlyDragDrop._groups[this._groupId];
   }
@@ -919,7 +917,7 @@ abstract class FriendlyDragDrop extends DragDropWidget {
 //  */
 // export class DragDropContents extends FriendlyDragDrop {
 
-//   protected move(mimeData: MimeData, target: HTMLElement): DropAction { 
+//   protected move(mimeData: MimeData, target: HTMLElement): DropAction {
 //     if (!mimeData.hasData(CONTENTS_MIME)) {
 //       return 'none';
 //     }
@@ -927,9 +925,9 @@ abstract class FriendlyDragDrop extends DragDropWidget {
 //   }
 
 //   protected addMimeData(handle: HTMLElement, mimeData: MimeData): void {
-    
+
 //   }
-    
+
 
 //   /**
 //    * Handle the `'lm-dragenter'` event for the widget.

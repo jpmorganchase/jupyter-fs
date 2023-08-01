@@ -154,7 +154,7 @@ export class AskDialog<
         >
           <ExpansionPanelSummary className="jfs-ask jfs-ask-panel-summary">
             <Typography>{summary}</Typography>
-            {!reason && 
+            {!reason &&
               <Tooltip title={resource.url}>
                 <Typography noWrap={true}>{resource.url}</Typography>
               </Tooltip>

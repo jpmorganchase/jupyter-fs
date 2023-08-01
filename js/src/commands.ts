@@ -273,7 +273,7 @@ export function createCommands(
             path,
           });
         } catch (e) {
-          showErrorMessage("Could not create file", e);
+          void showErrorMessage("Could not create file", e);
           return;
         }
         target.invalidate();
@@ -322,7 +322,6 @@ export function createCommands(
       label: "Copy Relative Path",
       isEnabled: () => !!tracker.currentWidget,
     }),
-
     app.commands.addCommand(commandIDs.toggleColumnPath, {
       execute: args => { /* no-op */ },
       label: "path",

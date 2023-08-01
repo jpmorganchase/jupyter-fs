@@ -89,7 +89,7 @@ export class TreeFinderWidget extends DragDropWidget {
     columns,
     rootPath = "",
     translator,
-    settings
+    settings,
   }: TreeFinderWidget.IOptions) {
     const { commands, serviceManager: { contents } } = app;
 
@@ -109,21 +109,21 @@ export class TreeFinderWidget extends DragDropWidget {
     this.rootPath = rootPath === "" ? rootPath : rootPath + ":";
     // CAREFUL: tree-finder currently REQUIRES the node to be added to the DOM before init can be called!
     this._ready = this.nodeInit();
-    this._ready.catch(reason => showErrorMessage("Failed to init browser", reason as string));
-    this._ready.then(() => {
+    void this._ready.catch(reason => showErrorMessage("Failed to init browser", reason as string));
+    void this._ready.then(() => {
       // TODO: Model state of TreeFinderWidget should be updated by renamerSub process.
       //       Currently we hard-code the refresh here, but should be moved upstream!
       const contentsModel = this.model!;
-      contentsModel.renamerSub.subscribe(async ({ name, target }) => {
-        contentsModel.sort();
+      contentsModel.renamerSub.subscribe(({ name, target }) => {
+        void contentsModel.sort();
       });
-    })
+    });
   }
 
   protected move(mimeData: MimeData, target: HTMLElement): DropAction {
     const source = mimeData.getData(TABLE_HEADER_MIME) as (keyof ContentsProxy.IJupyterContentRow);
     const dest = target.innerText as (keyof ContentsProxy.IJupyterContentRow);
-    void this._reorderColumns(source, dest)
+    void this._reorderColumns(source, dest);
     void this.nodeInit();
     return "move";
   }
@@ -134,11 +134,11 @@ export class TreeFinderWidget extends DragDropWidget {
   }
 
   protected getDragImage(handle: HTMLElement): HTMLElement | null {
-    let target = this.findDragTarget(handle);
+    const target = this.findDragTarget(handle);
     let img = null;
     if (target) {
       img = target.cloneNode(true) as HTMLElement;
-      img.classList.add('jp-thead-drag-image');
+      img.classList.add("jp-thead-drag-image");
     }
     return img;
   }
@@ -155,8 +155,7 @@ export class TreeFinderWidget extends DragDropWidget {
     if (sIndex < dIndex) {
       this._columns.splice(dIndex + 1, 0, source);
       this._columns.splice(sIndex, 1);
-    } 
-    else if (sIndex > dIndex) {
+    } else if (sIndex > dIndex) {
       this._columns.splice(sIndex, 1);
       this._columns.splice(dIndex, 0, source);
     }
@@ -208,7 +207,7 @@ export class TreeFinderWidget extends DragDropWidget {
 
           if (tableHeader) {
             // If tableheader is path, do not make it draggable
-            if (tableHeader.innerText !== 'path') {
+            if (tableHeader.innerText !== "path") {
               tableHeader.classList.add(this.dragHandleClass);
             }
           }
@@ -389,7 +388,7 @@ export class TreeFinderWidget extends DragDropWidget {
   protected evtKeydown(event: KeyboardEvent): void {
     // handle any keys unaffacted by renaming status above this check:
     if (this.parent?.node.classList.contains("jfs-mod-renaming")) {
-      return 
+      return;
     }
     switch (event.key) {
       case "ArrowDown":
@@ -402,15 +401,15 @@ export class TreeFinderWidget extends DragDropWidget {
         if (this.model?.selectedLast) {
           event.stopPropagation();
           event.preventDefault();
-          let selectedLast = this.model.selectedLast;
+          const selectedLast = this.model.selectedLast;
           // don't allow expansion or up/down nav if in select range mode:
           if (!event.shiftKey) {
             if (selectedLast.isExpand) {
-              this.model.collapse(this.model.contents.indexOf(selectedLast));
+              void this.model.collapse(this.model.contents.indexOf(selectedLast));
             } else {
               // navigate the selection to the next up (exluding to root)
               void getContentParent(selectedLast, this.model.root).then(parent => {
-                if (parent != this.model?.root) {
+                if (parent !== this.model?.root) {
                   this.model?.selectionModel.select(parent);
                   return TreeFinderSidebar.scrollIntoView(this, parent.pathstr);
                 }
@@ -423,16 +422,16 @@ export class TreeFinderWidget extends DragDropWidget {
         if (this.model?.selectedLast) {
           event.stopPropagation();
           event.preventDefault();
-          let selectedLast = this.model.selectedLast;
+          const selectedLast = this.model.selectedLast;
           // don't allow expansion or up/down nav if in select range mode:
           if (!event.shiftKey) {
             if (!selectedLast.isExpand) {
-              this.model.expand(this.model.contents.indexOf(selectedLast));
+              void this.model.expand(this.model.contents.indexOf(selectedLast));
             } else if (selectedLast.hasChildren) {
               // navigate the selection to the first child
               void selectedLast.getChildren().then(children => {
                 if (children && children.length > 0) {
-                  this.model?.selectionModel.select(children[0])
+                  this.model?.selectionModel.select(children[0]);
                   return TreeFinderSidebar.scrollIntoView(this, children[0].pathstr);
                 }
               });
@@ -445,13 +444,13 @@ export class TreeFinderWidget extends DragDropWidget {
         if (this.model?.selectedLast) {
           event.stopPropagation();
           event.preventDefault();
-          let selectedLast = this.model.selectedLast;
+          const selectedLast = this.model.selectedLast;
           if (selectedLast.hasChildren) {
-            let selectedIdx = this.model.contents.indexOf(selectedLast);
+            const selectedIdx = this.model.contents.indexOf(selectedLast);
             if (selectedLast.isExpand) {
-              this.model.collapse(selectedIdx);
+              void this.model.collapse(selectedIdx);
             } else {
-              this.model.expand(selectedIdx);
+              void this.model.expand(selectedIdx);
             }
           }
         }
@@ -550,7 +549,7 @@ export class TreeFinderSidebar extends Widget {
     rootPath = "",
     caption = "TreeFinder",
     id = "jupyterlab-tree-finder",
-    settings
+    settings,
   }: TreeFinderSidebar.IOptions) {
     super();
     this.id = id;
@@ -738,13 +737,13 @@ export namespace TreeFinderSidebar {
 
     if (preferredDir) {
       void widget.treefinder.ready.then(async () => {
-        var path = preferredDir.split("/");
+        let path = preferredDir.split("/");
         if (preferredDir.startsWith("/")) {
           path = path.slice(1);
-        };
+        }
         path.unshift(rootPath);
-        openDirRecursive(widget.treefinder.model!, path);
-      })
+        await openDirRecursive(widget.treefinder.model!, path);
+      });
     }
 
     // // remove context highlight on context menu exit
