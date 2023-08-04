@@ -177,7 +177,7 @@ class FSManager(FileContentsManager):
                 import os
 
                 syspath = self._pyfilesystem_instance.getsyspath(path)
-                if not os.access(syspath, os.X_OK | os.R_OK):
+                if os.path.exists(syspath) and not os.access(syspath, os.X_OK | os.R_OK):
                     return True
 
         except ResourceNotFound:
@@ -317,7 +317,7 @@ class FSManager(FileContentsManager):
             for dir_entry in self._pyfilesystem_instance.scandir(path, namespaces=("basic", "access", "details", "stat")):
                 try:
                     if self.should_list(dir_entry.name):
-                        if self.allow_hidden or not self._is_path_hidden(dir_entry.name, dir_entry):
+                        if self.allow_hidden or not self._is_path_hidden(dir_entry.make_path(path), dir_entry):
                             contents.append(
                                 self.get(path="%s/%s" % (path, dir_entry.name), content=False, info=dir_entry)
                             )
