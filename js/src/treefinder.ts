@@ -33,6 +33,7 @@ import {
 // import JSZip from "jszip";
 import { ArrayExt } from "@lumino/algorithm";
 import { CommandRegistry } from "@lumino/commands";
+import { PromiseDelegate } from "@lumino/coreutils";
 import { Message } from "@lumino/messaging";
 import { PanelLayout, Widget } from "@lumino/widgets";
 import { Content, ContentsModel, Format, Path, TreeFinderGridElement, TreeFinderPanelElement } from "tree-finder";
@@ -111,10 +112,9 @@ export class TreeFinderWidget extends DragDropWidget {
     this.rootPath = rootPath === "" ? rootPath : rootPath + ":";
     this._initialLoad = true;
 
-    // CAREFUL: tree-finder currently REQUIRES the node to be added to the DOM before init can be called!
-    this._ready = this.nodeInit();
-    void this._ready.catch(reason => showErrorMessage("Failed to init browser", reason as string));
-    void this._ready.then(() => {
+    this._readyDelegate = new PromiseDelegate<void>();
+    void this._readyDelegate.promise.catch(reason => showErrorMessage("Failed to init browser", reason as string));
+    void this._readyDelegate.promise.then(() => {
       // TODO: Model state of TreeFinderWidget should be updated by renamerSub process.
       //       Currently we hard-code the refresh here, but should be moved upstream!
       const contentsModel = this.model!;
@@ -123,7 +123,6 @@ export class TreeFinderWidget extends DragDropWidget {
       });
     });
   }
-
   protected move(mimeData: MimeData, target: HTMLElement): DropAction {
     const source = mimeData.getData(TABLE_HEADER_MIME) as (keyof ContentsProxy.IJupyterContentRow);
     const dest = target.innerText as (keyof ContentsProxy.IJupyterContentRow);
@@ -300,7 +299,7 @@ export class TreeFinderWidget extends DragDropWidget {
   }
 
   get ready(): Promise<void> {
-    return this._ready;
+    return this._readyDelegate.promise;
   }
 
 
@@ -356,6 +355,12 @@ export class TreeFinderWidget extends DragDropWidget {
   protected onAfterAttach(msg: Message): void {
     super.onAfterAttach(msg);
     const node = this.node;
+    const initPromise = this.nodeInit();
+    if (this._initialLoad) {
+      void initPromise.then(() => {
+        this._readyDelegate.resolve();
+      });
+    }
     node.addEventListener("keydown", this);
     node.addEventListener("dragenter", this);
     node.addEventListener("dragover", this);
@@ -566,7 +571,7 @@ export class TreeFinderWidget extends DragDropWidget {
 
   readonly translator: ITranslator;
 
-  private _ready: Promise<void>;
+  private _readyDelegate: PromiseDelegate<void>;
   private _trans: TranslationBundle;
   private _commands: CommandRegistry;
   private _expanding: Map<string, number>;
