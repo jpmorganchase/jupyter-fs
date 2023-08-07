@@ -34,6 +34,7 @@ import type { TreeFinderTracker } from "./treefinder";
 import { getContentParent, getRefreshTargets, revealAndSelectPath } from "./contents_utils";
 import { ISettingRegistry } from "@jupyterlab/settingregistry";
 import { showErrorMessage } from "@jupyterlab/apputils";
+import { getAllSnippets, instantiateSnippet, Snippet } from "./snippets";
 
 // define the command ids as a constant tuple
 export const commandNames = [
@@ -97,6 +98,28 @@ function _getRelativePaths(selectedFiles: Array<Content<ContentsProxy.IJupyterCo
     allPaths.push(relativePath);
   }
   return allPaths;
+}
+
+
+async function _digestString(value: string): Promise<string> {
+  const encoded = new TextEncoder().encode(value); // encode as (utf-8) Uint8Array
+  const buffer = await crypto.subtle.digest("SHA-256", encoded); // hash the message
+  const hash = Array.from(new Uint8Array(buffer)); // convert buffer to byte array
+  return hash
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join(""); // convert bytes to hex string
+}
+
+
+async function _commandKeyForSnippet(snippet: Snippet): Promise<string>  {
+  return `jupyterfs:snippet-${snippet.label}-${await _digestString(snippet.label + snippet.caption + snippet.pattern.source + snippet.template)}`;
+}
+
+
+function _normalizedUrlForSnippet(content: Content<ContentsProxy.IJupyterContentRow>, baseUrl: string): string {
+  const split = content.pathstr.split("/", 2);
+  const path = split[split.length - 1];
+  return `${baseUrl}/${path}${content.hasChildren ? "/" : ""}`;
 }
 
 
@@ -340,11 +363,46 @@ export async function createDynamicCommands(
     }));
   }
 
+
+  const snippetsMenu = new Menu({ commands: app.commands });
+  snippetsMenu.title.label = "Snippets";
+  const snippets = await getAllSnippets(settings);
+  const snippetCommands = [] as IDisposable[];
+  const snippetIds = new Set<string>();
+  for (const snippet of snippets) {
+    const key = await _commandKeyForSnippet(snippet);
+    if (snippetIds.has(key)) {
+      console.warn("Discarding duplicate snippet", snippet);
+      continue;
+    }
+    snippetIds.add(key);
+    snippetsMenu.addItem({ command: key });
+    snippetCommands.push(app.commands.addCommand(key, {
+      execute: async (args: unknown) => {
+        const sidebar = tracker.currentWidget!;
+        const content = sidebar.treefinder.selection![0];
+        const instantiated = instantiateSnippet(snippet.template, sidebar.url, content.pathstr);
+        await navigator.clipboard.writeText(instantiated);
+      },
+      label: snippet.label,
+      caption: snippet.caption,
+      isVisible: () => {
+        const sidebar = tracker.currentWidget;
+        const selection = sidebar?.treefinder.selection;
+        if (selection?.length) {
+          return snippet.pattern.test(_normalizedUrlForSnippet(selection[0], sidebar!.url));
+        }
+        return false;
+      },
+    }));
+  }
+
   const selector = ".jp-tree-finder-sidebar";
   let contextMenuRank = 1;
 
   return [
     ...columnCommands,
+    ...snippetCommands,
 
     // context menu items
     app.contextMenu.addItem({
@@ -395,6 +453,12 @@ export async function createDynamicCommands(
     }),
     app.contextMenu.addItem({
       command: commandIDs.copyRelativePath,
+      selector,
+      rank: contextMenuRank++,
+    }),
+    app.contextMenu.addItem({
+      type: "submenu",
+      submenu: snippetsMenu,
       selector,
       rank: contextMenuRank++,
     }),
