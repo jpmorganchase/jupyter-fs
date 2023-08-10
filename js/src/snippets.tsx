@@ -10,6 +10,30 @@
 import { URLExt } from "@jupyterlab/coreutils";
 import { ServerConnection } from "@jupyterlab/services";
 import { ISettingRegistry } from "@jupyterlab/settingregistry";
+import * as React from "react";
+
+// for lab 4, import this from @rjsf/utils:
+import type { FieldProps } from "@rjsf/core";
+
+function _mknode(obj: any, paths: string[]) {
+  for (const path of paths) {
+    obj = obj[path] = obj[path] ?? {};
+  }
+  return obj;
+}
+
+/**
+ * Trick to set uiSchema on our settings editor form elements.
+ *
+ * We use it to set the "template" to a "textarea" multiline input
+ */
+export function snippetFormRender(props: FieldProps) {
+  const ArrayField = props.registry.fields.ArrayField;
+  const uiSchema = { ...props.uiSchema };
+  const templateUiSchema = _mknode(uiSchema, ["items", "template"]);
+  templateUiSchema["ui:widget"] = "textarea";
+  return <ArrayField {...props} uiSchema={uiSchema} />;
+}
 
 
 interface RawSnippet {

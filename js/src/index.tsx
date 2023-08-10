@@ -13,7 +13,7 @@ import { IDocumentManager } from "@jupyterlab/docmanager";
 import { ISettingRegistry } from "@jupyterlab/settingregistry";
 import { IStatusBar } from "@jupyterlab/statusbar";
 import { ITranslator } from "@jupyterlab/translation";
-import { folderIcon, fileIcon } from "@jupyterlab/ui-components";
+import { folderIcon, fileIcon, IFormComponentRegistry } from "@jupyterlab/ui-components";
 import { DisposableSet, IDisposable } from "@lumino/disposable";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
@@ -23,6 +23,7 @@ import { commandIDs, createDynamicCommands, createStaticCommands, idFromResource
 import { ContentsProxy } from "./contents_proxy";
 import { FSComm, IFSOptions, IFSResource } from "./filesystem";
 import { FileUploadStatus } from "./progress";
+import { snippetFormRender } from "./snippets";
 import { TreeFinderSidebar } from "./treefinder";
 import { ITreeFinderMain } from "./tokens";
 
@@ -41,6 +42,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
     ISettingRegistry,
     IThemeManager,
   ],
+  optional: [IFormComponentRegistry],
   provides: ITreeFinderMain,
 
   async activate(
@@ -52,6 +54,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
     router: IRouter,
     settingRegistry: ISettingRegistry,
     themeManager: IThemeManager,
+    editorRegistry: IFormComponentRegistry | null
   ): Promise<ITreeFinderMain> {
     const comm = new FSComm();
     const widgetMap : {[key: string]: TreeFinderSidebar} = {};
@@ -64,6 +67,12 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
     } catch (error) {
       // eslint-disable-next-line no-console
       console.warn(`Failed to load settings for the jupyter-fs extension.\n${error}`);
+    }
+
+    if (editorRegistry) {
+      editorRegistry.addRenderer("snippets", snippetFormRender);
+      // Format for lab 4.x +
+      // editorRegistry.addRenderer(`${BROWSER_ID}:snippets`, snippetFormRender);
     }
 
     let columns = settings?.composite.display_columns as Array<keyof ContentsProxy.IJupyterContentRow> ?? ["size"];

@@ -1,0 +1,8 @@
+
+/**
+ * Remove this is lab ever starts styling textareas itself:
+ */
+.jp-SettingsPanel textarea.form-control {
+  min-height: 3lh;  /* minimum height of 3 lines */
+  width: 80ch;  /* initial width of 80 characters */
+}
