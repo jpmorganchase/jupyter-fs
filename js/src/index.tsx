@@ -14,12 +14,12 @@ import { ISettingRegistry } from "@jupyterlab/settingregistry";
 import { IStatusBar } from "@jupyterlab/statusbar";
 import { ITranslator } from "@jupyterlab/translation";
 import { folderIcon, fileIcon } from "@jupyterlab/ui-components";
-import { IDisposable } from "@lumino/disposable";
+import { DisposableSet, IDisposable } from "@lumino/disposable";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
 import { AskDialog, askRequired } from "./auth";
-import { createCommands, idFromResource } from "./commands";
+import { commandIDs, createDynamicCommands, createStaticCommands, idFromResource } from "./commands";
 import { ContentsProxy } from "./contents_proxy";
 import { FSComm, IFSOptions, IFSResource } from "./filesystem";
 import { FileUploadStatus } from "./progress";
@@ -79,7 +79,9 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
       settings,
     };
 
-    function refreshWidgets({ resources, options }: {resources: IFSResource[]; options: IFSOptions}) {
+    createStaticCommands(app, TreeFinderSidebar.tracker, TreeFinderSidebar.clipboard);
+
+    async function refreshWidgets({ resources, options }: {resources: IFSResource[]; options: IFSOptions}) {
       if (options.verbose) {
         // eslint-disable-next-line no-console
         console.info(`jupyter-fs frontend received resources:\n${JSON.stringify(resources)}`);
@@ -101,7 +103,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
           w.treefinder.columns = columns;
         }
       }
-      commands = createCommands(
+      commands = await createDynamicCommands(
         app,
         TreeFinderSidebar.tracker,
         TreeFinderSidebar.clipboard,
@@ -156,7 +158,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
               options,
             });
             cleanup();
-            refreshWidgets({ resources, options });
+            await refreshWidgets({ resources, options });
           };
 
           ReactDOM.render(
@@ -171,9 +173,10 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
         } else {
           // otherwise, just go ahead and refresh the widgets
           cleanup();
-          refreshWidgets({ options, resources });
+          await refreshWidgets({ options, resources });
         }
-      } catch {
+      } catch (e) {
+        console.error("Failed to refresh widgets!", e);
         cleanup(true);
       }
     }
@@ -236,7 +239,7 @@ export const progressStatus: JupyterFrontEndPlugin<void> = {
     ITreeFinderMain,
     IStatusBar,
   ],
-  async activate(
+  activate(
     app: JupyterFrontEnd,
     translator: ITranslator,
     main: ITreeFinderMain | null,

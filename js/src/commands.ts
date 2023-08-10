@@ -100,41 +100,16 @@ function _getRelativePaths(selectedFiles: Array<Content<ContentsProxy.IJupyterCo
 }
 
 
-export function createCommands(
+/**
+ * Create commands that will have the same IDs indepent of settings/resources
+ *
+ * These commands do not need to be recreated on settings/resource updates
+ */
+export function createStaticCommands(
   app: JupyterFrontEnd,
   tracker: TreeFinderTracker,
   clipboard: JupyterClipboard,
-  resources: IFSResource[],
-  settings?: ISettingRegistry.ISettings,
 ): IDisposable {
-  const selector = ".jp-tree-finder-sidebar";
-  const submenu = new Menu({ commands: app.commands });
-  submenu.title.label = "Show/Hide Columns";
-  submenu.title.icon = filterListIcon;
-  submenu.addItem({ command: commandIDs.toggleColumnPath });
-  for (const column of COLUMN_NAMES) {
-    submenu.addItem({ command: toggleColumnCommandId(column) });
-  }
-
-  // const toggleState: {[key: string]: {[key: string]: boolean}} = {};
-  // for (let resource of resources) {
-  //   const colsToDisplay = resource.displayColumns as string[] ?? ['size'];
-  //   const id = idFromResource(resource);
-  //   toggleState[id] = {};
-  //   const state = toggleState[id];
-  //   for (let key of COLUMN_NAMES) {
-  //     state[key] = colsToDisplay.includes(key);
-  //   }
-  // }
-  const toggleState: {[key: string]: boolean} = {};
-  const colsToDisplay = settings?.composite.display_columns as string[] ?? ["size"];
-  for (const key of COLUMN_NAMES) {
-    toggleState[key] = colsToDisplay.includes(key);
-  }
-
-  let contextMenuRank = 1;
-
-  // globally accessible jupyter commands[
   return [
     app.commands.addCommand(commandIDs.copy, {
       execute: args => clipboard.model.copySelection(tracker.currentWidget!.treefinder.model!),
@@ -328,7 +303,33 @@ export function createCommands(
       isEnabled: () => false,
       isToggled: () => true,
     }),
-    ...COLUMN_NAMES.map((column: keyof ContentsProxy.IJupyterContentRow) => app.commands.addCommand(toggleColumnCommandId(column), {
+  ].reduce((set: DisposableSet, d) => {
+    set.add(d); return set;
+  }, new DisposableSet());
+}
+
+
+/**
+ * Create commands whose count/IDs depend on settings/resources
+ */
+export async function createDynamicCommands(
+  app: JupyterFrontEnd,
+  tracker: TreeFinderTracker,
+  clipboard: JupyterClipboard,
+  resources: IFSResource[],
+  settings?: ISettingRegistry.ISettings,
+): Promise<IDisposable> {
+  const columnCommands = [];
+  const toggleState: {[key: string]: boolean} = {};
+  const colsToDisplay = settings?.composite.display_columns as string[] ?? ["size"];
+  const columnsMenu = new Menu({ commands: app.commands });
+  columnsMenu.title.label = "Show/Hide Columns";
+  columnsMenu.title.icon = filterListIcon;
+  columnsMenu.addItem({ command: commandIDs.toggleColumnPath });
+  for (const column of COLUMN_NAMES) {
+    columnsMenu.addItem({ command: toggleColumnCommandId(column) });
+    toggleState[column] = colsToDisplay.includes(column);
+    columnCommands.push(app.commands.addCommand(toggleColumnCommandId(column), {
       execute: async args => {
         toggleState[column] = !toggleState[column];
         await settings?.set("display_columns", COLUMN_NAMES.filter(k => toggleState[k]));
@@ -336,7 +337,14 @@ export function createCommands(
       label: column,
       isToggleable: true,
       isToggled: () => toggleState[column],
-    })),
+    }));
+  }
+
+  const selector = ".jp-tree-finder-sidebar";
+  let contextMenuRank = 1;
+
+  return [
+    ...columnCommands,
 
     // context menu items
     app.contextMenu.addItem({
@@ -412,7 +420,7 @@ export function createCommands(
     }),
     app.contextMenu.addItem({
       type: "submenu",
-      submenu,
+      submenu: columnsMenu,
       selector,
       rank: contextMenuRank++,
     }),
