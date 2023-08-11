@@ -14,6 +14,7 @@ import * as React from "react";
 
 // for lab 4, import this from @rjsf/utils:
 import type { FieldProps } from "@rjsf/core";
+import { splitPathstrDrive } from "./contents_utils";
 
 function _mknode(obj: any, paths: string[]) {
   for (const path of paths) {
@@ -86,7 +87,7 @@ export function getSettingsSnippets(settings?: ISettingRegistry.ISettings): Snip
 }
 
 /**
- * Sends a GET request to obtain all existing profile names in Neptune
+ * Gets all the snippet specifications configured on the server
  */
 export async function getServerSnippets(settings?: ServerConnection.ISettings): Promise<Snippet[]> {
   if (!settings) {
@@ -122,10 +123,7 @@ export async function getAllSnippets(settings?: ISettingRegistry.ISettings): Pro
 export function instantiateSnippet(template: string, url: string, pathstr: string) {
   const parsed = processUrlRegex.exec(url);
   // eslint-disable-next-line prefer-const
-  const splitloc = pathstr.indexOf("/");
-  const drive = splitloc !== -1 ? pathstr.slice(0, splitloc) : pathstr;
-  let relativePath = splitloc !== -1 ? pathstr.slice(splitloc + 1) : "";
-  relativePath = relativePath.replace(/^\//g, "");  // trim all leading "/"
+  const [drive, relativePath] = splitPathstrDrive(pathstr);
   const args = {
     ...parsed?.groups,
     url,

@@ -25,7 +25,6 @@ class SnippetsHandler(APIHandler):
     @web.authenticated
     def get(self):
         """Get the server-side configured snippets"""
-        print(self.fsconfig.snippets)
         self.write({
             "snippets": self.fsconfig.snippets
         })

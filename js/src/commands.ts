@@ -31,7 +31,7 @@ import { TreeFinderSidebar } from "./treefinder";
 import type { IFSResource } from "./filesystem";
 import type { ContentsProxy } from "./contents_proxy";
 import type { TreeFinderTracker } from "./treefinder";
-import { getContentParent, getRefreshTargets, revealAndSelectPath } from "./contents_utils";
+import { getContentParent, getRefreshTargets, revealAndSelectPath, splitPathstrDrive } from "./contents_utils";
 import { ISettingRegistry } from "@jupyterlab/settingregistry";
 import { showErrorMessage } from "@jupyterlab/apputils";
 import { getAllSnippets, instantiateSnippet, Snippet } from "./snippets";
@@ -117,8 +117,7 @@ async function _commandKeyForSnippet(snippet: Snippet): Promise<string>  {
 
 
 function _normalizedUrlForSnippet(content: Content<ContentsProxy.IJupyterContentRow>, baseUrl: string): string {
-  const split = content.pathstr.split("/", 2);
-  const path = split[split.length - 1];
+  const path = splitPathstrDrive(content.pathstr)[1];
   return `${baseUrl}/${path}${content.hasChildren ? "/" : ""}`;
 }
 

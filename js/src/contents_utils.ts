@@ -137,3 +137,15 @@ export function getRefreshTargets<T extends IContentRow>(
   }
   return invalidateTargets;
 }
+
+
+/**
+ * Split a "pathstr" into its drive and path components
+ */
+export function splitPathstrDrive(pathstr: string): [string, string] {
+  const splitloc = pathstr.indexOf("/");
+  if (splitloc === -1) {
+    return [pathstr, ""];
+  }
+  return [pathstr.slice(0, splitloc), pathstr.slice(splitloc + 1).replace(/^\//g, "")];
+}
