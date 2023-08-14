@@ -147,5 +147,6 @@ export function splitPathstrDrive(pathstr: string): [string, string] {
   if (splitloc === -1) {
     return [pathstr, ""];
   }
-  return [pathstr.slice(0, splitloc), pathstr.slice(splitloc + 1).replace(/^\//g, "")];
+  // split, and trim leading forward slashes on the path component
+  return [pathstr.slice(0, splitloc), pathstr.slice(splitloc + 1).replace(/^[/]*/, "")];
 }

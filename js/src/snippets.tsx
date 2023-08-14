@@ -136,6 +136,7 @@ export function instantiateSnippet(template: string, url: string, pathstr: strin
   let templated = template;
   for (const key of Object.keys(args) as Array<keyof typeof args>) {
     if (!(key in templateTokenFinders)) {
+      // match `key` wrapped in double curly-braces (and optionally whitespace padding within the braces)
       templateTokenFinders[key] = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, "g");
     }
     templated = templated.replace(templateTokenFinders[key], args[key]);
