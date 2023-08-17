@@ -156,12 +156,19 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
           const dialogElem = document.createElement("div");
           document.body.appendChild(dialogElem);
 
-          const handleClose = () => {
+          let submitted = false;
+          const handleClose = async () => {
             ReactDOM.unmountComponentAtNode(dialogElem);
             dialogElem.remove();
+            if (!submitted) {
+              // if prompt cancelled, refresh all inited resources
+              cleanup();
+              await refreshWidgets({ resources: resources.filter(r => r.init), options });
+            }
           };
 
           const handleSubmit = async (values: {[url: string]: {[key: string]: string}}) => {
+            submitted = true;
             resources = await comm.initResourceRequest({
               resources: resources.map(r => ({ ...r, tokenDict: values[r.url] })),
               options,
