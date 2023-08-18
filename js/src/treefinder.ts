@@ -201,6 +201,7 @@ export class TreeFinderWidget extends DragDropWidget {
   async nodeInit() {
     // The contents of root passed to node.init is not (currently) considered, so do not ask for it.
     const root = await this.contentsProxy.get(this.rootPath, { content: false });
+    this._currentFolder = this.model?.root.pathstr;
     await this.node.init({
       root,
       gridOptions: {
@@ -274,6 +275,9 @@ export class TreeFinderWidget extends DragDropWidget {
         contentsProxy: this.contentsProxy,
         model: this.model!,
       });
+    }
+    if (this._currentFolder) {
+      await openDirRecursive(this.model!, this._currentFolder.split("/"));
     }
     this.model!.openSub.subscribe(rows => rows.forEach(row => {
       if (!row.getChildren) {
@@ -580,6 +584,7 @@ export class TreeFinderWidget extends DragDropWidget {
   private _commands: CommandRegistry;
   private _expanding: Map<string, number>;
   private _initialLoad: boolean;
+  private _currentFolder: string | undefined;
 }
 
 export namespace TreeFinderWidget {
