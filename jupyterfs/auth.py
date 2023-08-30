@@ -36,6 +36,41 @@ class DoubleBraceTemplate(_BaseTemplate):
     """
 
 
+if not hasattr(DoubleBraceTemplate, "get_identifiers"):
+    # back-fill of 3.11 method. Th function body is copied from CPython under the
+    # Python Software Foundation License Version 2. And is subject to the below copy right:
+    # Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+    # 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Python Software Foundation;
+    # All Rights Reserved
+    
+    def get_identifiers(self):
+        ids = []
+        for mo in self.pattern.finditer(self.template):
+            named = mo.group('named') or mo.group('braced')
+            if named is not None and named not in ids:
+                # add a named group only the first time it appears
+                ids.append(named)
+            elif (named is None
+                and mo.group('invalid') is None
+                and mo.group('escaped') is None):
+                # If all the groups are None, there must be
+                # another group we're not expecting
+                raise ValueError('Unrecognized named group in pattern',
+                    self.pattern)
+        return ids  
+    
+    setattr(DoubleBraceTemplate, "get_identifiers", get_identifiers)
+
+
+def stdin_prompt(url):
+    from getpass import getpass
+    template = DoubleBraceTemplate(url)
+    subs = {}
+    for ident in template.get_identifiers():
+        subs[ident] = urllib.parse.quote(getpass(f"Enter value for {ident!r}: "))
+    return template.safe_substitute(subs)
+
+
 def substituteAsk(resource):
     if "tokenDict" in resource:
         url = DoubleBraceTemplate(resource["url"]).safe_substitute(

@@ -111,13 +111,13 @@
           "label": "Read CSV as dataframe",
           "caption": "Read the contents of this CSV file as a pandas DataFrame",
           "pattern": "\\.csv$",
-          "template": "from fs import open_fs\nimport pandas\nwith open_fs(\"{{url}}\") as fs_instance:\n    df = pandas.read_csv(fs_instance.openbin(\"{{path}}\"))"
+          "template": "from jupyterfs import open_fs\nimport pandas\nwith open_fs(\"{{url}}\") as fs_instance:\n    df = pandas.read_csv(fs_instance.openbin(\"{{path}}\"))"
         },
         {
           "label": "Read contents",
           "caption": "Read the contents of this file with PyFilesystem",
           "pattern": "^(?!:osfs://)(.*/)?[^/]+$",
-          "template": "from fs import open_fs\nwith open_fs(\"{{url}}\") as fs_instance:\n    contents = fs_instance.readbytes(\"{{path}}\")"
+          "template": "from jupyterfs import open_fs\nwith open_fs(\"{{url}}\") as fs_instance:\n    contents = fs_instance.readbytes(\"{{path}}\")"
         },
         {
           "label": "Read contents (local)",
@@ -129,13 +129,13 @@
           "label": "Read text",
           "caption": "Read the contents of this file as text with PyFilesystem",
           "pattern": "^(?!:osfs://)(.*/)?[^/]+$",
-          "template": "from fs import open_fs\nwith open_fs(\"{{url}}\") as fs_instance:\n    contents = fs_instance.readtext(\"{{path}}\")"
+          "template": "from jupyterfs import open_fs\nwith open_fs(\"{{url}}\") as fs_instance:\n    contents = fs_instance.readtext(\"{{path}}\")"
         },
         {
           "label": "List directory contents",
           "caption": "List the entries of this directory with PyFilesystem",
           "pattern": "^.*/$",
-          "template": "from fs import open_fs\nwith open_fs(\"{{url}}\") as fs_instance:\n    entries = fs_instance.listdir(\"{{path}}\")"
+          "template": "from jupyterfs import open_fs\nwith open_fs(\"{{url}}\") as fs_instance:\n    entries = fs_instance.listdir(\"{{path}}\")"
         }
       ]
     },
