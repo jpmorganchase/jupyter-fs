@@ -22,6 +22,11 @@ export interface IFSOptions {
    * If true, enable jupyter-fs debug output in both frontend and backend
    */
   verbose: boolean;
+
+  /**
+   * The version of the package that these settings were written with
+   */
+  writtenVersion: string;
 }
 
 export interface IFSResource {

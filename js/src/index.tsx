@@ -14,15 +14,17 @@ import { ISettingRegistry } from "@jupyterlab/settingregistry";
 import { IStatusBar } from "@jupyterlab/statusbar";
 import { ITranslator } from "@jupyterlab/translation";
 import { folderIcon, fileIcon, IFormComponentRegistry } from "@jupyterlab/ui-components";
-import { DisposableSet, IDisposable } from "@lumino/disposable";
+import { IDisposable } from "@lumino/disposable";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import * as semver from "semver";
 
 import { AskDialog, askRequired } from "./auth";
 import { commandIDs, createDynamicCommands, createStaticCommands, idFromResource } from "./commands";
 import { ContentsProxy } from "./contents_proxy";
 import { FSComm, IFSOptions, IFSResource } from "./filesystem";
 import { FileUploadStatus } from "./progress";
+import { migrateSettings } from "./settings";
 import { snippetFormRender } from "./snippets";
 import { TreeFinderSidebar } from "./treefinder";
 import { ITreeFinderMain } from "./tokens";
@@ -67,6 +69,12 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
     } catch (error) {
       // eslint-disable-next-line no-console
       console.warn(`Failed to load settings for the jupyter-fs extension.\n${error}`);
+    }
+
+    // Migrate any old settings
+    const options = settings?.composite.options as unknown as IFSOptions | undefined;
+    if ((settings && semver.lt(options?.writtenVersion || "0.0.0", settings.version))) {
+      settings = await migrateSettings(settings);
     }
 
     if (editorRegistry) {

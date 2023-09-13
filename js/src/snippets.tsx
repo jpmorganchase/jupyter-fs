@@ -37,7 +37,7 @@ export function snippetFormRender(props: FieldProps) {
 }
 
 
-interface RawSnippet {
+export interface RawSnippet {
   label: string;
   caption: string;
   pattern: string;

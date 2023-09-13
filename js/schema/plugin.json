@@ -5,7 +5,6 @@
   "jupyter.lab.setting-icon": "jfs:drive",
   "jupyter.lab.setting-icon-label": "jupyter-fs",
   "type": "object",
-  "additionalProperties": false,
 
   "jupyter.lab.shortcuts": [
     {
@@ -39,7 +38,6 @@
     "resource": {
       "description": "Specification for an fs resource",
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "name": {
           "description": "Display name of resource",
@@ -69,7 +67,6 @@
     "snippet": {
       "description": "Per entry snippets for how to use it, e.g. a snippet for how to open a file from a given resource",
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "label": {
           "description": "The designator to show to users",
@@ -111,31 +108,61 @@
           "label": "Read CSV as dataframe",
           "caption": "Read the contents of this CSV file as a pandas DataFrame",
           "pattern": "\\.csv$",
-          "template": "from jupyterfs import open_fs\nimport pandas\nwith open_fs(\"{{url}}\") as fs_instance:\n    df = pandas.read_csv(fs_instance.openbin(\"{{path}}\"))"
+          "template": "# uses https://docs.pyfilesystem.org/en/latest/reference/base.html#fs.base.FS.openbin \nfrom jupyterfs import open_fs\nimport pandas\nwith open_fs(\"{{url}}\") as fs_instance:\n    df = pandas.read_csv(fs_instance.openbin(\"{{path}}\"))"
         },
         {
           "label": "Read contents",
           "caption": "Read the contents of this file with PyFilesystem",
-          "pattern": "^(?!:osfs://)(.*/)?[^/]+$",
-          "template": "from jupyterfs import open_fs\nwith open_fs(\"{{url}}\") as fs_instance:\n    contents = fs_instance.readbytes(\"{{path}}\")"
+          "pattern": "^(?!osfs://)(.*/)?[^/]+$",
+          "template": "# uses https://docs.pyfilesystem.org/en/latest/reference/base.html#fs.base.FS.readbytes \nfrom jupyterfs import open_fs\nwith open_fs(\"{{url}}\") as fs_instance:\n    contents = fs_instance.readbytes(\"{{path}}\")"
         },
         {
           "label": "Read contents (local)",
-          "caption": "Read the contents of this file with PyFilesystem",
-          "pattern": "^(?:osfs://)(.*/)?[^/]+$",
-          "template": "import pathlib;\ncontents = pathlib.Path(\"{{resource}}/{{path}}\").read_bytes()"
+          "caption": "Read the contents of this local file",
+          "pattern": "^(?=osfs://)(.*/)?[^/]+$",
+          "template": "import pathlib;\ncontents = pathlib.Path(\"{{path}}\").read_bytes()"
         },
         {
           "label": "Read text",
           "caption": "Read the contents of this file as text with PyFilesystem",
-          "pattern": "^(?!:osfs://)(.*/)?[^/]+$",
-          "template": "from jupyterfs import open_fs\nwith open_fs(\"{{url}}\") as fs_instance:\n    contents = fs_instance.readtext(\"{{path}}\")"
+          "pattern": "^(?!osfs://)(.*/)?[^/]+$",
+          "template": "# uses https://docs.pyfilesystem.org/en/latest/reference/base.html#fs.base.FS.readtext \nfrom jupyterfs import open_fs\nwith open_fs(\"{{url}}\") as fs_instance:\n    contents = fs_instance.readtext(\"{{path}}\")"
         },
         {
           "label": "List directory contents",
           "caption": "List the entries of this directory with PyFilesystem",
           "pattern": "^.*/$",
-          "template": "from jupyterfs import open_fs\nwith open_fs(\"{{url}}\") as fs_instance:\n    entries = fs_instance.listdir(\"{{path}}\")"
+          "template": "# uses https://docs.pyfilesystem.org/en/latest/reference/base.html#fs.base.FS.listdir \nfrom jupyterfs import open_fs\nwith open_fs(\"{{url}}\") as fs_instance:\n    entries = fs_instance.listdir(\"{{path}}\")"
+        },
+        {
+          "label": "Read Excel as dataframe",
+          "caption": "Read the contents of this Excel file as a pandas DataFrame",
+          "pattern": "\\.(xls|xlsx|xlsm|xlsb)$",
+          "template": "# uses https://docs.pyfilesystem.org/en/latest/reference/base.html#fs.base.FS.open \nfrom jupyterfs import open_fs\nimport pandas\nwith open_fs(\"{{url}}\") as fs_instance:\n    df = pandas.read_excel(fs_instance.open(\"{{path}}\", mode=\"rb\"))"
+        },
+        {
+          "label": "Write dataframe as CSV",
+          "caption": "Save a pandas DF from the session to the given CSV file with PyFilesystem",
+          "pattern": "\\.csv$",
+          "template": "# uses https://docs.pyfilesystem.org/en/latest/reference/base.html#fs.base.FS.writetext \nfrom jupyterfs import open_fs\nwith open_fs(\"{{url}}\") as fs_instance:\n    fs_instance.writetext(\"{{path}}\", YOUR_DF_VARIABLE.to_csv())"
+        },
+        {
+          "label": "Write contents",
+          "caption": "Write the given contents (bytes) to the specified file with PyFilesystem",
+          "pattern": "^(?!osfs://)(.*/)?[^/]+$",
+          "template": "# uses https://docs.pyfilesystem.org/en/latest/reference/base.html#fs.base.FS.writebytes \nfrom jupyterfs import open_fs\nwith open_fs(\"{{url}}\") as fs_instance:\n    fs_instance.writebytes(\"{{path}}\", YOUR_BYTES_CONTENT)"
+        },
+        {
+          "label": "Write contents (local)",
+          "caption": "Write the contents to this local file",
+          "pattern": "^(?=osfs://)(.*/)?[^/]+$",
+          "template": "import pathlib;\ncontents = pathlib.Path(\"{{path}}\").write_bytes(YOUR_BYTES_CONTENT)"
+        },
+        {
+          "label": "Write text",
+          "caption": "Write the given text to the specified file with PyFilesystem",
+          "pattern": "^(?!osfs://)(.*/)?[^/]+$",
+          "template": "# uses https://docs.pyfilesystem.org/en/latest/reference/base.html#fs.base.FS.writetext \nfrom jupyterfs import open_fs\nwith open_fs(\"{{url}}\") as fs_instance:\n    fs_instance.writetext(\"{{path}}\", YOUR_TEXT_CONTENT)"
         }
       ]
     },
@@ -143,7 +170,6 @@
       "title": "Options",
       "description": "Global options for jupyter-fs",
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "cache": {
           "description": "If true, only recreate the actual resources when necessary (ie on initial load or changes to 'resources')",
@@ -154,6 +180,10 @@
           "description": "If true, jupyter-fs will output helpful info messages to the console",
           "type": "boolean",
           "default": false
+        },
+        "writtenVersion": {
+          "description": "The version of the schema these settings were written with (do not edit)",
+          "type": "string"
         }
       },
       "default": {}
