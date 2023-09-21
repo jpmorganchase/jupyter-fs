@@ -97,12 +97,7 @@ export interface IFSComm {
 abstract class FSCommBase implements IFSComm {
   protected _settings: ServerConnection.ISettings | undefined = undefined;
 
-  constructor(props: { baseUrl?: string } = {}) {
-    const { baseUrl } = props;
-
-    if (baseUrl) {
-      this.baseUrl = baseUrl;
-    }
+  constructor() {
   }
 
   abstract getResourcesRequest(): Promise<IFSResource[]>;
@@ -110,11 +105,6 @@ abstract class FSCommBase implements IFSComm {
 
   get baseUrl(): string {
     return this.settings.baseUrl;
-  }
-  set baseUrl(baseUrl: string) {
-    if (baseUrl !== this.baseUrl) {
-      this._settings = ServerConnection.makeSettings({ baseUrl });
-    }
   }
 
   get resourcesUrl(): string {
@@ -131,6 +121,16 @@ abstract class FSCommBase implements IFSComm {
 }
 
 export class FSComm extends FSCommBase {
+
+  private static _instance: FSComm;
+
+  static get instance(): FSComm {
+    if (FSComm._instance === undefined) {
+      FSComm._instance = new FSComm();
+    }
+    return FSComm._instance;
+  }
+
   async getResourcesRequest(): Promise<IFSResource[]> {
     const settings = this.settings;
     const fullUrl = this.resourcesUrl;

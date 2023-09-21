@@ -15,19 +15,17 @@ import { IStatusBar } from "@jupyterlab/statusbar";
 import { ITranslator } from "@jupyterlab/translation";
 import { folderIcon, fileIcon, IFormComponentRegistry } from "@jupyterlab/ui-components";
 import { IDisposable } from "@lumino/disposable";
-import * as React from "react";
-import * as ReactDOM from "react-dom";
 import * as semver from "semver";
 
-import { AskDialog, askRequired } from "./auth";
 import { commandIDs, createDynamicCommands, createStaticCommands, idFromResource } from "./commands";
 import { ContentsProxy } from "./contents_proxy";
-import { FSComm, IFSOptions, IFSResource } from "./filesystem";
+import { IFSOptions, IFSResource } from "./filesystem";
 import { FileUploadStatus } from "./progress";
 import { migrateSettings } from "./settings";
 import { snippetFormRender } from "./snippets";
 import { TreeFinderSidebar } from "./treefinder";
 import { ITreeFinderMain } from "./tokens";
+import { initResources } from "./resources";
 
 // tslint:disable: variable-name
 
@@ -58,7 +56,6 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
     themeManager: IThemeManager,
     editorRegistry: IFormComponentRegistry | null
   ): Promise<ITreeFinderMain> {
-    const comm = new FSComm();
     const widgetMap : {[key: string]: TreeFinderSidebar} = {};
     let commands: IDisposable | undefined;
 
@@ -149,56 +146,9 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
       }
 
       try {
-        // send user specs to backend; await return containing resources
-        // defined by user settings + resources defined by server config
-        resources = await comm.initResourceRequest({
-          resources,
-          options: {
-            ...options,
-            _addServerside: true,
-          },
-        });
-
-        if (askRequired(resources)) {
-          // ask for url template values, if required
-          const dialogElem = document.createElement("div");
-          document.body.appendChild(dialogElem);
-
-          let submitted = false;
-          const handleClose = async () => {
-            ReactDOM.unmountComponentAtNode(dialogElem);
-            dialogElem.remove();
-            if (!submitted) {
-              // if prompt cancelled, refresh all inited resources
-              cleanup();
-              await refreshWidgets({ resources: resources.filter(r => r.init), options });
-            }
-          };
-
-          const handleSubmit = async (values: {[url: string]: {[key: string]: string}}) => {
-            submitted = true;
-            resources = await comm.initResourceRequest({
-              resources: resources.map(r => ({ ...r, tokenDict: values[r.url] })),
-              options,
-            });
-            cleanup();
-            await refreshWidgets({ resources, options });
-          };
-
-          ReactDOM.render(
-            <AskDialog
-              handleClose={handleClose}
-              handleSubmit={handleSubmit}
-              options={options}
-              resources={resources}
-            />,
-            dialogElem,
-          );
-        } else {
-          // otherwise, just go ahead and refresh the widgets
-          cleanup();
-          await refreshWidgets({ options, resources });
-        }
+        resources = await initResources(resources, options);
+        cleanup();
+        await refreshWidgets({resources, options});
       } catch (e) {
         console.error("Failed to refresh widgets!", e);
         cleanup(true);
