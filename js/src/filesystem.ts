@@ -73,6 +73,11 @@ export interface IFSResource {
    * initialization
    */
   tokenDict?: {[key: string]: string};
+
+  /**
+   * Any errors during initialization
+   */
+  errors?: string[];
 }
 
 export interface IFSComm {

@@ -12,7 +12,7 @@ import { FSComm, IFSResource, IFSOptions } from "./filesystem";
  *
  * @param resources The resources to initialize to.
  * @param options The initialization options to use.
- * @param onDone 
+ * @returns All resources, whether inited or not
  */
 export async function initResources(resources: IFSResource[], options: IFSOptions): Promise<IFSResource[]> {
   const delegate = new PromiseDelegate<IFSResource[]>();
@@ -37,8 +37,7 @@ export async function initResources(resources: IFSResource[], options: IFSOption
         ReactDOM.unmountComponentAtNode(dialogElem);
         dialogElem.remove();
         if (!submitted) {
-          // if prompt cancelled, refresh all inited resources
-          delegate.resolve(resources.filter(r => r.init));
+          delegate.resolve(resources);
         }
       } catch (e) {
         delegate.reject(e);

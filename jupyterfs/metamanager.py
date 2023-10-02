@@ -78,6 +78,7 @@ class MetaManager(AsyncContentsManager):
             _hash = md5(resource["url"].encode("utf-8")).hexdigest()[:8]
             init = False
             missingTokens = None
+            errors = []
 
             if _hash in self._managers and cache:
                 # reuse existing cm
@@ -108,18 +109,20 @@ class MetaManager(AsyncContentsManager):
                             parent=self,
                             **self._pyfs_kw,
                         )
-                    except (FSError, OpenerError, ParseError):
+                        init = True
+                    except (FSError, OpenerError, ParseError) as e:
                         self.log.exception(
                             "Failed to create manager for resource %r",
                             resource.get("name"),
                         )
-                        continue
-                    init = True
+                        errors.append(str(e))
 
             # assemble resource from spec + hash
             newResource = {}
             newResource.update(resource)
             newResource.update({"drive": _hash, "init": init})
+            if self._jupyterfsConfig.surface_init_errors:
+                newResource["errors"] = errors
             if missingTokens is not None:
                 newResource["missingTokens"] = missingTokens
 

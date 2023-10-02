@@ -46,6 +46,12 @@ class JupyterFs(Configurable):
         ),
     )
 
+    surface_init_errors = Bool(
+        default_value=False,
+        config=True,
+        help=_i18n("whether to surface init errors to the client")
+    )
+
     snippets = List(
         config=True,
         per_key_traits=Dict({
