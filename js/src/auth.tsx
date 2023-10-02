@@ -132,6 +132,7 @@ export class AskDialog<
   protected _formInner() {
     return this.props.resources.map(resource => {
       // ask for credentials if needed, or state why not
+      const decodedUrl = decodeURIComponent(resource.url)
       const askReq = _askRequired(resource);
       const inputs = askReq ? this._inputs(resource.url) : [];
       const tokens = tokensFromUrl(resource.url);
@@ -155,8 +156,8 @@ export class AskDialog<
           <ExpansionPanelSummary className="jfs-ask jfs-ask-panel-summary">
             <Typography>{summary}</Typography>
             {!reason &&
-              <Tooltip title={resource.url}>
-                <Typography noWrap={true}>{resource.url}</Typography>
+              <Tooltip title={decodedUrl}>
+                <Typography noWrap={true}>{decodedUrl}</Typography>
               </Tooltip>
             }
           </ExpansionPanelSummary>
