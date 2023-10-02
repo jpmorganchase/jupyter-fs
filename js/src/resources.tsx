@@ -32,7 +32,7 @@ export async function initResources(resources: IFSResource[], options: IFSOption
     document.body.appendChild(dialogElem);
 
     let submitted = false;
-    const handleClose = async () => {
+    const handleClose = () => {
       try {
         ReactDOM.unmountComponentAtNode(dialogElem);
         dialogElem.remove();

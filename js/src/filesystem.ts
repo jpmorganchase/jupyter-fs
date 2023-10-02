@@ -102,9 +102,6 @@ export interface IFSComm {
 abstract class FSCommBase implements IFSComm {
   protected _settings: ServerConnection.ISettings | undefined = undefined;
 
-  constructor() {
-  }
-
   abstract getResourcesRequest(): Promise<IFSResource[]>;
   abstract initResourceRequest(args: {options: IFSOptions; resources: IFSResource[]}): Promise<IFSResource[]>;
 

@@ -132,7 +132,7 @@ export class AskDialog<
   protected _formInner() {
     return this.props.resources.map(resource => {
       // ask for credentials if needed, or state why not
-      const decodedUrl = decodeURIComponent(resource.url)
+      const decodedUrl = decodeURIComponent(resource.url);
       const askReq = _askRequired(resource);
       const inputs = askReq ? this._inputs(resource.url) : [];
       const tokens = tokensFromUrl(resource.url);

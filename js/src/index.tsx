@@ -69,8 +69,8 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
     }
 
     // Migrate any old settings
-    const options = settings?.composite.options as unknown as IFSOptions | undefined;
-    if ((settings && semver.lt(options?.writtenVersion || "0.0.0", settings.version))) {
+    const initialOptions = settings?.composite.options as unknown as IFSOptions | undefined;
+    if ((settings && semver.lt(initialOptions?.writtenVersion || "0.0.0", settings.version))) {
       settings = await migrateSettings(settings);
     }
 
