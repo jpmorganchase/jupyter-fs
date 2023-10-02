@@ -9,7 +9,7 @@ import { FSComm, IFSResource, IFSOptions } from "./filesystem";
 
 /**
  * Init resource on the server, and prompt for credentials via a dialog if needed.
- * 
+ *
  * @param resources The resources to initialize to.
  * @param options The initialization options to use.
  * @param onDone 
@@ -67,7 +67,7 @@ export async function initResources(resources: IFSResource[], options: IFSOption
       />,
       dialogElem,
     );
-    
+
   } else {
     delegate.resolve(resources);
   }

@@ -148,7 +148,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
       try {
         resources = await initResources(resources, options);
         cleanup();
-        await refreshWidgets({resources, options});
+        await refreshWidgets({ resources, options });
       } catch (e) {
         console.error("Failed to refresh widgets!", e);
         cleanup(true);
