@@ -29,7 +29,42 @@ export interface IFSOptions {
   writtenVersion: string;
 }
 
-export interface IFSResource {
+
+/**
+ * A resource configuration as stored in the settings system.
+ */
+export interface IFSSettingsResource {
+  /**
+   * The name of this resource
+   */
+  name?: string;
+
+  /**
+   * The fsurl specifying this resource
+   */
+  url?: string;
+
+  /**
+   * Auth scheme to be used for this resource, or false for none
+   */
+  auth: "ask" | "env" | false;
+
+  /**
+   * Fallback for determining if resource is writeable. Used only if the underlying PyFilesystem does not provide this information (eg S3)
+   */
+  defaultWritable?: boolean;
+
+  /**
+   * Directory to be first opened
+   */
+  preferred_dir?: string;
+}
+
+
+/**
+ * An object defining an FS resource.
+ */
+export interface IFSResource extends IFSSettingsResource {
   /**
    * The name of this resource
    */
@@ -40,15 +75,6 @@ export interface IFSResource {
    */
   url: string;
 
-  /**
-   * Auth scheme to be used for this resource, or false for none
-   */
-  auth: "ask" | "env" | false;
-
-  /**
-   * Directory to be first opened
-   */
-  preferred_dir?: string;
 
   /**
    * The jupyterlab drive name associated with this resource. This is defined

@@ -19,9 +19,9 @@ import * as semver from "semver";
 
 import { commandIDs, createDynamicCommands, createStaticCommands, idFromResource } from "./commands";
 import { ContentsProxy } from "./contents_proxy";
-import { IFSOptions, IFSResource } from "./filesystem";
+import { IFSOptions, IFSResource, IFSSettingsResource } from "./filesystem";
 import { FileUploadStatus } from "./progress";
-import { migrateSettings } from "./settings";
+import { migrateSettings, unpartialResource } from "./settings";
 import { snippetFormRender } from "./snippets";
 import { TreeFinderSidebar } from "./treefinder";
 import { ITreeFinderMain } from "./tokens";
@@ -128,7 +128,9 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
 
     async function refresh() {
       // get user settings from json file
-      let resources: IFSResource[] = settings!.composite.resources as any;
+      let resources: IFSResource[] = (
+        settings!.composite.resources as unknown as IFSSettingsResource[]
+      ).map(unpartialResource);
       const options: IFSOptions = settings!.composite.options as any;
 
       function cleanup(all=false) {
