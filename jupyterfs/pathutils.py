@@ -39,7 +39,7 @@ def _resolve_path(path, manager_dict):
     Returns:
         tuple: prefix of contents manager, instance of contents manager, relative path to request from contents manager
     """
-    parts = path.strip("/").split(":")
+    parts = path.strip("/").split(":", 1)
     if len(parts) == 1:
         # Try to find use the root manager, if one was supplied.
         mgr = manager_dict.get("")
@@ -56,7 +56,7 @@ def _resolve_path(path, manager_dict):
         # Try to find a sub-manager for the first subdirectory.
         mgr = manager_dict.get(parts[0])
         if mgr is not None:
-            return parts[0], mgr, "/".join(parts[1:])
+            return parts[0], mgr, parts[1]
 
         raise HTTPError(
             404,
@@ -89,15 +89,25 @@ def _get_arg(argname, args, kwargs):
 
 
 # Dispatch decorators.
-def path_first_arg(method_name, returns_model):
+def path_first_arg(method_name, returns_model, sync=False):
     """Decorator for methods that accept path as a first argument,
     e.g. manager.get(path, ...)"""
 
-    def _wrapper(self, *args, **kwargs):
-        path, args = _get_arg("path", args, kwargs)
-        _, mgr, mgr_path = _resolve_path(path, self._managers)
-        result = getattr(mgr, method_name)(mgr_path, *args, **kwargs)
-        return result
+    if sync:
+
+        def _wrapper(self, *args, **kwargs):
+            path, args = _get_arg("path", args, kwargs)
+            _, mgr, mgr_path = _resolve_path(path, self._managers)
+            result = getattr(mgr, method_name)(mgr_path, *args, **kwargs)
+            return result
+
+    else:
+
+        async def _wrapper(self, *args, **kwargs):
+            path, args = _get_arg("path", args, kwargs)
+            _, mgr, mgr_path = _resolve_path(path, self._managers)
+            result = getattr(mgr, method_name)(mgr_path, *args, **kwargs)
+            return result
 
     return _wrapper
 
@@ -106,7 +116,7 @@ def path_second_arg(method_name, first_argname, returns_model):
     """Decorator for methods that accept path as a second argument.
     e.g. manager.save(model, path, ...)"""
 
-    def _wrapper(self, *args, **kwargs):
+    async def _wrapper(self, *args, **kwargs):
         other, args = _get_arg(first_argname, args, kwargs)
         path, args = _get_arg("path", args, kwargs)
         _, mgr, mgr_path = _resolve_path(path, self._managers)
@@ -123,7 +133,7 @@ def path_kwarg(method_name, path_default, returns_model):
     e.g. manager.file_exists(path='')
     """
 
-    def _wrapper(self, path=path_default, **kwargs):
+    async def _wrapper(self, path=path_default, **kwargs):
         _, mgr, mgr_path = _resolve_path(path, self._managers)
         result = getattr(mgr, method_name)(path=mgr_path, **kwargs)
         return result
@@ -137,14 +147,11 @@ def path_old_new(method_name, returns_model):
     e.g. manager.rename(old_path, new_path)
     """
 
-    def _wrapper(self, old_path, new_path, *args, **kwargs):
+    async def _wrapper(self, old_path, new_path, *args, **kwargs):
         old_prefix, old_mgr, old_mgr_path = _resolve_path(old_path, self._managers)
-        new_prefix, new_mgr, new_mgr_path = _resolve_path(
-            new_path,
-            self._managers,
-        )
+        new_prefix, new_mgr, new_mgr_path = _resolve_path(new_path, self._managers)
         if old_mgr is not new_mgr:
-            # TODO: Consider supporting this via get+delete+save.
+            # TODO: Consider supporting this via get+save+delete.
             raise HTTPError(
                 400,
                 "Can't move files between backends yet ({old} -> {new})".format(
@@ -163,8 +170,8 @@ def path_old_new(method_name, returns_model):
 
 # handlers for drive specifications in path strings, as in "fooDrive:bar/baz.buzz"
 def getDrive(path):
-    first, *_ = path.strip("/").split("/")
-    return first.split(":")[0]
+    first = path.strip("/").split("/", 1)[0]
+    return first.split(":", 1)[0]
 
 
 def isDrive(path):
@@ -175,4 +182,4 @@ def stripDrive(path):
     """Strips off leading "drive:foo" specification from path, if present"""
     # strip any drives off the front of the filename
     first, *rest = path.strip("/").split("/")
-    return "/".join([first.split(":").pop(), *rest])
+    return "/".join([first.split(":", 1).pop(), *rest])

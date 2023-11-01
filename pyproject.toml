@@ -2,7 +2,7 @@
 requires = [
     "hatchling>=1.3.1",
     "hatch-jupyter-builder",
-    "jupyterlab>=3.5,<4",
+    "jupyterlab>=4,<5",
 ]
 build-backend = "hatchling.build"
 
@@ -42,7 +42,7 @@ dependencies = [
     "fs>=2.4.11",
     "fs-s3fs>=1.1.1",
     "fs.smbfs>=0.6.3",
-    "jupyterlab>=3.5,<4",
+    "jupyterlab>=4,<5",
     "jupyter_server>=2,<3",
 ]
 
@@ -53,9 +53,13 @@ develop = [
     "fs-miniofs",
     "pysmb",
     "pytest",
+    "pytest-asyncio",
     "pytest-cov",
+    "pytest-jupyter[server]",
     "pytest-sugar",
     "pytest-xdist",
+    "pytest-asyncio",
+    "pytest-jupyter[server]",
     # Other deps
     "black>=23",
     "bump2version>=1.0.0",
@@ -70,9 +74,13 @@ test = [
     "mock",
     "pysmb",
     "pytest",
+    "pytest-asyncio",
     "pytest-cov",
+    "pytest-jupyter[server]",
     "pytest-sugar",
     "pytest-xdist",
+    "pytest-asyncio",
+    "pytest-jupyter[server]",
 ]
 
 [project.urls]

@@ -6,35 +6,61 @@
  * the Apache License 2.0.  The full license can be found in the LICENSE file.
  *
  */
-import { WidgetTracker } from "@jupyterlab/apputils";
+import { WidgetTracker, showErrorMessage } from "@jupyterlab/apputils";
 import { Drive } from "@jupyterlab/services";
-import { Widget } from "@lumino/widgets";
 import { ClipboardModel, ContentsModel, IContentRow, Path } from "tree-finder";
 
-// "forward" declare the TreeFinderWidget
-type ITreeFinderWidget = Widget & {treefinder: {model: ContentsModel<any>}};
+import type { ContentsProxy } from "./contents_proxy";
+import type { TreeFinderSidebar } from "./treefinder";
+import { getRefreshTargets } from "./contents_utils";
 
 export class JupyterClipboard {
-  constructor(tracker: WidgetTracker<ITreeFinderWidget>) {
+  constructor(tracker: WidgetTracker<TreeFinderSidebar>) {
     this._tracker = tracker;
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     this._model.deleteSub.subscribe(async memo => {
       await Promise.all(memo.map(s => this._onDelete(s)));
-      this.model.refresh(this._tracker.currentWidget.treefinder.model, memo);
+      const contentsModel = this._tracker.currentWidget!.treefinder.model!;
+      const toRefresh = getRefreshTargets<ContentsProxy.IJupyterContentRow>(
+        memo as ContentsProxy.IJupyterContentRow[],
+        contentsModel.root,
+        true
+      );
+      this.model.refresh(contentsModel, toRefresh!);
     });
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     this._model.pasteSub.subscribe(async ({ destination, doCut, memo }) => {
-      const destPathstr = Path.fromarray(destination.kind === "dir" ? destination.path : destination.path.slice(0, -1));
+      const destPath = destination.kind === "dir" ? destination.path : destination.path.slice(0, -1);
+      const destPathstr = Path.fromarray(destPath);
       await Promise.all(memo.map(s => this._onPaste(s, destPathstr, doCut)));
-      this.model.refresh(this._tracker.currentWidget.treefinder.model, [destination, ...memo]);
+      const contentsModel = this._tracker.currentWidget!.treefinder.model!;
+      let toRefresh = getRefreshTargets<ContentsProxy.IJupyterContentRow>(
+        [destination] as ContentsProxy.IJupyterContentRow[],
+        contentsModel.root,
+        false
+      );
+      // Only refresh sources if cutting:
+      if (doCut && toRefresh !== undefined) {
+        const extra = getRefreshTargets<ContentsProxy.IJupyterContentRow>(
+          memo as ContentsProxy.IJupyterContentRow[],
+          contentsModel.root,
+          false
+        );
+        if (extra === undefined) {
+          toRefresh = undefined;
+        } else {
+          toRefresh.push(...extra);
+        }
+      }
+      this.model.refresh(contentsModel, toRefresh!);
     });
   }
 
   refresh<T extends IContentRow>(tm?: ContentsModel<T>, memo?: T[]) {
-    tm ??= this._tracker.currentWidget.treefinder.model as any as ContentsModel<T>;
-    this.model.refresh(tm, memo);
+    tm ??= this._tracker.currentWidget!.treefinder.model as any as ContentsModel<T>;
+    this.model.refresh(tm, memo!);
   }
 
   // TODO: remove in favor of this.model.refreshSelection once tree-finder v0.0.14 is out
@@ -48,19 +74,27 @@ export class JupyterClipboard {
 
   protected async _onDelete<T extends IContentRow>(src: T) {
     const srcPathstr = Path.fromarray(src.path);
-    await this._drive.delete(srcPathstr);
+    try {
+      await this._drive.delete(srcPathstr);
+    } catch (err) {
+      await showErrorMessage("Delete Failed", err as string);
+    }
   }
 
   protected async _onPaste<T extends IContentRow>(src: T, destPathstr: string, doCut: boolean) {
     const srcPathstr = Path.fromarray(src.path);
-    await this._drive.copy(srcPathstr, destPathstr);
-    if (doCut) {
-      await this._drive.delete(srcPathstr);
+    try {
+      await this._drive.copy(srcPathstr, destPathstr);
+      if (doCut) {
+        await this._drive.delete(srcPathstr);
+      }
+    } catch (err) {
+      await showErrorMessage("Paste Error", err as string);
     }
   }
 
   protected _model = new ClipboardModel();
-  protected _tracker: WidgetTracker<ITreeFinderWidget>;
+  protected _tracker: WidgetTracker<TreeFinderSidebar>;
 
   private _drive = new Drive();
 }

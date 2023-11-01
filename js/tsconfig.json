@@ -15,8 +15,9 @@
     "preserveWatchOutput": true,
     "resolveJsonModule": true,
     "sourceMap": true,
-    // "strictNullChecks": true,
+    "strictNullChecks": true,
     "target": "es2019",
+    "skipLibCheck": true,
     // "types": ["jest"],
     "outDir": "lib",
     "rootDir": "src"

@@ -8,13 +8,17 @@
 from hashlib import md5
 import json
 import re
+
+from traitlets import default
 from tornado import web
 
+from fs.errors import FSError
+from fs.opener.errors import OpenerError, ParseError
 from jupyter_server.base.handlers import APIHandler
-from jupyter_server.services.contents.manager import ContentsManager
+from jupyter_server.services.contents.manager import AsyncContentsManager
 
 from .auth import substituteAsk, substituteEnv, substituteNone
-from .config import Jupyterfs as JupyterfsConfig
+from .config import JupyterFs as JupyterFsConfig
 from .fsmanager import FSManager
 from .pathutils import (
     path_first_arg,
@@ -29,12 +33,16 @@ from .pathutils import (
 __all__ = ["MetaManager", "MetaManagerHandler"]
 
 
-class MetaManager(ContentsManager):
+class MetaManager(AsyncContentsManager):
     copy_pat = re.compile(r"\-Copy\d*\.")
+
+    @default("files_handler_params")
+    def _files_handler_params_default(self):
+        return {"path": self.root_dir}
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._jupyterfsConfig = JupyterfsConfig(config=self.config)
+        self._jupyterfsConfig = JupyterFsConfig(config=self.config)
 
         self._kwargs = kwargs
         self._pyfs_kw = {}
@@ -55,8 +63,8 @@ class MetaManager(ContentsManager):
     def initResource(self, *resources, options={}):
         """initialize one or more (name, url) tuple representing a PyFilesystem resource specification"""
         # handle options
-        cache = "cache" not in options or options["cache"]
-        verbose = "verbose" in options and options["verbose"]
+        cache = options.get("cache", True)
+        verbose = options.get("verbose", False)
 
         self.resources = []
         managers = dict((("", self._default_root_manager),))
@@ -93,9 +101,19 @@ class MetaManager(ContentsManager):
                 else:
                     # create new cm
                     default_writable = resource.get("defaultWritable", True)
-                    managers[_hash] = FSManager(
-                        urlSubbed, default_writable=default_writable, **self._pyfs_kw
-                    )
+                    try:
+                        managers[_hash] = FSManager(
+                            urlSubbed,
+                            default_writable=default_writable,
+                            parent=self,
+                            **self._pyfs_kw,
+                        )
+                    except (FSError, OpenerError, ParseError):
+                        self.log.exception(
+                            "Failed to create manager for resource %r",
+                            resource.get("name"),
+                        )
+                        continue
                     init = True
 
             # assemble resource from spec + hash
@@ -132,7 +150,7 @@ class MetaManager(ContentsManager):
     def root_dir(self):
         return self.root_manager.root_dir
 
-    def copy(self, from_path, to_path=None):
+    async def copy(self, from_path, to_path=None):
         """Copy an existing file and return its new model.
 
         If to_path not specified, it will be the parent directory of from_path.
@@ -160,9 +178,9 @@ class MetaManager(ContentsManager):
         if to_path is None:
             to_path = from_dir
         if self.dir_exists(to_path):
-            name = self.copy_pat.sub(".", from_name)
+            name = self.copy_pat.sub(".", stripDrive(from_name))
             # ensure that any drives are stripped from the resulting filename
-            to_name = stripDrive(self.increment_filename(name, to_path, insert="-Copy"))
+            to_name = self.increment_filename(name, to_path, insert="-Copy")
             # separate path and filename with a slash if to_path is not just a drive string
             to_path = ("{0}{1}" if isDrive(to_path) else "{0}/{1}").format(
                 to_path, to_name
@@ -195,7 +213,7 @@ class MetaManager(ContentsManager):
     get = path_first_arg("get", True)
     delete = path_first_arg("delete", False)
 
-    get_kernel_path = path_first_arg("get_kernel_path", False)
+    get_kernel_path = path_first_arg("get_kernel_path", False, sync=True)
 
     create_checkpoint = path_first_arg("create_checkpoint", False)
     list_checkpoints = path_first_arg("list_checkpoints", False)
@@ -215,11 +233,29 @@ class MetaManagerHandler(APIHandler):
     _jupyterfsConfig = None
 
     @property
-    def config_resources(self):
+    def fsconfig(self):
+        # TODO: This pattern will not pick up changes to config after this!
         if self._jupyterfsConfig is None:
-            self._jupyterfsConfig = JupyterfsConfig(config=self.config)
+            self._jupyterfsConfig = JupyterFsConfig(config=self.config)
 
-        return self._jupyterfsConfig.resources
+        return self._jupyterfsConfig
+
+    def _config_changed(self):
+        self._jupyterfsConfig
+
+    def _validate_resource(self, resource):
+        if self.fsconfig.resource_validators:
+            for validator in self.fsconfig.resource_validators:
+                if re.fullmatch(validator, resource["url"]) is not None:
+                    break
+            else:
+                self.log.warning(
+                    "Resource failed validation: %r vs %r",
+                    resource["url"],
+                    self.fsconfig.resource_validators,
+                )
+                return False
+        return True
 
     @web.authenticated
     async def get(self):
@@ -246,10 +282,17 @@ class MetaManagerHandler(APIHandler):
         body = self.get_json_body()
         options = body["options"]
 
-        if "_addServerside" in options and options["_addServerside"]:
-            resources = list((*self.config_resources, *body["resources"]))
+        if not self.fsconfig.allow_user_resources:
+            if body["resources"]:
+                self.log.warning("User not allowed to configure resources, ignoring")
+            resources = self.fsconfig.resources
         else:
-            resources = body["resources"]
+            client_resources = body["resources"]
+            valid_resources = list(filter(self._validate_resource, client_resources))
+            if "_addServerside" in options and options["_addServerside"]:
+                resources = list((*self.fsconfig.resources, *valid_resources))
+            else:
+                resources = valid_resources
 
         self.finish(
             json.dumps(self.contents_manager.initResource(*resources, options=options))

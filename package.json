@@ -1,7 +1,9 @@
 {
   "private": true,
   "license": "BSD-3-Clause",
-  "workspaces": ["js"],
+  "workspaces": [
+    "js"
+  ],
   "scripts": {
     "develop": "jupyter labextension develop --overwrite .",
     "test:browser": "jlpm --cwd ./js test:browser"
