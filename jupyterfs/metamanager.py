@@ -9,7 +9,6 @@ from hashlib import md5
 import json
 import re
 
-from traitlets import default
 from tornado import web
 
 from fs.errors import FSError
@@ -36,8 +35,13 @@ __all__ = ["MetaManager", "MetaManagerHandler"]
 class MetaManager(AsyncContentsManager):
     copy_pat = re.compile(r"\-Copy\d*\.")
 
-    @default("files_handler_params")
-    def _files_handler_params_default(self):
+    # https://github.com/jpmorganchase/jupyter-fs/issues/175
+    # @default("files_handler_params")
+    # def _files_handler_params_default(self):
+    #     return {"path": self.root_dir}
+
+    @property
+    def files_handler_params(self):
         return {"path": self.root_dir}
 
     def __init__(self, **kwargs):
