@@ -45,7 +45,8 @@
         },
         "url": {
           "description": "A url pointing to an fs resource, as per the PyFilesystem fsurl specification",
-          "type": "string"
+          "type": "string",
+          "pattern": "^.+?:\/\/((([^:]*):(|{{[^@]+}})@.*)|[^@]*)$"
         },
         "preferred_dir": {
           "description": "Directory to be first opened (e.g., myDir/mySubdir)",

@@ -11,7 +11,6 @@ from datetime import datetime
 from fs import errors, open_fs
 from fs.base import FS
 from fs.errors import NoSysPath, ResourceNotFound, PermissionDenied
-import fs.path
 import mimetypes
 import pathlib
 import stat

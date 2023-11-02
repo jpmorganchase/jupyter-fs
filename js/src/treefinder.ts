@@ -41,7 +41,7 @@ import { Content, ContentsModel, Format, Path, TreeFinderGridElement, TreeFinder
 import { JupyterClipboard } from "./clipboard";
 import { commandIDs, idFromResource } from "./commands";
 import { ContentsProxy } from "./contents_proxy";
-import { getContentChild, getContentParent, revealPath, openDirRecursive } from "./contents_utils";
+import { getContentParent, revealPath, openDirRecursive } from "./contents_utils";
 import { DragDropWidget, TABLE_HEADER_MIME } from "./drag";
 import { IFSResource } from "./filesystem";
 import { fileTreeIcon } from "./icons";
@@ -49,7 +49,6 @@ import { promptRename } from "./utils";
 import { Uploader, UploadButton } from "./upload";
 import { MimeData } from "@lumino/coreutils";
 import { DropAction } from "@lumino/dragdrop";
-import { ContentsManager } from "@jupyterlab/services";
 
 
 export class TreeFinderTracker extends WidgetTracker<TreeFinderSidebar> {
@@ -100,7 +99,7 @@ export class TreeFinderWidget extends DragDropWidget {
     this.addClass("jp-tree-finder");
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    this.contentsProxy = new ContentsProxy(contents as ContentsManager, rootPath, this.onGetChildren.bind(this));
+    this.contentsProxy = new ContentsProxy(contents, rootPath, this.onGetChildren.bind(this));
     this.settings = settings;
 
     this.translator = translator || nullTranslator;
