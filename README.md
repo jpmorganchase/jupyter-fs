@@ -125,7 +125,7 @@ The `"url"` field jupyter-fs config is based on the PyFilesystem [opener url](ht
 If you prefer to set up your filesystem resources in the server-side config, you can do so. For example, you can set up a local filesystem by adding the following to your `jupyter_server_config.py` file:
 
 ```python
-c.Jupyterfs.resources = [
+c.JupyterFs.resources = [
     {
         "name": "local_test",
         "url": "osfs:///Users/foo/test"
@@ -143,7 +143,7 @@ ALternatively, you can add resource specifications alongside the basic jupyter-f
       "jupyterfs.extension": true
     }
   },
-  "Jupyterfs": {
+  "JupyterFs": {
     "resources": [
       {
         "name": "local_test",
