@@ -11,20 +11,60 @@ import { URLExt } from "@jupyterlab/coreutils";
 import { ServerConnection } from "@jupyterlab/services";
 
 export interface IFSOptions {
-  _addServerside: boolean;
+  _addServerside?: boolean;
 
   /**
    * If true, only recreate the actual resource when necessary
    */
-  cache: boolean;
+  cache?: boolean;
 
   /**
    * If true, enable jupyter-fs debug output in both frontend and backend
    */
-  verbose: boolean;
+  verbose?: boolean;
+
+  /**
+   * The version of the package that these settings were written with
+   */
+  writtenVersion?: string;
 }
 
-export interface IFSResource {
+
+/**
+ * A resource configuration as stored in the settings system.
+ */
+export interface IFSSettingsResource {
+  /**
+   * The name of this resource
+   */
+  name?: string;
+
+  /**
+   * The fsurl specifying this resource
+   */
+  url?: string;
+
+  /**
+   * Auth scheme to be used for this resource, or false for none
+   */
+  auth: "ask" | "env" | false;
+
+  /**
+   * Fallback for determining if resource is writeable. Used only if the underlying PyFilesystem does not provide this information (eg S3)
+   */
+  defaultWritable?: boolean;
+
+  /**
+   * Directory to be first opened
+   */
+  preferred_dir?: string;
+}
+
+
+/**
+ * An object defining an FS resource.
+ */
+export interface IFSResource extends IFSSettingsResource {
   /**
    * The name of this resource
    */
@@ -35,10 +75,6 @@ export interface IFSResource {
    */
   url: string;
 
-  /**
-   * Auth scheme to be used for this resource, or false for none
-   */
-  auth: "ask" | "env" | false;
 
   /**
    * The jupyterlab drive name associated with this resource. This is defined
@@ -63,6 +99,11 @@ export interface IFSResource {
    * initialization
    */
   tokenDict?: {[key: string]: string};
+
+  /**
+   * Any errors during initialization
+   */
+  errors?: string[];
 }
 
 export interface IFSComm {
@@ -87,24 +128,11 @@ export interface IFSComm {
 abstract class FSCommBase implements IFSComm {
   protected _settings: ServerConnection.ISettings | undefined = undefined;
 
-  constructor(props: { baseUrl?: string } = {}) {
-    const { baseUrl } = props;
-
-    if (baseUrl) {
-      this.baseUrl = baseUrl;
-    }
-  }
-
   abstract getResourcesRequest(): Promise<IFSResource[]>;
   abstract initResourceRequest(args: {options: IFSOptions; resources: IFSResource[]}): Promise<IFSResource[]>;
 
   get baseUrl(): string {
     return this.settings.baseUrl;
-  }
-  set baseUrl(baseUrl: string) {
-    if (baseUrl !== this.baseUrl) {
-      this._settings = ServerConnection.makeSettings({ baseUrl });
-    }
   }
 
   get resourcesUrl(): string {
@@ -121,6 +149,16 @@ abstract class FSCommBase implements IFSComm {
 }
 
 export class FSComm extends FSCommBase {
+
+  private static _instance: FSComm;
+
+  static get instance(): FSComm {
+    if (FSComm._instance === undefined) {
+      FSComm._instance = new FSComm();
+    }
+    return FSComm._instance;
+  }
+
   async getResourcesRequest(): Promise<IFSResource[]> {
     const settings = this.settings;
     const fullUrl = this.resourcesUrl;
@@ -160,7 +198,6 @@ export class FSComm extends FSCommBase {
           throw new ServerConnection.ResponseError(response, data);
         });
       }
-
       return response.json();
     });
   }

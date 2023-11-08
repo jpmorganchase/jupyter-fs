@@ -20,6 +20,7 @@ import {
   TextField,
   InputAdornment,
   IconButton,
+  Tooltip,
 } from "@material-ui/core";
 import * as React from "react";
 
@@ -54,8 +55,8 @@ function tokensFromUrl(url: string): string[] {
   return new DoubleBraceTemplate(url).tokens();
 }
 
-function _askRequired(spec: IFSResource) {
-  return spec.auth === "ask" && !spec.init;
+function _askRequired(spec: IFSResource): boolean {
+  return spec.auth === "ask" && !spec.init && !!(spec.missingTokens?.length);
 }
 
 export function askRequired(specs: IFSResource[]) {
@@ -131,6 +132,7 @@ export class AskDialog<
   protected _formInner() {
     return this.props.resources.map(resource => {
       // ask for credentials if needed, or state why not
+      const decodedUrl = decodeURIComponent(resource.url);
       const askReq = _askRequired(resource);
       const inputs = askReq ? this._inputs(resource.url) : [];
       const tokens = tokensFromUrl(resource.url);
@@ -153,7 +155,11 @@ export class AskDialog<
         >
           <ExpansionPanelSummary className="jfs-ask jfs-ask-panel-summary">
             <Typography>{summary}</Typography>
-            {!reason && <Typography>{resource.url}</Typography>}
+            {!reason &&
+              <Tooltip title={decodedUrl}>
+                <Typography noWrap={true}>{decodedUrl}</Typography>
+              </Tooltip>
+            }
           </ExpansionPanelSummary>
           <ExpansionPanelDetails className="jfs-ask jfs-ask-panel-details">
             {inputs}

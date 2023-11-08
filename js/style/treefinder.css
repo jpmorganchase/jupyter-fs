@@ -84,8 +84,76 @@ tree-finder-panel tree-finder-grid table {
   font-weight: normal;
 }
 
+.jp-tree-finder th.jfs-mod-loading span.rt-row-header-icon::before {
+  content: "";
+  background-color: var(--tf-background);
+  border: solid 3px var(--jp-ui-font-color1);
+  border-bottom-color: var(--jp-brand-color1);
+  border-radius: 50%;
+
+  position: absolute;
+  width: 1ex;
+  height: 1ex;
+
+  animation: load3 1s infinite linear
+}
+
+.jp-tree-finder tr.tf-mod-select th.jfs-mod-loading span.rt-row-header-icon::before {
+  background-color: var(--tf-select-background);
+}
+
+.jp-tree-finder tbody tr:hover:not(.tf-mod-select) th.jfs-mod-loading span.rt-row-header-icon::before {
+  background-color: var(--tf-row-hover-background);
+}
+
+.jp-tree-finder tree-finder-grid.jfs-mod-loading tbody::before {
+  content: "";
+  border: solid 5px var(--jp-brand-color1);
+  border-radius: 50%;
+  border-bottom-color: var(--jp-layout-color1);
+
+  position: absolute;
+  width: 3em;
+  height: 3em;
+  left: calc(50% - 2em);
+  top: 4lh;
+
+  animation:
+    load3 1s infinite linear,
+    fadeIn 1s;
+}
+
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes load3 {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 .jp-tree-finder thead th {
   font-weight: 500;
+}
+
+.jp-thead-drag-image {
+  top: 0px;
+  left: 0px;
+  color: var(--jp-ui-font-color1);
+  font-size: var(--jp-ui-font-size1);
+  font-weight: 500; 
 }
 
 .jp-tree-finder .tf-filter-input {

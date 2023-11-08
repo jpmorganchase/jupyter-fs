@@ -18,6 +18,7 @@ import {
   filterListIcon,
   pasteIcon,
   refreshIcon,
+  fileIcon,
   newFolderIcon,
 } from "@jupyterlab/ui-components";
 import { DisposableSet, IDisposable } from "@lumino/disposable";
@@ -30,9 +31,10 @@ import { TreeFinderSidebar } from "./treefinder";
 import type { IFSResource } from "./filesystem";
 import type { ContentsProxy } from "./contents_proxy";
 import type { TreeFinderTracker } from "./treefinder";
-import { getContentParent, getRefreshTargets, revealAndSelectPath } from "./contents_utils";
+import { getContentParent, getRefreshTargets, openDirRecursive, revealAndSelectPath, splitPathstrDrive } from "./contents_utils";
 import { ISettingRegistry } from "@jupyterlab/settingregistry";
 import { showErrorMessage } from "@jupyterlab/apputils";
+import { getAllSnippets, instantiateSnippet, Snippet } from "./snippets";
 
 // define the command ids as a constant tuple
 export const commandNames = [
@@ -45,10 +47,11 @@ export const commandNames = [
   "rename",
   "download",
   "create_folder",
-  // "create_file",
+  "create_file",
   // "navigate",
   "copyFullPath",
   "copyRelativePath",
+  "restore",
   "toggleColumnPath",
   "toggleColumn",
 ] as const;
@@ -99,41 +102,37 @@ function _getRelativePaths(selectedFiles: Array<Content<ContentsProxy.IJupyterCo
 }
 
 
-export function createCommands(
+async function _digestString(value: string): Promise<string> {
+  const encoded = new TextEncoder().encode(value); // encode as (utf-8) Uint8Array
+  const buffer = await crypto.subtle.digest("SHA-256", encoded); // hash the message
+  const hash = Array.from(new Uint8Array(buffer)); // convert buffer to byte array
+  return hash
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join(""); // convert bytes to hex string
+}
+
+
+async function _commandKeyForSnippet(snippet: Snippet): Promise<string>  {
+  return `jupyterfs:snippet-${snippet.label}-${await _digestString(snippet.label + snippet.caption + snippet.pattern.source + snippet.template)}`;
+}
+
+
+function _normalizedUrlForSnippet(content: Content<ContentsProxy.IJupyterContentRow>, baseUrl: string): string {
+  const path = splitPathstrDrive(content.pathstr)[1];
+  return `${baseUrl}/${path}${content.hasChildren ? "/" : ""}`;
+}
+
+
+/**
+ * Create commands that will have the same IDs indepent of settings/resources
+ *
+ * These commands do not need to be recreated on settings/resource updates
+ */
+export function createStaticCommands(
   app: JupyterFrontEnd,
   tracker: TreeFinderTracker,
   clipboard: JupyterClipboard,
-  resources: IFSResource[],
-  settings?: ISettingRegistry.ISettings,
 ): IDisposable {
-  const selector = ".jp-tree-finder-sidebar";
-  const submenu = new Menu({ commands: app.commands });
-  submenu.title.label = "Show/Hide Columns";
-  submenu.title.icon = filterListIcon;
-  submenu.addItem({ command: commandIDs.toggleColumnPath });
-  for (const column of COLUMN_NAMES) {
-    submenu.addItem({ command: toggleColumnCommandId(column) });
-  }
-
-  // const toggleState: {[key: string]: {[key: string]: boolean}} = {};
-  // for (let resource of resources) {
-  //   const colsToDisplay = resource.displayColumns as string[] ?? ['size'];
-  //   const id = idFromResource(resource);
-  //   toggleState[id] = {};
-  //   const state = toggleState[id];
-  //   for (let key of COLUMN_NAMES) {
-  //     state[key] = colsToDisplay.includes(key);
-  //   }
-  // }
-  const toggleState: {[key: string]: boolean} = {};
-  const colsToDisplay = settings?.composite.display_columns as string[] ?? ["size"];
-  for (const key of COLUMN_NAMES) {
-    toggleState[key] = colsToDisplay.includes(key);
-  }
-
-  let contextMenuRank = 1;
-
-  // globally accessible jupyter commands[
   return [
     app.commands.addCommand(commandIDs.copy, {
       execute: args => clipboard.model.copySelection(tracker.currentWidget!.treefinder.model!),
@@ -218,7 +217,9 @@ export function createCommands(
       },
       icon: downloadIcon,
       label: "Download",
-      isEnabled: () => !!(tracker.currentWidget?.treefinder.model?.selection),
+      isEnabled: () => !!(
+        tracker.currentWidget?.treefinder.model?.selection?.some(s => !s.hasChildren)
+      ),
     }),
     app.commands.addCommand(commandIDs.create_folder, {
       execute: async args =>  {
@@ -254,6 +255,40 @@ export function createCommands(
       label: "New Folder",
       isEnabled: () => !!tracker.currentWidget,
     }),
+    app.commands.addCommand(commandIDs.create_file, {
+      execute: async args =>  {
+        const widget = tracker.currentWidget!;
+        const model = widget.treefinder.model!;
+        let target = model.selectedLast ?? model.root;
+        if (!target.hasChildren) {
+          target = await getContentParent(target, model.root);
+        }
+        const path = Path.fromarray(target.row.path);
+        let row: ContentsProxy.IJupyterContentRow;
+        try {
+          row = await widget.treefinder.contentsProxy.newUntitled({
+            type: "file",
+            path,
+          });
+        } catch (e) {
+          void showErrorMessage("Could not create file", e as string);
+          return;
+        }
+        target.invalidate();
+        const content = await revealAndSelectPath(model, row.path);
+        // Is this really needed?
+        model.refreshSub.next(getRefreshTargets([target.row], model.root));
+        // Scroll into view if not visible
+        await TreeFinderSidebar.scrollIntoView(widget.treefinder, content.pathstr);
+        const newContent = await TreeFinderSidebar.doRename(widget, content);
+        model.renamerSub.next( { name: newContent.name, target: content } );
+        // TODO: Model state of TreeFinderWidget should be updated by renamerSub process.
+        content.row = newContent;
+      },
+      icon: fileIcon,
+      label: "New File",
+      isEnabled: () => !!tracker.currentWidget,
+    }),
     app.commands.addCommand(commandIDs.refresh, {
       execute: args => {
         if (args["selection"]) {
@@ -285,14 +320,57 @@ export function createCommands(
       label: "Copy Relative Path",
       isEnabled: () => !!tracker.currentWidget,
     }),
-
     app.commands.addCommand(commandIDs.toggleColumnPath, {
       execute: args => { /* no-op */ },
       label: "path",
       isEnabled: () => false,
       isToggled: () => true,
     }),
-    ...COLUMN_NAMES.map((column: keyof ContentsProxy.IJupyterContentRow) => app.commands.addCommand(toggleColumnCommandId(column), {
+    app.commands.addCommand(commandIDs.restore, {
+      execute: async args => {
+        const rootPath = args.rootPath as string;
+        const dirsToOpen = rootPath.split("/");
+        const sidebar = tracker.findByDrive(args.id as string);
+        if (!sidebar) {
+          throw new Error(`Could not restore JupyterFS browser: ${args.id}`);
+        }
+        const treefinderwidget = sidebar.treefinder;
+        const model = treefinderwidget.model!;
+
+        // If preferredDir not specified, proceed with the restore
+        if (!sidebar.preferredDir) {
+          await openDirRecursive(model, dirsToOpen);
+          await tracker.save(sidebar);
+        }
+      },
+    }),
+  ].reduce((set: DisposableSet, d) => {
+    set.add(d); return set;
+  }, new DisposableSet());
+}
+
+
+/**
+ * Create commands whose count/IDs depend on settings/resources
+ */
+export async function createDynamicCommands(
+  app: JupyterFrontEnd,
+  tracker: TreeFinderTracker,
+  clipboard: JupyterClipboard,
+  resources: IFSResource[],
+  settings?: ISettingRegistry.ISettings,
+): Promise<IDisposable> {
+  const columnCommands = [];
+  const toggleState: {[key: string]: boolean} = {};
+  const colsToDisplay = settings?.composite.display_columns as string[] ?? ["size"];
+  const columnsMenu = new Menu({ commands: app.commands });
+  columnsMenu.title.label = "Show/Hide Columns";
+  columnsMenu.title.icon = filterListIcon;
+  columnsMenu.addItem({ command: commandIDs.toggleColumnPath });
+  for (const column of COLUMN_NAMES) {
+    columnsMenu.addItem({ command: toggleColumnCommandId(column) });
+    toggleState[column] = colsToDisplay.includes(column);
+    columnCommands.push(app.commands.addCommand(toggleColumnCommandId(column), {
       execute: async args => {
         toggleState[column] = !toggleState[column];
         await settings?.set("display_columns", COLUMN_NAMES.filter(k => toggleState[k]));
@@ -300,7 +378,49 @@ export function createCommands(
       label: column,
       isToggleable: true,
       isToggled: () => toggleState[column],
-    })),
+    }));
+  }
+
+
+  const snippetsMenu = new Menu({ commands: app.commands });
+  snippetsMenu.title.label = "Snippets";
+  const snippets = await getAllSnippets(settings);
+  const snippetCommands = [] as IDisposable[];
+  const snippetIds = new Set<string>();
+  for (const snippet of snippets) {
+    const key = await _commandKeyForSnippet(snippet);
+    if (snippetIds.has(key)) {
+      console.warn("Discarding duplicate snippet", snippet);
+      continue;
+    }
+    snippetIds.add(key);
+    snippetsMenu.addItem({ command: key });
+    snippetCommands.push(app.commands.addCommand(key, {
+      execute: async (args: unknown) => {
+        const sidebar = tracker.currentWidget!;
+        const content = sidebar.treefinder.selection![0];
+        const instantiated = instantiateSnippet(snippet.template, sidebar.url, content.pathstr);
+        await navigator.clipboard.writeText(instantiated);
+      },
+      label: snippet.label,
+      caption: snippet.caption,
+      isVisible: () => {
+        const sidebar = tracker.currentWidget;
+        const selection = sidebar?.treefinder.selection;
+        if (selection?.length) {
+          return snippet.pattern.test(_normalizedUrlForSnippet(selection[0], sidebar!.url));
+        }
+        return false;
+      },
+    }));
+  }
+
+  const selector = ".jp-tree-finder-sidebar";
+  let contextMenuRank = 1;
+
+  return [
+    ...columnCommands,
+    ...snippetCommands,
 
     // context menu items
     app.contextMenu.addItem({
@@ -355,13 +475,34 @@ export function createCommands(
       rank: contextMenuRank++,
     }),
     app.contextMenu.addItem({
+      type: "submenu",
+      submenu: snippetsMenu,
+      selector,
+      rank: contextMenuRank++,
+    }),
+    app.contextMenu.addItem({
+      type: "separator",
+      selector,
+      rank: contextMenuRank++,
+    }),
+    app.contextMenu.addItem({
+      command: commandIDs.create_file,
+      selector,
+      rank: contextMenuRank++,
+    }),
+    app.contextMenu.addItem({
+      command: commandIDs.create_folder,
+      selector,
+      rank: contextMenuRank++,
+    }),
+    app.contextMenu.addItem({
       type: "separator",
       selector,
       rank: contextMenuRank++,
     }),
     app.contextMenu.addItem({
       type: "submenu",
-      submenu,
+      submenu: columnsMenu,
       selector,
       rank: contextMenuRank++,
     }),

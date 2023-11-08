@@ -41,3 +41,11 @@
 .jfs-ask-panel-summary > div {
   flex-direction: column;
 }
+
+/* Elide the typography fields (mainly URL) */
+.jfs-ask-panel.MuiExpansionPanel-root p { 
+  white-space: nowrap;
+  max-width: 520px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}

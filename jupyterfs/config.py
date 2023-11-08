@@ -8,7 +8,7 @@
 from jupyter_server.services.contents.largefilemanager import LargeFileManager
 from jupyter_server.services.contents.manager import ContentsManager
 from jupyter_server.transutils import _i18n
-from traitlets import Bool, List, Type, Unicode
+from traitlets import Bool, Dict, List, Type, Unicode
 from traitlets.config import Configurable
 
 __all__ = ["JupyterFs"]
@@ -39,9 +39,34 @@ class JupyterFs(Configurable):
 
     resource_validators = List(
         config=True,
-        default_value=[".*"],
         trait=Unicode(),
         help=_i18n(
             "regular expressions to match against resource URLs. At least one must match"
+        ),
+    )
+
+    surface_init_errors = Bool(
+        default_value=False,
+        config=True,
+        help=_i18n("whether to surface init errors to the client"),
+    )
+
+    snippets = List(
+        config=True,
+        per_key_traits=Dict(
+            {
+                "label": Unicode(help="The designator to show to users"),
+                "caption": Unicode(
+                    "", help="An optional, longer description to show to users"
+                ),
+                "pattern": Unicode(
+                    "",
+                    help="A regular expression to match against the full URL of the entry, indicating if this snippet is valid for it",
+                ),
+                "template": Unicode(help="A template string to build up the snippet"),
+            }
+        ),
+        help=_i18n(
+            "per entry snippets for how to use it, e.g. a snippet for how to open a file from a given resource"
         ),
     )

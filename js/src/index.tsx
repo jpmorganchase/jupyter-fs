@@ -13,18 +13,19 @@ import { IDocumentManager } from "@jupyterlab/docmanager";
 import { ISettingRegistry } from "@jupyterlab/settingregistry";
 import { IStatusBar } from "@jupyterlab/statusbar";
 import { ITranslator } from "@jupyterlab/translation";
-import { folderIcon, fileIcon } from "@jupyterlab/ui-components";
+import { folderIcon, fileIcon, IFormRendererRegistry } from "@jupyterlab/ui-components";
 import { IDisposable } from "@lumino/disposable";
-import * as React from "react";
-import * as ReactDOM from "react-dom";
+import * as semver from "semver";
 
-import { AskDialog, askRequired } from "./auth";
-import { createCommands, idFromResource } from "./commands";
+import { commandIDs, createDynamicCommands, createStaticCommands, idFromResource } from "./commands";
 import { ContentsProxy } from "./contents_proxy";
-import { FSComm, IFSOptions, IFSResource } from "./filesystem";
+import { IFSOptions, IFSResource, IFSSettingsResource } from "./filesystem";
 import { FileUploadStatus } from "./progress";
+import { migrateSettings, unpartialResource } from "./settings";
+import { snippetFormRender } from "./snippets";
 import { TreeFinderSidebar } from "./treefinder";
 import { ITreeFinderMain } from "./tokens";
+import { initResources } from "./resources";
 
 // tslint:disable: variable-name
 
@@ -41,6 +42,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
     ISettingRegistry,
     IThemeManager,
   ],
+  optional: [IFormRendererRegistry],
   provides: ITreeFinderMain,
 
   async activate(
@@ -52,8 +54,8 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
     router: IRouter,
     settingRegistry: ISettingRegistry,
     themeManager: IThemeManager,
+    editorRegistry: IFormRendererRegistry | null
   ): Promise<ITreeFinderMain> {
-    const comm = new FSComm();
     const widgetMap : {[key: string]: TreeFinderSidebar} = {};
     let commands: IDisposable | undefined;
 
@@ -66,6 +68,16 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
       console.warn(`Failed to load settings for the jupyter-fs extension.\n${error}`);
     }
 
+    // Migrate any old settings
+    const initialOptions = settings?.composite.options as unknown as IFSOptions | undefined;
+    if ((settings && semver.lt(initialOptions?.writtenVersion || "0.0.0", settings.version))) {
+      settings = await migrateSettings(settings);
+    }
+
+    if (editorRegistry) {
+      editorRegistry.addRenderer(`${BROWSER_ID}.snippets`, { fieldRenderer: snippetFormRender });
+    }
+
     let columns = settings?.composite.display_columns as Array<keyof ContentsProxy.IJupyterContentRow> ?? ["size"];
 
     const sharedSidebarProps: Omit<TreeFinderSidebar.ISidebarProps, "url"> = {
@@ -76,9 +88,12 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
       restorer,
       router,
       columns,
+      settings,
     };
 
-    function refreshWidgets({ resources, options }: {resources: IFSResource[]; options: IFSOptions}) {
+    createStaticCommands(app, TreeFinderSidebar.tracker, TreeFinderSidebar.clipboard);
+
+    async function refreshWidgets({ resources, options }: {resources: IFSResource[]; options: IFSOptions}) {
       if (options.verbose) {
         // eslint-disable-next-line no-console
         console.info(`jupyter-fs frontend received resources:\n${JSON.stringify(resources)}`);
@@ -93,14 +108,14 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
         const id = idFromResource(r);
         let w = widgetMap[id];
         if (!w || w.isDisposed) {
-          const sidebarProps = { ...sharedSidebarProps, url: r.url };
+          const sidebarProps = { ...sharedSidebarProps, url: r.url, settings: settings! };
           w = TreeFinderSidebar.sidebarFromResource(r, sidebarProps);
           widgetMap[id] = w;
         } else {
           w.treefinder.columns = columns;
         }
       }
-      commands = createCommands(
+      commands = await createDynamicCommands(
         app,
         TreeFinderSidebar.tracker,
         TreeFinderSidebar.clipboard,
@@ -111,8 +126,10 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
 
     async function refresh() {
       // get user settings from json file
-      let resources: IFSResource[] = settings!.composite.resources as any;
-      const options: IFSOptions = settings!.composite.options as any;
+      let resources: IFSResource[] = (
+        settings?.composite.resources as unknown as IFSSettingsResource[] ?? []
+      ).map(unpartialResource);
+      const options: IFSOptions = settings?.composite.options as any ?? {};
 
       function cleanup(all=false) {
         if (commands) {
@@ -129,56 +146,26 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
       }
 
       try {
-        // send user specs to backend; await return containing resources
-        // defined by user settings + resources defined by server config
-        resources = await comm.initResourceRequest({
-          resources,
-          options: {
-            ...options,
-            _addServerside: true,
-          },
-        });
-
-        if (askRequired(resources)) {
-          // ask for url template values, if required
-          const dialogElem = document.createElement("div");
-          document.body.appendChild(dialogElem);
-
-          const handleClose = () => {
-            ReactDOM.unmountComponentAtNode(dialogElem);
-            dialogElem.remove();
-          };
-
-          const handleSubmit = async (values: {[url: string]: {[key: string]: string}}) => {
-            resources = await comm.initResourceRequest({
-              resources: resources.map(r => ({ ...r, tokenDict: values[r.url] })),
-              options,
-            });
-            cleanup();
-            refreshWidgets({ resources, options });
-          };
-
-          ReactDOM.render(
-            <AskDialog
-              handleClose={handleClose}
-              handleSubmit={handleSubmit}
-              options={options}
-              resources={resources}
-            />,
-            dialogElem,
-          );
-        } else {
-          // otherwise, just go ahead and refresh the widgets
-          cleanup();
-          refreshWidgets({ options, resources });
-        }
-      } catch {
+        resources = (await initResources(resources, options)).filter(r => r.init);
+        cleanup();
+        await refreshWidgets({ resources, options });
+      } catch (e) {
+        console.error("Failed to refresh widgets!", e);
         cleanup(true);
       }
     }
 
-    // initial setup when DOM attachment of custom elements is complete.
-    void app.started.then(refresh);
+    // when ready, restore using command
+    const refreshed = refresh();
+    void restorer.restore(TreeFinderSidebar.tracker, {
+      command: commandIDs.restore,
+      args: widget => ({
+        id: widget.id,
+        rootPath: widget.treefinder.model?.root.pathstr,
+      }),
+      name: widget => widget.id,
+      when: refreshed,
+    });
 
     if (settings) {
       // rerun setup whenever relevant settings change
@@ -202,6 +189,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
       `;
     }
 
+    let initialThemeLoad = true;
     themeManager.themeChanged.connect(() => {
       // Update SVG icon fills (since we put them in pseudo-elements we cannot style with CSS)
       const primary = getComputedStyle(document.documentElement).getPropertyValue("--jp-ui-font-color1");
@@ -211,9 +199,19 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
       );
 
       // Refresh widgets in case font/border sizes etc have changed
-      void Promise.all(Object.keys(widgetMap).map(
-        key => widgetMap[key].treefinder.nodeInit()
-      ));
+      if (initialThemeLoad) {
+        initialThemeLoad = false;
+        void app.restored.then(() => {
+          // offset it by a timeout to ensure we clear the initial async stack
+          setTimeout(() => void Object.keys(widgetMap).map(
+            key => widgetMap[key].treefinder.nodeInit()
+          ), 0);
+        });
+      } else {
+        Object.keys(widgetMap).map(
+          key => widgetMap[key].treefinder.nodeInit()
+        );
+      }
     });
 
     style.textContent = iconStyleContent(folderIcon.svgstr, fileIcon.svgstr);
@@ -235,7 +233,7 @@ export const progressStatus: JupyterFrontEndPlugin<void> = {
     ITreeFinderMain,
     IStatusBar,
   ],
-  async activate(
+  activate(
     app: JupyterFrontEnd,
     translator: ITranslator,
     main: ITreeFinderMain | null,

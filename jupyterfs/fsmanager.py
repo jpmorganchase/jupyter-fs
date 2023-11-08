@@ -11,7 +11,6 @@ from datetime import datetime
 from fs import errors, open_fs
 from fs.base import FS
 from fs.errors import NoSysPath, ResourceNotFound, PermissionDenied
-import fs.path
 import mimetypes
 import pathlib
 import stat
@@ -146,10 +145,11 @@ class FSManager(FileContentsManager):
     def _checkpoints_class_default(self):
         return NullCheckpoints
 
-    def _is_path_hidden(self, path):
+    def _is_path_hidden(self, path, info):
         """Does the specific API style path correspond to a hidden node?
         Args:
             path (str): The path to check.
+            info (<Info>): FS Info object for file/dir at path
         Returns:
             hidden (bool): Whether the path is hidden.
         """
@@ -161,7 +161,9 @@ class FSManager(FileContentsManager):
             return True
 
         try:
-            info = self._pyfilesystem_instance.getinfo(path, namespaces=("stat",))
+            if not info:
+                info = self._pyfilesystem_instance.getinfo(path, namespaces=("stat",))
+
             # Check Windows flag:
             if info.get("stat", "st_file_attributes", 0) & stat.FILE_ATTRIBUTE_HIDDEN:
                 return True
@@ -174,7 +176,9 @@ class FSManager(FileContentsManager):
                 import os
 
                 syspath = self._pyfilesystem_instance.getsyspath(path)
-                if not os.access(syspath, os.X_OK | os.R_OK):
+                if os.path.exists(syspath) and not os.access(
+                    syspath, os.X_OK | os.R_OK
+                ):
                     return True
 
         except ResourceNotFound:
@@ -187,10 +191,11 @@ class FSManager(FileContentsManager):
             self.log.exception(f"Failed to check if path is hidden: {path!r}")
         return False
 
-    def is_hidden(self, path):
+    def is_hidden(self, path, info=None):
         """Does the API style path correspond to a hidden directory or file?
         Args:
             path (str): The path to check.
+            info (<Info>): FS Info object for file/dir at path
         Returns:
             hidden (bool): Whether the path or any of its parents are hidden.
         """
@@ -199,7 +204,7 @@ class FSManager(FileContentsManager):
         if any(part.startswith(".") for part in ppath.parts):
             return True
         while ppath.parents:
-            if self._is_path_hidden(str(path)):
+            if self._is_path_hidden(str(path), info):
                 return True
             ppath = ppath.parent
         return False
@@ -231,12 +236,12 @@ class FSManager(FileContentsManager):
         """
         return self._pyfilesystem_instance.exists(path)
 
-    def _base_model(self, path):
-        """Build the common base of a contents model"""
-        info = self._pyfilesystem_instance.getinfo(
-            path, namespaces=["details", "access"]
-        )
+    def _base_model(self, path, info):
+        """
+        Build the common base of a contents model
 
+        info (<Info>): FS Info object for file/dir at path -- used for values and reduces needed network calls
+        """
         try:
             # size of file
             size = info.size
@@ -256,7 +261,7 @@ class FSManager(FileContentsManager):
 
         # Create the base model.
         model = {}
-        model["name"] = path.rsplit("/", 1)[-1]
+        model["name"] = info.name
         model["path"] = path
         model["last_modified"] = last_modified
         model["created"] = created
@@ -288,38 +293,40 @@ class FSManager(FileContentsManager):
             model["writable"] = False
         return model
 
-    def _dir_model(self, path, content=True):
+    def _dir_model(self, path, info, content=True):
         """Build a model for a directory
         if content is requested, will include a listing of the directory
+        info (<Info>): FS Info object for file/dir at path
         """
         four_o_four = "directory does not exist: %r" % path
 
-        if not self._pyfilesystem_instance.isdir(path):
+        if not info.is_dir:
             raise web.HTTPError(404, four_o_four)
-        elif not self.allow_hidden and self.is_hidden(path):
+
+        elif not self.allow_hidden and self.is_hidden(path, info):
             self.log.debug("Refusing to serve hidden directory %r, via 404 Error", path)
             raise web.HTTPError(404, four_o_four)
 
-        model = self._base_model(path)
+        model = self._base_model(path, info)
         model["type"] = "directory"
         model["size"] = None
         if content:
             model["content"] = contents = []
-            for name in self._pyfilesystem_instance.listdir(path):
-                os_path = fs.path.join(path, name)
-                try:
-                    if (
-                        not self._pyfilesystem_instance.islink(os_path)
-                        and not self._pyfilesystem_instance.isfile(os_path)
-                        and not self._pyfilesystem_instance.isdir(os_path)
-                    ):
-                        self.log.debug("%s not a regular file", os_path)
-                        continue
 
-                    if self.should_list(name):
-                        if self.allow_hidden or not self._is_path_hidden(name):
+            for dir_entry in self._pyfilesystem_instance.scandir(
+                path, namespaces=("basic", "access", "details", "stat")
+            ):
+                try:
+                    if self.should_list(dir_entry.name):
+                        if self.allow_hidden or not self._is_path_hidden(
+                            dir_entry.make_path(path), dir_entry
+                        ):
                             contents.append(
-                                self.get(path="%s/%s" % (path, name), content=False)
+                                self.get(
+                                    path="%s/%s" % (path, dir_entry.name),
+                                    content=False,
+                                    info=dir_entry,
+                                )
                             )
                 except PermissionDenied:
                     pass  # Don't provide clues about protected files
@@ -328,11 +335,14 @@ class FSManager(FileContentsManager):
                     # us from listing other entries
                     pass
                 except Exception as e:
-                    self.log.warning("Error stat-ing %s: %s", os_path, e)
+                    self.log.warning(
+                        "Error stat-ing %s: %s", dir_entry.make_path(path), e
+                    )
+
             model["format"] = "json"
         return model
 
-    def _read_file(self, path, format):
+    def _read_file(self, path, format, info):
         """Read a non-notebook file.
         Args:
             path (str): The path to be read.
@@ -340,9 +350,10 @@ class FSManager(FileContentsManager):
                 If 'text', the contents will be decoded as UTF-8.
                 If 'base64', the raw bytes contents will be encoded as base64.
                 If not specified, try to decode as UTF-8, and fall back to base64
+            info (<Info>): FS Info object for file at path
         """
         with self.perm_to_403(path):
-            if not self._pyfilesystem_instance.isfile(path):
+            if not info.is_file:
                 raise web.HTTPError(400, "Cannot read non-file %s" % path)
 
             bcontent = self._pyfilesystem_instance.readbytes(path)
@@ -361,25 +372,27 @@ class FSManager(FileContentsManager):
                     )
         return encodebytes(bcontent).decode("ascii"), "base64"
 
-    def _read_notebook(self, path, as_version=4):
+    def _read_notebook(self, path, info, as_version=4):
         """Read a notebook from a path."""
-        nb, format = self._read_file(path, "text")
+        nb, format = self._read_file(path, "text", info)
         return nbformat.reads(nb, as_version=as_version)
 
-    def _file_model(self, path, content=True, format=None):
+    def _file_model(self, path, info, content=True, format=None):
         """Build a model for a file
         if content is requested, include the file contents.
         format:
           If 'text', the contents will be decoded as UTF-8.
           If 'base64', the raw bytes contents will be encoded as base64.
           If not specified, try to decode as UTF-8, and fall back to base64
+
+        info (<Info>): FS Info object for file at path
         """
-        model = self._base_model(path)
+        model = self._base_model(path, info)
         model["type"] = "file"
         model["mimetype"] = mimetypes.guess_type(path)[0]
 
         if content:
-            content, format = self._read_file(path, format)
+            content, format = self._read_file(path, format, info)
             if model["mimetype"] is None:
                 default_mime = {
                     "text": "text/plain",
@@ -394,50 +407,62 @@ class FSManager(FileContentsManager):
 
         return model
 
-    def _notebook_model(self, path, content=True):
+    def _notebook_model(self, path, info, content=True):
         """Build a notebook model
         if content is requested, the notebook content will be populated
         as a JSON structure (not double-serialized)
+        info (<Info>): FS Info object for file at path
         """
-        model = self._base_model(path)
+        model = self._base_model(path, info)
         model["type"] = "notebook"
         if content:
-            nb = self._read_notebook(path, as_version=4)
+            nb = self._read_notebook(path, info, as_version=4)
             self.mark_trusted_cells(nb, path)
             model["content"] = nb
             model["format"] = "json"
             self.validate_notebook_model(model)
         return model
 
-    def get(self, path, content=True, type=None, format=None):
+    def get(self, path, content=True, type=None, format=None, info=None):
         """Takes a path for an entity and returns its model
         Args:
             path (str): the API path that describes the relative path for the target
             content (bool): Whether to include the contents in the reply
-            type (str): The requested type - 'file', 'notebook', or 'directory'. Will raise HTTPError 400 if the content doesn't match.
-            format (str): The requested format for file contents. 'text' or 'base64'. Ignored if this returns a notebook or directory model.
+            type (str): The requested type - 'file', 'notebook', or 'directory'.
+                Will raise HTTPError 400 if the content doesn't match.
+            format (str):
+                The requested format for file contents. 'text' or 'base64'. Ignored if this returns a notebook or directory model.
+            info (fs Info object):
+                Optional FS Info. If present, it needs to include the following namespaces: "basic", "stat", "access", "details".
+                Including it can avoid extraneous networkcalls.
         Returns
             model (dict): the contents model. If content=True, returns the contents of the file or directory as well.
         """
         path = path.strip("/")
 
-        if not self.exists(path):
-            raise web.HTTPError(404, "No such file or directory: %s" % path)
+        # gather info - by doing here can minimise further network requests from underlying fs functions
+        if not info:
+            try:
+                info = self._pyfilesystem_instance.getinfo(
+                    path, namespaces=("basic", "stat", "access", "details")
+                )
+            except Exception:
+                raise web.HTTPError(404, "No such file or directory: %s" % path)
 
-        if self._pyfilesystem_instance.isdir(path):
+        if info.is_dir:
             if type not in (None, "directory"):
                 raise web.HTTPError(
                     400, "%s is a directory, not a %s" % (path, type), reason="bad type"
                 )
-            model = self._dir_model(path, content=content)
+            model = self._dir_model(path, content=content, info=info)
         elif type == "notebook" or (type is None and path.endswith(".ipynb")):
-            model = self._notebook_model(path, content=content)
+            model = self._notebook_model(path, content=content, info=info)
         else:
             if type == "directory":
                 raise web.HTTPError(
                     400, "%s is not a directory" % path, reason="bad type"
                 )
-            model = self._file_model(path, content=content, format=format)
+            model = self._file_model(path, content=content, format=format, info=info)
         return model
 
     def _save_directory(self, path, model):

@@ -5,14 +5,13 @@
 # This file is part of the jupyter-fs library, distributed under the terms of
 # the Apache License 2.0.  The full license can be found in the LICENSE file.
 #
-from __future__ import print_function
-
 import warnings
 
 from jupyter_server.utils import url_path_join
 
 from ._version import __version__  # noqa: F401
 from .metamanager import MetaManager, MetaManagerHandler
+from .snippets import SnippetsHandler
 
 _mm_config_warning_msg = """Misconfiguration of MetaManager. Please add:
 
@@ -56,5 +55,9 @@ def _load_jupyter_server_extension(serverapp):
         % url_path_join(base_url, resources_url)
     )
     web_app.add_handlers(
-        host_pattern, [(url_path_join(base_url, resources_url), MetaManagerHandler)]
+        host_pattern,
+        [
+            (url_path_join(base_url, resources_url), MetaManagerHandler),
+            (url_path_join(base_url, "jupyterfs/snippets"), SnippetsHandler),
+        ],
     )

@@ -63,12 +63,14 @@
     "jszip": "^3.7.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "semver": "^7.5.4",
     "tree-finder": "^0.0.13"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
     "@babel/preset-env": "^7.20.2",
     "@jupyterlab/builder": "^4.0.0",
+    "@rjsf/utils": "^5.13.2",
     "@types/file-saver": "^2.0.1",
     "@types/jest": "^29.5.1",
     "@types/jszip": "^3.4.1",
