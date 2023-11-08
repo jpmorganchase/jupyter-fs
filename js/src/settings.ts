@@ -49,9 +49,9 @@ export async function migrateSettings(settings: ISettingRegistry.ISettings): Pro
 
 /**
  * Ensure undefined string values from settings that are required are translated to empty strings
- * @param settingsResoruce 
+ * @param settingsResoruce
  * @returns A filled in setting object
  */
 export function unpartialResource(settingsResource: IFSSettingsResource): IFSResource {
-  return {name: "", url: "", ...settingsResource};
+  return { name: "", url: "", ...settingsResource };
 }

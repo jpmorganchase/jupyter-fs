@@ -5,13 +5,13 @@ import { IFSSettingsResource } from "../src/filesystem";
 
 describe("unpartialResource", () => {
 
-    it("should replace non-existing fields with empty string", () => {
+  it("should replace non-existing fields with empty string", () => {
 
-        // blank resource missing name and url (like after pressing "add")
-        let resource: IFSSettingsResource = {auth: "ask", defaultWritable: true};
-        let unpartialed = unpartialResource(resource);
+    // blank resource missing name and url (like after pressing "add")
+    const resource: IFSSettingsResource = { auth: "ask", defaultWritable: true };
+    const unpartialed = unpartialResource(resource);
 
-        expect(unpartialed.name).toEqual("")
-        expect(unpartialed.url).toEqual("")
-    })
-})
+    expect(unpartialed.name).toEqual("");
+    expect(unpartialed.url).toEqual("");
+  });
+});

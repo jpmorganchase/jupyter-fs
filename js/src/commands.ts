@@ -271,7 +271,7 @@ export function createStaticCommands(
             path,
           });
         } catch (e) {
-          void showErrorMessage("Could not create file", e);
+          void showErrorMessage("Could not create file", e as string);
           return;
         }
         target.invalidate();

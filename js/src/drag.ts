@@ -67,7 +67,7 @@ import {
 } from "@lumino/coreutils";
 
 import {
-  Drag
+  Drag,
 } from "@lumino/dragdrop";
 
 
@@ -133,11 +133,11 @@ export
 function findChild(parent: HTMLElement | HTMLElement[], node: HTMLElement): HTMLElement | null  {
   // Work our way up the DOM to an element which has this node as parent
   const parentIsArray = Array.isArray(parent);
-  const isDirectChild = (child: HTMLElement): boolean => {
+  const isDirectChild = (element: HTMLElement): boolean => {
     if (parentIsArray) {
-      return (parent as HTMLElement[]).indexOf(child) > -1;
+      return parent.indexOf(element) > -1;
     } else {
-      return child.parentElement === parent;
+      return element.parentElement === parent;
     }
   };
   let candidate: HTMLElement | null = node;
@@ -517,7 +517,7 @@ abstract class DragDropWidgetBase extends DropWidget {
     this.addMimeData(handle, this.drag.mimeData);
 
     // Start the drag and remove the mousemove listener.
-    void this.drag.start(clientX, clientY).then(this.onDragComplete.bind(this));
+    void this.drag.start(clientX, clientY).then(action => this.onDragComplete(action));
     document.removeEventListener("mousemove", this, true);
     document.removeEventListener("mouseup", this, true);
   }
@@ -870,43 +870,5 @@ export
 namespace DragDropWidget {
   export
   interface IOptions extends DragWidget.IOptions, DropWidget.IOptions {
-  }
-}
-
-
-export
-abstract class FriendlyDragDrop extends DragDropWidget {
-  private static _counter = 0;
-  private static _groups: {[key: number]: FriendlyDragDrop[]} = {};
-
-  static makeGroup() {
-    const id = this._counter++;
-    FriendlyDragDrop._groups[id] = [];
-    return id;
-  }
-
-  setFriendlyGroup(id: number) {
-    this._groupId = id;
-    FriendlyDragDrop._groups[id].push(this);
-  }
-
-  addToFriendlyGroup(other: FriendlyDragDrop) {
-    other.setFriendlyGroup(this._groupId);
-  }
-
-  get friends(): FriendlyDragDrop[] {
-    if (this._groupId === undefined) {
-      throw new Error("Uninitialized drag-drop group");
-    }
-    return FriendlyDragDrop._groups[this._groupId];
-  }
-
-  private _groupId: number;
-
-  protected validateSource(event: Drag.Event) {
-    if (this.acceptDropsFromExternalSource) {
-      return this.friends.indexOf(event.source) !== -1;
-    }
-    return super.validateSource(event);
   }
 }

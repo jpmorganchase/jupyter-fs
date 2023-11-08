@@ -176,7 +176,9 @@ class FSManager(FileContentsManager):
                 import os
 
                 syspath = self._pyfilesystem_instance.getsyspath(path)
-                if os.path.exists(syspath) and not os.access(syspath, os.X_OK | os.R_OK):
+                if os.path.exists(syspath) and not os.access(
+                    syspath, os.X_OK | os.R_OK
+                ):
                     return True
 
         except ResourceNotFound:
@@ -237,7 +239,7 @@ class FSManager(FileContentsManager):
     def _base_model(self, path, info):
         """
         Build the common base of a contents model
-        
+
         info (<Info>): FS Info object for file/dir at path -- used for values and reduces needed network calls
         """
         try:
@@ -290,7 +292,6 @@ class FSManager(FileContentsManager):
         except AttributeError:
             model["writable"] = False
         return model
-    
 
     def _dir_model(self, path, info, content=True):
         """Build a model for a directory
@@ -301,11 +302,10 @@ class FSManager(FileContentsManager):
 
         if not info.is_dir:
             raise web.HTTPError(404, four_o_four)
-        
+
         elif not self.allow_hidden and self.is_hidden(path, info):
             self.log.debug("Refusing to serve hidden directory %r, via 404 Error", path)
             raise web.HTTPError(404, four_o_four)
-
 
         model = self._base_model(path, info)
         model["type"] = "directory"
@@ -313,12 +313,20 @@ class FSManager(FileContentsManager):
         if content:
             model["content"] = contents = []
 
-            for dir_entry in self._pyfilesystem_instance.scandir(path, namespaces=("basic", "access", "details", "stat")):
+            for dir_entry in self._pyfilesystem_instance.scandir(
+                path, namespaces=("basic", "access", "details", "stat")
+            ):
                 try:
                     if self.should_list(dir_entry.name):
-                        if self.allow_hidden or not self._is_path_hidden(dir_entry.make_path(path), dir_entry):
+                        if self.allow_hidden or not self._is_path_hidden(
+                            dir_entry.make_path(path), dir_entry
+                        ):
                             contents.append(
-                                self.get(path="%s/%s" % (path, dir_entry.name), content=False, info=dir_entry)
+                                self.get(
+                                    path="%s/%s" % (path, dir_entry.name),
+                                    content=False,
+                                    info=dir_entry,
+                                )
                             )
                 except PermissionDenied:
                     pass  # Don't provide clues about protected files
@@ -327,7 +335,9 @@ class FSManager(FileContentsManager):
                     # us from listing other entries
                     pass
                 except Exception as e:
-                    self.log.warning("Error stat-ing %s: %s", dir_entry.make_path(path), e)
+                    self.log.warning(
+                        "Error stat-ing %s: %s", dir_entry.make_path(path), e
+                    )
 
             model["format"] = "json"
         return model
@@ -374,7 +384,7 @@ class FSManager(FileContentsManager):
           If 'text', the contents will be decoded as UTF-8.
           If 'base64', the raw bytes contents will be encoded as base64.
           If not specified, try to decode as UTF-8, and fall back to base64
-        
+
         info (<Info>): FS Info object for file at path
         """
         model = self._base_model(path, info)
@@ -418,9 +428,13 @@ class FSManager(FileContentsManager):
         Args:
             path (str): the API path that describes the relative path for the target
             content (bool): Whether to include the contents in the reply
-            type (str): The requested type - 'file', 'notebook', or 'directory'. Will raise HTTPError 400 if the content doesn't match.
-            format (str): The requested format for file contents. 'text' or 'base64'. Ignored if this returns a notebook or directory model.
-            info (fs Info object): Optional FS Info. If present, it needs to include the following namespaces: "basic", "stat", "access", "details". Including it can avoid extraneous networkcalls.
+            type (str): The requested type - 'file', 'notebook', or 'directory'.
+                Will raise HTTPError 400 if the content doesn't match.
+            format (str):
+                The requested format for file contents. 'text' or 'base64'. Ignored if this returns a notebook or directory model.
+            info (fs Info object):
+                Optional FS Info. If present, it needs to include the following namespaces: "basic", "stat", "access", "details".
+                Including it can avoid extraneous networkcalls.
         Returns
             model (dict): the contents model. If content=True, returns the contents of the file or directory as well.
         """
@@ -429,8 +443,10 @@ class FSManager(FileContentsManager):
         # gather info - by doing here can minimise further network requests from underlying fs functions
         if not info:
             try:
-                info = self._pyfilesystem_instance.getinfo(path, namespaces=("basic", "stat", "access", "details"))
-            except:
+                info = self._pyfilesystem_instance.getinfo(
+                    path, namespaces=("basic", "stat", "access", "details")
+                )
+            except Exception:
                 raise web.HTTPError(404, "No such file or directory: %s" % path)
 
         if info.is_dir:

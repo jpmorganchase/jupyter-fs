@@ -20,6 +20,7 @@ def open_fs(fs_url, **kwargs):
     """Wrapper around fs.open_fs with {{variable}} substitution"""
     import fs
     from .auth import stdin_prompt
+
     # substitute credential variables via `getpass` queries
     fs_url = stdin_prompt(fs_url)
     return fs.open_fs(fs_url, **kwargs)

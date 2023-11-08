@@ -11,6 +11,7 @@ from tornado import web
 
 from .config import JupyterFs as JupyterFsConfig
 
+
 class SnippetsHandler(APIHandler):
     _jupyterfsConfig = None
 
@@ -25,6 +26,4 @@ class SnippetsHandler(APIHandler):
     @web.authenticated
     def get(self):
         """Get the server-side configured snippets"""
-        self.write({
-            "snippets": self.fsconfig.snippets
-        })
+        self.write({"snippets": self.fsconfig.snippets})

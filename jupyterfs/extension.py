@@ -55,8 +55,9 @@ def _load_jupyter_server_extension(serverapp):
         % url_path_join(base_url, resources_url)
     )
     web_app.add_handlers(
-        host_pattern, [
+        host_pattern,
+        [
             (url_path_join(base_url, resources_url), MetaManagerHandler),
             (url_path_join(base_url, "jupyterfs/snippets"), SnippetsHandler),
-        ]
+        ],
     )
