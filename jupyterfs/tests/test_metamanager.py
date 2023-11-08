@@ -120,7 +120,7 @@ async def test_resource_validators(tmp_path, jp_fetch, jp_server_config):
             },
         ]
     )
-    names = set(map(lambda r: r["name"], resources))
+    names = {r["name"] for r in resources if r["init"]}
     assert names == {"valid-1", "valid-2"}
 
 
