@@ -55,8 +55,8 @@ function tokensFromUrl(url: string): string[] {
   return new DoubleBraceTemplate(url).tokens();
 }
 
-function _askRequired(spec: IFSResource) {
-  return spec.auth === "ask" && !spec.init;
+function _askRequired(spec: IFSResource): boolean {
+  return spec.auth === "ask" && !spec.init && !!(spec.missingTokens?.length);
 }
 
 export function askRequired(specs: IFSResource[]) {
