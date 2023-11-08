@@ -11,22 +11,22 @@ import { URLExt } from "@jupyterlab/coreutils";
 import { ServerConnection } from "@jupyterlab/services";
 
 export interface IFSOptions {
-  _addServerside: boolean;
+  _addServerside?: boolean;
 
   /**
    * If true, only recreate the actual resource when necessary
    */
-  cache: boolean;
+  cache?: boolean;
 
   /**
    * If true, enable jupyter-fs debug output in both frontend and backend
    */
-  verbose: boolean;
+  verbose?: boolean;
 
   /**
    * The version of the package that these settings were written with
    */
-  writtenVersion: string;
+  writtenVersion?: string;
 }
 
 

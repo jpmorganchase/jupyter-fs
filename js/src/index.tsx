@@ -13,7 +13,7 @@ import { IDocumentManager } from "@jupyterlab/docmanager";
 import { ISettingRegistry } from "@jupyterlab/settingregistry";
 import { IStatusBar } from "@jupyterlab/statusbar";
 import { ITranslator } from "@jupyterlab/translation";
-import { folderIcon, fileIcon, IFormComponentRegistry } from "@jupyterlab/ui-components";
+import { folderIcon, fileIcon, IFormRendererRegistry } from "@jupyterlab/ui-components";
 import { IDisposable } from "@lumino/disposable";
 import * as semver from "semver";
 
@@ -42,7 +42,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
     ISettingRegistry,
     IThemeManager,
   ],
-  optional: [IFormComponentRegistry],
+  optional: [IFormRendererRegistry],
   provides: ITreeFinderMain,
 
   async activate(
@@ -54,7 +54,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
     router: IRouter,
     settingRegistry: ISettingRegistry,
     themeManager: IThemeManager,
-    editorRegistry: IFormComponentRegistry | null
+    editorRegistry: IFormRendererRegistry | null
   ): Promise<ITreeFinderMain> {
     const widgetMap : {[key: string]: TreeFinderSidebar} = {};
     let commands: IDisposable | undefined;
@@ -75,9 +75,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
     }
 
     if (editorRegistry) {
-      editorRegistry.addRenderer("snippets", snippetFormRender);
-      // Format for lab 4.x +
-      // editorRegistry.addRenderer(`${BROWSER_ID}:snippets`, snippetFormRender);
+      editorRegistry.addRenderer(`${BROWSER_ID}.snippets`, { fieldRenderer: snippetFormRender });
     }
 
     let columns = settings?.composite.display_columns as Array<keyof ContentsProxy.IJupyterContentRow> ?? ["size"];
@@ -129,9 +127,9 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
     async function refresh() {
       // get user settings from json file
       let resources: IFSResource[] = (
-        settings!.composite.resources as unknown as IFSSettingsResource[]
+        settings?.composite.resources as unknown as IFSSettingsResource[] ?? []
       ).map(unpartialResource);
-      const options: IFSOptions = settings!.composite.options as any;
+      const options: IFSOptions = settings?.composite.options as any ?? {};
 
       function cleanup(all=false) {
         if (commands) {

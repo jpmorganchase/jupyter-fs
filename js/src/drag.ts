@@ -67,7 +67,7 @@ import {
 } from "@lumino/coreutils";
 
 import {
-  Drag, IDragEvent, DropAction, SupportedActions,
+  Drag
 } from "@lumino/dragdrop";
 
 
@@ -207,23 +207,23 @@ abstract class DropWidget extends Widget {
   handleEvent(event: Event): void {
     switch (event.type) {
       case "lm-dragenter":
-        this._evtDragEnter(event as IDragEvent);
+        this._evtDragEnter(event as Drag.Event);
         break;
       case "lm-dragleave":
-        this._evtDragLeave(event as IDragEvent);
+        this._evtDragLeave(event as Drag.Event);
         break;
       case "lm-dragover":
-        this._evtDragOver(event as IDragEvent);
+        this._evtDragOver(event as Drag.Event);
         break;
       case "lm-drop":
-        this.evtDrop(event as IDragEvent);
+        this.evtDrop(event as Drag.Event);
         break;
       default:
         break;
     }
   }
 
-  protected validateSource(event: IDragEvent) {
+  protected validateSource(event: Drag.Event) {
     return this.acceptDropsFromExternalSource || event.source === this;
   }
 
@@ -234,7 +234,7 @@ abstract class DropWidget extends Widget {
    *  - That the `dropTarget` is a valid drop target
    *  - The value of `event.source` if `acceptDropsFromExternalSource` is false
    */
-  protected abstract processDrop(dropTarget: HTMLElement, event: IDragEvent): void;
+  protected abstract processDrop(dropTarget: HTMLElement, event: Drag.Event): void;
 
   /**
    * Find a drop target from a given drag event target.
@@ -272,7 +272,7 @@ abstract class DropWidget extends Widget {
    * Should normally only be overriden if you cannot achive your goal by
    * other overrides.
    */
-  protected evtDrop(event: IDragEvent): void {
+  protected evtDrop(event: Drag.Event): void {
     let target = event.target as HTMLElement;
     while (target && target.parentElement) {
       if (target.classList.contains(DROP_TARGET_CLASS)) {
@@ -323,7 +323,7 @@ abstract class DropWidget extends Widget {
   /**
    * Handle the `'lm-dragenter'` event for the widget.
    */
-  private _evtDragEnter(event: IDragEvent): void {
+  private _evtDragEnter(event: Drag.Event): void {
     if (!this.validateSource(event)) {
       return;
     }
@@ -340,7 +340,7 @@ abstract class DropWidget extends Widget {
   /**
    * Handle the `'lm-dragleave'` event for the widget.
    */
-  private _evtDragLeave(event: IDragEvent): void {
+  private _evtDragLeave(event: Drag.Event): void {
     event.preventDefault();
     event.stopPropagation();
     this._clearDropTarget();
@@ -349,7 +349,7 @@ abstract class DropWidget extends Widget {
   /**
    * Handle the `'lm-dragover'` event for the widget.
    */
-  private _evtDragOver(event: IDragEvent): void {
+  private _evtDragOver(event: Drag.Event): void {
     if (!this.validateSource(event)) {
       return;
     }
@@ -469,7 +469,7 @@ abstract class DragDropWidgetBase extends DropWidget {
   /**
    * Called when a drag has completed with this widget as a source
    */
-  protected onDragComplete(action: DropAction) {
+  protected onDragComplete(action: Drag.DropAction) {
     this.drag = null;
   }
 
@@ -616,8 +616,8 @@ abstract class DragDropWidgetBase extends DropWidget {
     this._clickData = null;
   }
 
-  protected defaultSupportedActions: SupportedActions = "all";
-  protected defaultProposedAction: DropAction = "move";
+  protected defaultSupportedActions: Drag.SupportedActions = "all";
+  protected defaultProposedAction: Drag.DropAction = "move";
 
   /**
    * Data stored on mouse down to determine if drag treshold has
@@ -662,7 +662,7 @@ abstract class DragWidget extends DragDropWidgetBase {
   /**
    * No-op on DragWidget, as it does not support dropping
    */
-  protected processDrop(dropTarget: HTMLElement, event: IDragEvent): void {
+  protected processDrop(dropTarget: HTMLElement, event: Drag.Event): void {
     // Intentionally empty
   }
 
@@ -717,7 +717,7 @@ abstract class DragWidget extends DragDropWidgetBase {
  * For maximum control, `startDrag` and `evtDrop` can be overriden.
  */
 export abstract class DragDropWidget extends DragDropWidgetBase {
-  protected abstract move(mimeData: MimeData, target: HTMLElement): DropAction;
+  protected abstract move(mimeData: MimeData, target: HTMLElement): Drag.DropAction;
 
   /**
    * Adds mime data represeting the drag data to the drag event's MimeData bundle.
@@ -748,7 +748,7 @@ export abstract class DragDropWidget extends DragDropWidgetBase {
    *
    * Override this if you need to handle other mime data than the default.
    */
-  protected processDrop(dropTarget: HTMLElement, event: IDragEvent): void {
+  protected processDrop(dropTarget: HTMLElement, event: Drag.Event): void {
     if (!DropWidget.isValidAction(event.supportedActions, "move") ||
         event.proposedAction === "none") {
       // The default implementation only handles move action
@@ -801,7 +801,7 @@ namespace DropWidget {
    * Validate a drop action against a SupportedActions type
    */
   export
-  function isValidAction(supported: SupportedActions, action: DropAction): boolean {
+  function isValidAction(supported: Drag.SupportedActions, action: Drag.DropAction): boolean {
     switch (supported) {
       case "all":
         return true;
@@ -903,7 +903,7 @@ abstract class FriendlyDragDrop extends DragDropWidget {
 
   private _groupId: number;
 
-  protected validateSource(event: IDragEvent) {
+  protected validateSource(event: Drag.Event) {
     if (this.acceptDropsFromExternalSource) {
       return this.friends.indexOf(event.source) !== -1;
     }

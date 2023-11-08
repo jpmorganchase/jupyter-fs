@@ -48,7 +48,7 @@ import { fileTreeIcon } from "./icons";
 import { promptRename } from "./utils";
 import { Uploader, UploadButton } from "./upload";
 import { MimeData } from "@lumino/coreutils";
-import { DropAction } from "@lumino/dragdrop";
+import { Drag } from "@lumino/dragdrop";
 
 
 export class TreeFinderTracker extends WidgetTracker<TreeFinderSidebar> {
@@ -122,7 +122,7 @@ export class TreeFinderWidget extends DragDropWidget {
       });
     });
   }
-  protected move(mimeData: MimeData, target: HTMLElement): DropAction {
+  protected move(mimeData: MimeData, target: HTMLElement): Drag.DropAction {
     const source = mimeData.getData(TABLE_HEADER_MIME) as (keyof ContentsProxy.IJupyterContentRow);
     const dest = target.innerText as (keyof ContentsProxy.IJupyterContentRow);
     void this._reorderColumns(source, dest);

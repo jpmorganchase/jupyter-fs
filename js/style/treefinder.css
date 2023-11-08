@@ -149,6 +149,8 @@ tree-finder-panel tree-finder-grid table {
 }
 
 .jp-thead-drag-image {
+  top: 0px;
+  left: 0px;
   color: var(--jp-ui-font-color1);
   font-size: var(--jp-ui-font-size1);
   font-weight: 500; 

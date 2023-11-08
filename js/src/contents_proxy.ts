@@ -2,7 +2,7 @@
 
 import { PromiseDelegate } from "@lumino/coreutils";
 import { showErrorMessage } from "@jupyterlab/apputils";
-import { Contents, ContentsManager } from "@jupyterlab/services";
+import { Contents } from "@jupyterlab/services";
 import { IContentRow, Path } from "tree-finder";
 
 
@@ -10,7 +10,7 @@ import { IContentRow, Path } from "tree-finder";
  * Wrapper for a drive onto the contents manager.
  */
 export class ContentsProxy {
-  constructor(contentsManager: ContentsManager, drive?: string, onGetChildren?: ContentsProxy.GetChildrenCallback) {
+  constructor(contentsManager: Contents.IManager, drive?: string, onGetChildren?: ContentsProxy.GetChildrenCallback) {
     this.contentsManager = contentsManager;
     this.drive = drive;
     this.onGetChildren = onGetChildren;
@@ -42,7 +42,7 @@ export class ContentsProxy {
     return await this.contentsManager.getDownloadUrl(path);
   }
 
-  readonly contentsManager: ContentsManager;
+  readonly contentsManager: Contents.IManager;
   readonly drive?: string;
   readonly onGetChildren?: ContentsProxy.GetChildrenCallback;
 }
@@ -71,7 +71,7 @@ export namespace ContentsProxy {
     return [first.split(":").pop(), ...rest].join("/");
   }
 
-  export function toJupyterContentRow(row: Contents.IModel, contentsManager: ContentsManager, drive?: string, onGetChildren?: ContentsProxy.GetChildrenCallback): IJupyterContentRow {
+  export function toJupyterContentRow(row: Contents.IModel, contentsManager: Contents.IManager, drive?: string, onGetChildren?: ContentsProxy.GetChildrenCallback): IJupyterContentRow {
     const { path, type, ...rest } = row;
 
     const pathWithDrive = toFullPath(path, drive).replace(/\/$/, "");

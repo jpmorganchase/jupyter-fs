@@ -12,8 +12,7 @@ import { ServerConnection } from "@jupyterlab/services";
 import { ISettingRegistry } from "@jupyterlab/settingregistry";
 import * as React from "react";
 
-// for lab 4, import this from @rjsf/utils:
-import type { FieldProps } from "@rjsf/core";
+import type { FieldProps } from "@rjsf/utils";
 import { splitPathstrDrive } from "./contents_utils";
 
 function _mknode(obj: any, paths: string[]) {
