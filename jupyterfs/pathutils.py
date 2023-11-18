@@ -89,61 +89,69 @@ def path_first_arg(method_name, returns_model, sync=False):
     """Decorator for methods that accept path as a first argument,
     e.g. manager.get(path, ...)"""
 
+    def _wrapper(self, *args, **kwargs):
+        path, args = _get_arg("path", args, kwargs)
+        _, mgr, mgr_path = _resolve_path(path, self._managers)
+        result = getattr(mgr, method_name)(mgr_path, *args, **kwargs)
+        return result
+
     if sync:
+        return _wrapper
 
-        def _wrapper(self, *args, **kwargs):
-            path, args = _get_arg("path", args, kwargs)
-            _, mgr, mgr_path = _resolve_path(path, self._managers)
-            result = getattr(mgr, method_name)(mgr_path, *args, **kwargs)
-            return result
+    async def _wrapper2(self, *args, **kwargs):
+        return _wrapper(self, *args, **kwargs)
 
-    else:
-
-        async def _wrapper(self, *args, **kwargs):
-            path, args = _get_arg("path", args, kwargs)
-            _, mgr, mgr_path = _resolve_path(path, self._managers)
-            result = getattr(mgr, method_name)(mgr_path, *args, **kwargs)
-            return result
-
-    return _wrapper
+    return _wrapper2
 
 
-def path_second_arg(method_name, first_argname, returns_model):
+def path_second_arg(method_name, first_argname, returns_model, sync=False):
     """Decorator for methods that accept path as a second argument.
     e.g. manager.save(model, path, ...)"""
 
-    async def _wrapper(self, *args, **kwargs):
+    def _wrapper(self, *args, **kwargs):
         other, args = _get_arg(first_argname, args, kwargs)
         path, args = _get_arg("path", args, kwargs)
         _, mgr, mgr_path = _resolve_path(path, self._managers)
         result = getattr(mgr, method_name)(other, mgr_path, *args, **kwargs)
         return result
 
-    return _wrapper
+    if sync:
+        return _wrapper
+
+    async def _wrapper2(self, *args, **kwargs):
+        return _wrapper(self, *args, **kwargs)
+
+    return _wrapper2
 
 
-def path_kwarg(method_name, path_default, returns_model):
+def path_kwarg(method_name, path_default, returns_model, sync=False):
     """Parameterized decorator for methods that accept path as a second
     argument.
 
     e.g. manager.file_exists(path='')
     """
 
-    async def _wrapper(self, path=path_default, **kwargs):
+    def _wrapper(self, path=path_default, **kwargs):
         _, mgr, mgr_path = _resolve_path(path, self._managers)
         result = getattr(mgr, method_name)(path=mgr_path, **kwargs)
         return result
 
-    return _wrapper
+    if sync:
+        return _wrapper
+
+    async def _wrapper2(self, *args, **kwargs):
+        return _wrapper(self, *args, **kwargs)
+
+    return _wrapper2
 
 
-def path_old_new(method_name, returns_model):
+def path_old_new(method_name, returns_model, sync=False):
     """Decorator for methods accepting old_path and new_path.
 
     e.g. manager.rename(old_path, new_path)
     """
 
-    async def _wrapper(self, old_path, new_path, *args, **kwargs):
+    def _wrapper(self, old_path, new_path, *args, **kwargs):
         old_prefix, old_mgr, old_mgr_path = _resolve_path(old_path, self._managers)
         new_prefix, new_mgr, new_mgr_path = _resolve_path(new_path, self._managers)
         if old_mgr is not new_mgr:
@@ -159,7 +167,13 @@ def path_old_new(method_name, returns_model):
         result = getattr(new_mgr, method_name)(old_mgr_path, new_mgr_path, *args, **kwargs)
         return result
 
-    return _wrapper
+    if sync:
+        return _wrapper
+
+    async def _wrapper2(self, *args, **kwargs):
+        return _wrapper(self, *args, **kwargs)
+
+    return _wrapper2
 
 
 # handlers for drive specifications in path strings, as in "fooDrive:bar/baz.buzz"

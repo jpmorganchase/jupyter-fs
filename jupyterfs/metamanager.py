@@ -15,7 +15,10 @@ from tornado import web
 from fs.errors import FSError
 from fs.opener.errors import OpenerError, ParseError
 from jupyter_server.base.handlers import APIHandler
-from jupyter_server.services.contents.manager import AsyncContentsManager
+from jupyter_server.services.contents.manager import (
+    AsyncContentsManager,
+    ContentsManager,
+)
 
 from .auth import substituteAsk, substituteEnv, substituteNone
 from .config import JupyterFs as JupyterFsConfig
@@ -27,10 +30,10 @@ from .pathutils import (
     path_old_new,
 )
 
-__all__ = ["MetaManager", "MetaManagerHandler"]
+__all__ = ["MetaManager", "SyncMetaManager", "MetaManagerHandler"]
 
 
-class MetaManager(AsyncContentsManager):
+class MetaManagerShared:
     copy_pat = re.compile(r"\-Copy\d*\.")
 
     @default("files_handler_params")
@@ -149,25 +152,52 @@ class MetaManager(AsyncContentsManager):
     file_exists = path_kwarg("file_exists", "", False)
     exists = path_first_arg("exists", False)
 
-    save = path_second_arg("save", "model", True)
-    rename = path_old_new("rename", False)
+    save = path_second_arg("save", "model", True, sync=False)
+    rename = path_old_new("rename", False, sync=False)
 
-    get = path_first_arg("get", True)
-    delete = path_first_arg("delete", False)
+    get = path_first_arg("get", True, sync=False)
+    delete = path_first_arg("delete", False, sync=False)
 
     get_kernel_path = path_first_arg("get_kernel_path", False, sync=True)
 
-    create_checkpoint = path_first_arg("create_checkpoint", False)
-    list_checkpoints = path_first_arg("list_checkpoints", False)
+    create_checkpoint = path_first_arg("create_checkpoint", False, sync=False)
+    list_checkpoints = path_first_arg("list_checkpoints", False, sync=False)
     restore_checkpoint = path_second_arg(
-        "restore_checkpoint",
-        "checkpoint_id",
-        False,
+        "restore_checkpoint", "checkpoint_id", False, sync=False
     )
     delete_checkpoint = path_second_arg(
-        "delete_checkpoint",
-        "checkpoint_id",
-        False,
+        "delete_checkpoint", "checkpoint_id", False, sync=False
+    )
+
+
+class SyncMetaManager(MetaManagerShared, ContentsManager):
+    ...
+
+
+class MetaManager(MetaManagerShared, AsyncContentsManager):
+    async def copy(self, from_path, to_path=None):
+        return super(MetaManagerShared, self).copy(from_path=from_path, to_path=to_path)
+
+    is_hidden = path_first_arg("is_hidden", False, sync=False)
+    dir_exists = path_first_arg("dir_exists", False, sync=False)
+    file_exists = path_kwarg("file_exists", "", False, sync=False)
+    exists = path_first_arg("exists", False, sync=False)
+
+    save = path_second_arg("save", "model", True, sync=False)
+    rename = path_old_new("rename", False, sync=False)
+
+    get = path_first_arg("get", True, sync=False)
+    delete = path_first_arg("delete", False, sync=False)
+
+    get_kernel_path = path_first_arg("get_kernel_path", False, sync=True)
+
+    create_checkpoint = path_first_arg("create_checkpoint", False, sync=False)
+    list_checkpoints = path_first_arg("list_checkpoints", False, sync=False)
+    restore_checkpoint = path_second_arg(
+        "restore_checkpoint", "checkpoint_id", False, sync=False
+    )
+    delete_checkpoint = path_second_arg(
+        "delete_checkpoint", "checkpoint_id", False, sync=False
     )
 
 
