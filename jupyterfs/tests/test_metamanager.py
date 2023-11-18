@@ -20,6 +20,14 @@ base_config = {
     "JupyterFs": {},
 }
 
+sync_base_config = {
+    "ServerApp": {
+        "jpserver_extensions": {"jupyterfs.extension": True},
+        "contents_manager_class": "jupyterfs.metamanager.SyncMetaManager",
+    },
+    "JupyterFs": {},
+}
+
 deny_client_config = {
     "JupyterFs": {
         "allow_user_resources": False,
@@ -40,7 +48,7 @@ def our_config():
 
 
 @pytest.fixture
-def jp_server_config(tmp_path, tmp_osfs_resource, our_config):
+def jp_server_config(base_config, tmp_path, tmp_osfs_resource, our_config):
     c = Config(base_config)
     c.JupyterFs.setdefault("resources", [])
     if tmp_osfs_resource:
@@ -54,6 +62,7 @@ def jp_server_config(tmp_path, tmp_osfs_resource, our_config):
     return c
 
 
+@pytest.mark.parametrize("base_config", [base_config, sync_base_config])
 @pytest.mark.parametrize("our_config", [deny_client_config])
 async def test_client_creation_disallowed(tmp_path, jp_fetch, jp_server_config):
     cc = ContentsClient(jp_fetch)
@@ -63,6 +72,7 @@ async def test_client_creation_disallowed(tmp_path, jp_fetch, jp_server_config):
     assert resources == []
 
 
+@pytest.mark.parametrize("base_config", [base_config, sync_base_config])
 @pytest.mark.parametrize("our_config", [deny_client_config])
 @pytest.mark.parametrize("tmp_osfs_resource", [True])
 async def test_client_creation_disallowed_retains_server_config(
@@ -76,6 +86,7 @@ async def test_client_creation_disallowed_retains_server_config(
     assert names == {"test-server-config"}
 
 
+@pytest.mark.parametrize("base_config", [base_config, sync_base_config])
 @pytest.mark.parametrize(
     "our_config",
     [
@@ -124,6 +135,7 @@ async def test_resource_validators(tmp_path, jp_fetch, jp_server_config):
     assert names == {"valid-1", "valid-2"}
 
 
+@pytest.mark.parametrize("base_config", [base_config, sync_base_config])
 @pytest.mark.parametrize(
     "our_config",
     [
