@@ -9,7 +9,7 @@ build:  ## build python/javascript
 	python -m build .
 
 develop:  ## install to site-packages in editable mode
-	python -m pip install --upgrade build docker-compose jupyterlab pip setuptools twine wheel
+	python -m pip install --upgrade build jupyterlab pip setuptools twine wheel
 	python -m pip install -vvv .[develop]
 
 install:  ## install to site-packages
@@ -40,13 +40,13 @@ teardown-infra-win:
 teardown-infra-common:
 
 dockerup:
-	${DOCKER}-compose -f ci/docker-compose.yml up -d
+	${DOCKER} compose -f ci/docker-compose.yml up -d
 
 dockerdown:
-	${DOCKER}-compose -f ci/docker-compose.yml down || echo "can't teardown docker compose"
+	${DOCKER} compose -f ci/docker-compose.yml down || echo "can't teardown docker compose"
 
 dockerlogs:
-	${DOCKER}-compose -f ci/docker-compose.yml logs
+	${DOCKER} compose -f ci/docker-compose.yml logs
 
 testpy: ## Clean and Make unit tests
 	python -m pytest -v jupyterfs/tests --junitxml=junit.xml --cov=jupyterfs --cov-report=xml:.coverage.xml --cov-branch --cov-fail-under=20 --cov-report term-missing
