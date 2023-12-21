@@ -111,6 +111,10 @@ exclude = [
     "docs",
 ]
 
+[tool.hatch.build.targets.wheel]
+packages = ["jupyterfs"]
+
+
 [tool.hatch.build.hooks.jupyter-builder]
 build-function = "hatch_jupyter_builder.npm_builder"
 ensured-targets = [
