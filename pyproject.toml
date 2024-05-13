@@ -98,6 +98,9 @@ artifacts = [
     "jupyterfs/labextension"
 ]
 
+[tool.hatch.build.targets.wheel]
+packages = ["jupyterfs"]
+
 [tool.hatch.build.targets.wheel.shared-data]
 "jupyterfs/labextension" = "share/jupyter/labextensions/jupyter-fs"
 "jupyterfs/labextension/schemas/jupyter-fs/plugin.json" = "share/jupyter/lab/schemas/jupyter-fs/plugin.json"
