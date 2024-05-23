@@ -41,9 +41,7 @@ def _load_jupyter_server_extension(serverapp):
         warnings.warn(_mm_config_warning_msg)
         return
 
-    if isinstance(serverapp.contents_manager_class, type) and not issubclass(
-        serverapp.contents_manager_class, MetaManagerShared
-    ):
+    if isinstance(serverapp.contents_manager_class, type) and not issubclass(serverapp.contents_manager_class, MetaManagerShared):
         serverapp.contents_manager_class = MetaManager
         serverapp.log.info("Configuring jupyter-fs manager as the content manager class")
 

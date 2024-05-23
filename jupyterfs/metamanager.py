@@ -162,12 +162,8 @@ class MetaManagerShared:
 
     create_checkpoint = path_first_arg("create_checkpoint", False, sync=True)
     list_checkpoints = path_first_arg("list_checkpoints", False, sync=True)
-    restore_checkpoint = path_second_arg(
-        "restore_checkpoint", "checkpoint_id", False, sync=True
-    )
-    delete_checkpoint = path_second_arg(
-        "delete_checkpoint", "checkpoint_id", False, sync=True
-    )
+    restore_checkpoint = path_second_arg("restore_checkpoint", "checkpoint_id", False, sync=True)
+    delete_checkpoint = path_second_arg("delete_checkpoint", "checkpoint_id", False, sync=True)
 
 
 class SyncMetaManager(MetaManagerShared, ContentsManager): ...
@@ -192,12 +188,8 @@ class MetaManager(MetaManagerShared, AsyncContentsManager):
 
     create_checkpoint = path_first_arg("create_checkpoint", False, sync=False)
     list_checkpoints = path_first_arg("list_checkpoints", False, sync=False)
-    restore_checkpoint = path_second_arg(
-        "restore_checkpoint", "checkpoint_id", False, sync=False
-    )
-    delete_checkpoint = path_second_arg(
-        "delete_checkpoint", "checkpoint_id", False, sync=False
-    )
+    restore_checkpoint = path_second_arg("restore_checkpoint", "checkpoint_id", False, sync=False)
+    delete_checkpoint = path_second_arg("delete_checkpoint", "checkpoint_id", False, sync=False)
 
 
 class MetaManagerHandler(APIHandler):
