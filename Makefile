@@ -1,4 +1,4 @@
-DOCKER := podman
+DOCKER_COMPOSE := podman-compose
 YARN := jlpm
 
 ###############
@@ -9,7 +9,7 @@ build:  ## build python/javascript
 	python -m build .
 
 develop:  ## install to site-packages in editable mode
-	python -m pip install --upgrade build docker-compose jupyterlab pip setuptools twine wheel
+	python -m pip install --upgrade build jupyterlab pip setuptools twine wheel
 	python -m pip install -vvv .[develop]
 
 install:  ## install to site-packages
@@ -40,13 +40,13 @@ teardown-infra-win:
 teardown-infra-common:
 
 dockerup:
-	${DOCKER}-compose -f ci/docker-compose.yml up -d
+	${DOCKER_COMPOSE} -f ci/docker-compose.yml up -d
 
 dockerdown:
-	${DOCKER}-compose -f ci/docker-compose.yml down || echo "can't teardown docker compose"
+	${DOCKER_COMPOSE} -f ci/docker-compose.yml down || echo "can't teardown docker compose"
 
 dockerlogs:
-	${DOCKER}-compose -f ci/docker-compose.yml logs
+	${DOCKER_COMPOSE} -f ci/docker-compose.yml logs
 
 testpy: ## Clean and Make unit tests
 	python -m pytest -v jupyterfs/tests --junitxml=junit.xml --cov=jupyterfs --cov-report=xml:.coverage.xml --cov-branch --cov-fail-under=20 --cov-report term-missing
@@ -62,20 +62,19 @@ tests: testpy testjs ## run the tests
 ###########
 .PHONY: lintpy lintjs lint fixpy fixjs fix format
 
-lintpy:  ## Black/flake8 python
-	python -m ruff jupyterfs setup.py
-	python -m black --check jupyterfs setup.py
+lintpy:  ## Lint Python with Ruff
+	python -m ruff check jupyterfs setup.py
+	python -m ruff format --check jupyterfs setup.py
 
-lintjs:  ## ESlint javascript
+lintjs:  ## Lint Javascript with ESlint
 	cd js; ${YARN} lint
 
 lint: lintpy lintjs  ## run linter
 
-fixpy:  ## Black python
-	python -m ruff jupyterfs setup.py --fix
-	python -m black jupyterfs/ setup.py
+fixpy:  ## Autoformat Python with Ruff
+	python -m ruff format jupyterfs/ setup.py
 
-fixjs:  ## ESlint Autofix JS
+fixjs:  ## Autoformat JavaScript with ESlint
 	cd js; ${YARN} fix
 
 fix: fixpy fixjs  ## run black/tslint fix

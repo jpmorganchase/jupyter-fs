@@ -35,6 +35,4 @@ class TestInit:
 
         open_fs("osfs://{{foo}}/bar.txt")
         mock_getpass.assert_called_with("Enter value for 'foo': ")
-        mock_fs_open_fs.assert_called_with(
-            "osfs://test%20return%20getpass%20%3C%3E/%7C/bar.txt"
-        )
+        mock_fs_open_fs.assert_called_with("osfs://test%20return%20getpass%20%3C%3E/%7C/bar.txt")

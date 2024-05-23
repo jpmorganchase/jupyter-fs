@@ -59,7 +59,7 @@ jobs:
       run: make develop
 
     - name: Setup Linux testing infra
-      run: make setup-infra-ubuntu DOCKER=docker
+      run: make setup-infra-ubuntu DOCKER_COMPOSE="docker compose"
       if: ${{ matrix.os == 'ubuntu-latest' }}
 
     - name: Setup Mac testing infra
@@ -85,7 +85,7 @@ jobs:
       if: ${{ matrix.os == 'ubuntu-latest' }}
 
     - name: Teardown Linux testing infra
-      run: make teardown-infra-ubuntu DOCKER=docker
+      run: make teardown-infra-ubuntu DOCKER_COMPOSE="docker compose"
       if: ${{ matrix.os == 'ubuntu-latest' }}
 
     - name: Teardown Mac testing infra

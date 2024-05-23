@@ -48,9 +48,7 @@ def _resolve_path(path, manager_dict):
 
         raise HTTPError(
             404,
-            "Couldn't find manager {mgrName} for {path}".format(
-                mgrName=parts[0], path=path
-            ),
+            "Couldn't find manager {mgrName} for {path}".format(mgrName=parts[0], path=path),
         )
     else:
         # Try to find a sub-manager for the first subdirectory.
@@ -60,9 +58,7 @@ def _resolve_path(path, manager_dict):
 
         raise HTTPError(
             404,
-            "Couldn't find manager {mgrName} for {path}".format(
-                mgrName=parts[0], path=path
-            ),
+            "Couldn't find manager {mgrName} for {path}".format(mgrName=parts[0], path=path),
         )
 
 
@@ -160,9 +156,7 @@ def path_old_new(method_name, returns_model):
                 ),
             )
         assert new_prefix == old_prefix
-        result = getattr(new_mgr, method_name)(
-            old_mgr_path, new_mgr_path, *args, **kwargs
-        )
+        result = getattr(new_mgr, method_name)(old_mgr_path, new_mgr_path, *args, **kwargs)
         return result
 
     return _wrapper

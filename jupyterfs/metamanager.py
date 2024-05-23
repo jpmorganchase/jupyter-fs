@@ -25,9 +25,6 @@ from .pathutils import (
     path_second_arg,
     path_kwarg,
     path_old_new,
-    getDrive,
-    isDrive,
-    stripDrive,
 )
 
 __all__ = ["MetaManager", "MetaManagerHandler"]
@@ -48,9 +45,7 @@ class MetaManager(AsyncContentsManager):
         self._pyfs_kw = {}
 
         self.resources = []
-        self._default_root_manager = self._jupyterfsConfig.root_manager_class(
-            **self._kwargs
-        )
+        self._default_root_manager = self._jupyterfsConfig.root_manager_class(**self._kwargs)
         self._managers = dict((("", self._default_root_manager),))
 
         # copy kwargs to pyfs_kw, removing kwargs not relevant to pyfs
@@ -136,11 +131,7 @@ class MetaManager(AsyncContentsManager):
         self._managers = managers
 
         if verbose:
-            print(
-                "jupyter-fs initialized: {} file system resources, {} managers".format(
-                    len(self.resources), len(self._managers)
-                )
-            )
+            print("jupyter-fs initialized: {} file system resources, {} managers".format(len(self.resources), len(self._managers)))
 
         return self.resources
 
@@ -152,58 +143,6 @@ class MetaManager(AsyncContentsManager):
     @property
     def root_dir(self):
         return self.root_manager.root_dir
-
-    async def copy(self, from_path, to_path=None):
-        """Copy an existing file and return its new model.
-
-        If to_path not specified, it will be the parent directory of from_path.
-        If to_path is a directory, filename will increment `from_path-Copy#.ext`.
-        Considering multi-part extensions, the Copy# part will be placed before the first dot for all the extensions except `ipynb`.
-        For easier manual searching in case of notebooks, the Copy# part will be placed before the last dot.
-
-        from_path must be a full path to a file.
-        """
-        path = from_path.strip("/")
-        if to_path is not None:
-            to_path = to_path.strip("/")
-
-        if "/" in path:
-            from_dir, from_name = path.rsplit("/", 1)
-        else:
-            from_dir = ""
-            from_name = path
-
-        model = self.get(path)
-        model.pop("path", None)
-        model.pop("name", None)
-        if model["type"] == "directory":
-            raise web.HTTPError(400, "Can't copy directories")
-        if to_path is None:
-            to_path = from_dir
-        if self.dir_exists(to_path):
-            name = self.copy_pat.sub(".", stripDrive(from_name))
-            # ensure that any drives are stripped from the resulting filename
-            to_name = self.increment_filename(name, to_path, insert="-Copy")
-            # separate path and filename with a slash if to_path is not just a drive string
-            to_path = ("{0}{1}" if isDrive(to_path) else "{0}/{1}").format(
-                to_path, to_name
-            )
-
-        model = self.save(model, to_path)
-        return model
-
-    def _getManagerForPath(self, path):
-        drive = getDrive(path)
-        mgr = self._managers.get(drive)
-        if mgr is None:
-            raise web.HTTPError(
-                404,
-                "Couldn't find manager {mgrName} for {path}".format(
-                    mgrName=drive, path=path
-                ),
-            )
-
-        return mgr, stripDrive(path)
 
     is_hidden = path_first_arg("is_hidden", False)
     dir_exists = path_first_arg("dir_exists", False)
@@ -297,6 +236,4 @@ class MetaManagerHandler(APIHandler):
             else:
                 resources = valid_resources
 
-        self.finish(
-            json.dumps(self.contents_manager.initResource(*resources, options=options))
-        )
+        self.finish(json.dumps(self.contents_manager.initResource(*resources, options=options)))

@@ -104,11 +104,7 @@ class _TestBase:
             assert test_content == (await cc.get(p))["content"]
 
         for p in hidden_paths:
-            ctx = (
-                nullcontext()
-                if allow_hidden
-                else pytest.raises(tornado.httpclient.HTTPClientError)
-            )
+            ctx = nullcontext() if allow_hidden else pytest.raises(tornado.httpclient.HTTPClientError)
             with ctx as c:
                 # save to root and tips
                 await cc.save(p, _test_file_model)
@@ -155,8 +151,7 @@ class Test_FSManager_s3(_TestBase):
         cls._rootDirUtil.delete()
 
     @classmethod
-    def teardown_class(cls):
-        ...
+    def teardown_class(cls): ...
 
     def setup_method(self, method):
         self._rootDirUtil.create()
@@ -212,8 +207,7 @@ class Test_FSManager_smb_docker_share(_TestBase):
         cls._rootDirUtil.delete()
 
     @classmethod
-    def teardown_class(cls):
-        ...
+    def teardown_class(cls): ...
 
     def setup_method(self, method):
         # create a root

@@ -50,11 +50,7 @@ if not hasattr(DoubleBraceTemplate, "get_identifiers"):
             if named is not None and named not in ids:
                 # add a named group only the first time it appears
                 ids.append(named)
-            elif (
-                named is None
-                and mo.group("invalid") is None
-                and mo.group("escaped") is None
-            ):
+            elif named is None and mo.group("invalid") is None and mo.group("escaped") is None:
                 # If all the groups are None, there must be
                 # another group we're not expecting
                 raise ValueError("Unrecognized named group in pattern", self.pattern)
@@ -75,9 +71,7 @@ def stdin_prompt(url):
 
 def substituteAsk(resource):
     if "tokenDict" in resource:
-        url = DoubleBraceTemplate(resource["url"]).safe_substitute(
-            {k: urllib.parse.quote(v) for k, v in resource.pop("tokenDict").items()}
-        )
+        url = DoubleBraceTemplate(resource["url"]).safe_substitute({k: urllib.parse.quote(v) for k, v in resource.pop("tokenDict").items()})
     else:
         url = resource["url"]
 

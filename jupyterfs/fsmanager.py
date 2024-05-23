@@ -176,9 +176,7 @@ class FSManager(FileContentsManager):
                 import os
 
                 syspath = self._pyfilesystem_instance.getsyspath(path)
-                if os.path.exists(syspath) and not os.access(
-                    syspath, os.X_OK | os.R_OK
-                ):
+                if os.path.exists(syspath) and not os.access(syspath, os.X_OK | os.R_OK):
                     return True
 
         except ResourceNotFound:
@@ -313,14 +311,10 @@ class FSManager(FileContentsManager):
         if content:
             model["content"] = contents = []
 
-            for dir_entry in self._pyfilesystem_instance.scandir(
-                path, namespaces=("basic", "access", "details", "stat")
-            ):
+            for dir_entry in self._pyfilesystem_instance.scandir(path, namespaces=("basic", "access", "details", "stat")):
                 try:
                     if self.should_list(dir_entry.name):
-                        if self.allow_hidden or not self._is_path_hidden(
-                            dir_entry.make_path(path), dir_entry
-                        ):
+                        if self.allow_hidden or not self._is_path_hidden(dir_entry.make_path(path), dir_entry):
                             contents.append(
                                 self.get(
                                     path="%s/%s" % (path, dir_entry.name),
@@ -335,9 +329,7 @@ class FSManager(FileContentsManager):
                     # us from listing other entries
                     pass
                 except Exception as e:
-                    self.log.warning(
-                        "Error stat-ing %s: %s", dir_entry.make_path(path), e
-                    )
+                    self.log.warning("Error stat-ing %s: %s", dir_entry.make_path(path), e)
 
             model["format"] = "json"
         return model
@@ -443,25 +435,19 @@ class FSManager(FileContentsManager):
         # gather info - by doing here can minimise further network requests from underlying fs functions
         if not info:
             try:
-                info = self._pyfilesystem_instance.getinfo(
-                    path, namespaces=("basic", "stat", "access", "details")
-                )
+                info = self._pyfilesystem_instance.getinfo(path, namespaces=("basic", "stat", "access", "details"))
             except Exception:
                 raise web.HTTPError(404, "No such file or directory: %s" % path)
 
         if info.is_dir:
             if type not in (None, "directory"):
-                raise web.HTTPError(
-                    400, "%s is a directory, not a %s" % (path, type), reason="bad type"
-                )
+                raise web.HTTPError(400, "%s is a directory, not a %s" % (path, type), reason="bad type")
             model = self._dir_model(path, content=content, info=info)
         elif type == "notebook" or (type is None and path.endswith(".ipynb")):
             model = self._notebook_model(path, content=content, info=info)
         else:
             if type == "directory":
-                raise web.HTTPError(
-                    400, "%s is not a directory" % path, reason="bad type"
-                )
+                raise web.HTTPError(400, "%s is not a directory" % path, reason="bad type")
             model = self._file_model(path, content=content, format=format, info=info)
         return model
 
@@ -519,9 +505,7 @@ class FSManager(FileContentsManager):
         if chunk and model["type"] != "file":
             raise web.HTTPError(
                 400,
-                'File type "{}" is not supported for chunked transfer'.format(
-                    model["type"]
-                ),
+                'File type "{}" is not supported for chunked transfer'.format(model["type"]),
             )
 
         self.log.debug("Saving %s", path)
@@ -549,9 +533,7 @@ class FSManager(FileContentsManager):
             raise
         except Exception as e:
             self.log.error("Error while saving file: %s %s", path, e, exc_info=True)
-            raise web.HTTPError(
-                500, "Unexpected error while saving file: %s %s" % (path, e)
-            )
+            raise web.HTTPError(500, "Unexpected error while saving file: %s %s" % (path, e))
 
         validation_message = None
         if model["type"] == "notebook":
@@ -603,9 +585,7 @@ class FSManager(FileContentsManager):
 
         with self.perm_to_403(new_path):
             # Should we proceed with the move?
-            if self._pyfilesystem_instance.exists(
-                new_path
-            ):  # TODO and not samefile(old_os_path, new_os_path):
+            if self._pyfilesystem_instance.exists(new_path):  # TODO and not samefile(old_os_path, new_os_path):
                 raise web.HTTPError(409, "File already exists: %s" % new_path)
 
         # Move the file or directory
@@ -620,9 +600,7 @@ class FSManager(FileContentsManager):
         except web.HTTPError:
             raise
         except Exception as e:
-            raise web.HTTPError(
-                500, "Unknown error renaming file: %s %s" % (old_path, e)
-            )
+            raise web.HTTPError(500, "Unknown error renaming file: %s %s" % (old_path, e))
 
 
 class PyFilesystemCheckpoints(GenericFileCheckpoints):
