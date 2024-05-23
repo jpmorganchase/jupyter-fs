@@ -45,9 +45,7 @@ class MetaManager(AsyncContentsManager):
         self._pyfs_kw = {}
 
         self.resources = []
-        self._default_root_manager = self._jupyterfsConfig.root_manager_class(
-            **self._kwargs
-        )
+        self._default_root_manager = self._jupyterfsConfig.root_manager_class(**self._kwargs)
         self._managers = dict((("", self._default_root_manager),))
 
         # copy kwargs to pyfs_kw, removing kwargs not relevant to pyfs
@@ -133,11 +131,7 @@ class MetaManager(AsyncContentsManager):
         self._managers = managers
 
         if verbose:
-            print(
-                "jupyter-fs initialized: {} file system resources, {} managers".format(
-                    len(self.resources), len(self._managers)
-                )
-            )
+            print("jupyter-fs initialized: {} file system resources, {} managers".format(len(self.resources), len(self._managers)))
 
         return self.resources
 
@@ -242,6 +236,4 @@ class MetaManagerHandler(APIHandler):
             else:
                 resources = valid_resources
 
-        self.finish(
-            json.dumps(self.contents_manager.initResource(*resources, options=options))
-        )
+        self.finish(json.dumps(self.contents_manager.initResource(*resources, options=options)))

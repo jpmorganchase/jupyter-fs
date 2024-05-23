@@ -57,21 +57,15 @@ def jp_server_config(tmp_path, tmp_osfs_resource, our_config):
 @pytest.mark.parametrize("our_config", [deny_client_config])
 async def test_client_creation_disallowed(tmp_path, jp_fetch, jp_server_config):
     cc = ContentsClient(jp_fetch)
-    resources = await cc.set_resources(
-        [{"name": "test-2", "url": f"osfs://{tmp_path.as_posix()}"}]
-    )
+    resources = await cc.set_resources([{"name": "test-2", "url": f"osfs://{tmp_path.as_posix()}"}])
     assert resources == []
 
 
 @pytest.mark.parametrize("our_config", [deny_client_config])
 @pytest.mark.parametrize("tmp_osfs_resource", [True])
-async def test_client_creation_disallowed_retains_server_config(
-    tmp_path, jp_fetch, jp_server_config
-):
+async def test_client_creation_disallowed_retains_server_config(tmp_path, jp_fetch, jp_server_config):
     cc = ContentsClient(jp_fetch)
-    resources = await cc.set_resources(
-        [{"name": "test-2", "url": f"osfs://{tmp_path.as_posix()}"}]
-    )
+    resources = await cc.set_resources([{"name": "test-2", "url": f"osfs://{tmp_path.as_posix()}"}])
     names = set(map(lambda r: r["name"], resources))
     assert names == {"test-server-config"}
 

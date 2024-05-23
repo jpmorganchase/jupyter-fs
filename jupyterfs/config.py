@@ -18,9 +18,7 @@ class JupyterFs(Configurable):
     root_manager_class = Type(
         config=True,
         default_value=LargeFileManager,
-        help=_i18n(
-            "the root contents manager class to use. Used by the Jupyterlab default filebrowser and elsewhere"
-        ),
+        help=_i18n("the root contents manager class to use. Used by the Jupyterlab default filebrowser and elsewhere"),
         klass=ContentsManager,
     )
 
@@ -40,9 +38,7 @@ class JupyterFs(Configurable):
     resource_validators = List(
         config=True,
         trait=Unicode(),
-        help=_i18n(
-            "regular expressions to match against resource URLs. At least one must match"
-        ),
+        help=_i18n("regular expressions to match against resource URLs. At least one must match"),
     )
 
     surface_init_errors = Bool(
@@ -56,9 +52,7 @@ class JupyterFs(Configurable):
         per_key_traits=Dict(
             {
                 "label": Unicode(help="The designator to show to users"),
-                "caption": Unicode(
-                    "", help="An optional, longer description to show to users"
-                ),
+                "caption": Unicode("", help="An optional, longer description to show to users"),
                 "pattern": Unicode(
                     "",
                     help="A regular expression to match against the full URL of the entry, indicating if this snippet is valid for it",
@@ -66,7 +60,5 @@ class JupyterFs(Configurable):
                 "template": Unicode(help="A template string to build up the snippet"),
             }
         ),
-        help=_i18n(
-            "per entry snippets for how to use it, e.g. a snippet for how to open a file from a given resource"
-        ),
+        help=_i18n("per entry snippets for how to use it, e.g. a snippet for how to open a file from a given resource"),
     )

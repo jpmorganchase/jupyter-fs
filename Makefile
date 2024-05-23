@@ -63,7 +63,7 @@ tests: testpy testjs ## run the tests
 .PHONY: lintpy lintjs lint fixpy fixjs fix format
 
 lintpy:  ## Lint Python with Ruff
-	python -m ruff jupyterfs setup.py
+	python -m ruff check jupyterfs setup.py
 	python -m ruff format --check jupyterfs setup.py
 
 lintjs:  ## Lint Javascript with ESlint
@@ -72,7 +72,6 @@ lintjs:  ## Lint Javascript with ESlint
 lint: lintpy lintjs  ## run linter
 
 fixpy:  ## Autoformat Python with Ruff
-	python -m ruff jupyterfs setup.py --fix
 	python -m ruff format jupyterfs/ setup.py
 
 fixjs:  ## Autoformat JavaScript with ESlint
