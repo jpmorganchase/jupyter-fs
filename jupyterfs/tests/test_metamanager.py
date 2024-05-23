@@ -155,3 +155,11 @@ async def test_resource_validators_no_auth(tmp_path, jp_fetch, jp_server_config)
     )
     names = set(map(lambda r: r["name"], resources))
     assert names == {"valid-1", "valid-2"}
+
+
+@pytest.mark.parametrize("base_config", [base_config, sync_base_config])
+@pytest.mark.parametrize("our_config", [{}])
+async def test_basic_sanity_check(tmp_path, jp_fetch, jp_server_config):
+    cc = ContentsClient(jp_fetch)
+    resources = await cc.get("/")
+    assert resources["type"] == "directory"

@@ -147,31 +147,30 @@ class MetaManagerShared:
     def root_dir(self):
         return self.root_manager.root_dir
 
-    is_hidden = path_first_arg("is_hidden", False)
-    dir_exists = path_first_arg("dir_exists", False)
-    file_exists = path_kwarg("file_exists", "", False)
-    exists = path_first_arg("exists", False)
+    is_hidden = path_first_arg("is_hidden", False, sync=True)
+    dir_exists = path_first_arg("dir_exists", False, sync=True)
+    file_exists = path_kwarg("file_exists", "", False, sync=True)
+    exists = path_first_arg("exists", False, sync=False)
 
-    save = path_second_arg("save", "model", True, sync=False)
-    rename = path_old_new("rename", False, sync=False)
+    save = path_second_arg("save", "model", True, sync=True)
+    rename = path_old_new("rename", False, sync=True)
 
-    get = path_first_arg("get", True, sync=False)
-    delete = path_first_arg("delete", False, sync=False)
+    get = path_first_arg("get", True, sync=True)
+    delete = path_first_arg("delete", False, sync=True)
 
     get_kernel_path = path_first_arg("get_kernel_path", False, sync=True)
 
-    create_checkpoint = path_first_arg("create_checkpoint", False, sync=False)
-    list_checkpoints = path_first_arg("list_checkpoints", False, sync=False)
+    create_checkpoint = path_first_arg("create_checkpoint", False, sync=True)
+    list_checkpoints = path_first_arg("list_checkpoints", False, sync=True)
     restore_checkpoint = path_second_arg(
-        "restore_checkpoint", "checkpoint_id", False, sync=False
+        "restore_checkpoint", "checkpoint_id", False, sync=True
     )
     delete_checkpoint = path_second_arg(
-        "delete_checkpoint", "checkpoint_id", False, sync=False
+        "delete_checkpoint", "checkpoint_id", False, sync=True
     )
 
 
-class SyncMetaManager(MetaManagerShared, ContentsManager):
-    ...
+class SyncMetaManager(MetaManagerShared, ContentsManager): ...
 
 
 class MetaManager(MetaManagerShared, AsyncContentsManager):
