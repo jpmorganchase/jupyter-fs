@@ -10,7 +10,7 @@ import warnings
 from jupyter_server.utils import url_path_join
 
 from ._version import __version__  # noqa: F401
-from .metamanager import MetaManager, MetaManagerHandler
+from .metamanager import MetaManagerShared, MetaManager, MetaManagerHandler
 from .snippets import SnippetsHandler
 
 _mm_config_warning_msg = """Misconfiguration of MetaManager. Please add:
@@ -37,11 +37,11 @@ def _load_jupyter_server_extension(serverapp):
     base_url = web_app.settings["base_url"]
     host_pattern = ".*$"
 
-    if not isinstance(serverapp.contents_manager, MetaManager):
+    if not isinstance(serverapp.contents_manager, MetaManagerShared):
         warnings.warn(_mm_config_warning_msg)
         return
 
-    if isinstance(serverapp.contents_manager_class, type) and not issubclass(serverapp.contents_manager_class, MetaManager):
+    if isinstance(serverapp.contents_manager_class, type) and not issubclass(serverapp.contents_manager_class, MetaManagerShared):
         serverapp.contents_manager_class = MetaManager
         serverapp.log.info("Configuring jupyter-fs manager as the content manager class")
 
