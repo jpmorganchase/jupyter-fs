@@ -1,3 +1,11 @@
+/******************************************************************************
+ *
+ * Copyright (c) 2019, the jupyter-fs authors.
+ *
+ * This file is part of the jupyter-fs library, distributed under the terms of
+ * the Apache License 2.0.  The full license can be found in the LICENSE file.
+ *
+ */
 const esModules = ["@jupyter", "@jupyterlab", "@jupyter-widgets", "@lumino", "lib0", "nanoid", "y-protocols", "internmap", "delaunator", "robust-predicates", "lodash-es", "tree-finder"].join("|");
 
 module.exports = {
