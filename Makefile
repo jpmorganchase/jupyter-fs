@@ -1,5 +1,4 @@
 DOCKER_COMPOSE := podman-compose
-YARN := jlpm
 
 ###############
 # Build Tools #
@@ -52,7 +51,7 @@ testpy: ## Clean and Make unit tests
 	python -m pytest -v jupyterfs/tests --junitxml=junit.xml --cov=jupyterfs --cov-report=xml:.coverage.xml --cov-branch --cov-fail-under=20 --cov-report term-missing
 
 testjs: ## Clean and Make js tests
-	cd js; ${YARN} test
+	cd js; jlpm test
 
 test: tests
 tests: testpy testjs ## run the tests
@@ -67,7 +66,7 @@ lintpy:  ## Lint Python with Ruff
 	python -m ruff format --check jupyterfs setup.py
 
 lintjs:  ## Lint Javascript with ESlint
-	cd js; ${YARN} lint
+	cd js; jlpm lint
 
 lint: lintpy lintjs  ## run linter
 
@@ -75,7 +74,7 @@ fixpy:  ## Autoformat Python with Ruff
 	python -m ruff format jupyterfs/ setup.py
 
 fixjs:  ## Autoformat JavaScript with ESlint
-	cd js; ${YARN} fix
+	cd js; jlpm fix
 
 fix: fixpy fixjs  ## run black/tslint fix
 format: fix
@@ -122,7 +121,7 @@ clean: ## clean the repository
 	find . -name ".ipynb_checkpoints" | xargs  rm -rf
 	rm -rf .coverage coverage *.xml build dist *.egg-info lib node_modules .pytest_cache *.egg-info
 	rm -rf jupyterfs/labextension jupyterfs/nbextension/static/index*
-	cd js && ${YARN} clean
+	cd js && jlpm clean
 	git clean -fd
 
 ###########

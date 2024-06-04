@@ -12,15 +12,11 @@ pytest_plugins = ["pytest_jupyter.jupyter_server"]
 def pytest_configure(config):
     # register the platform markers
     for info in PLATFORM_INFO.items():
-        config.addinivalue_line(
-            "markers", "{}: mark test to run only on platform == {}".format(*info)
-        )
+        config.addinivalue_line("markers", "{}: mark test to run only on platform == {}".format(*info))
 
 
 def pytest_runtest_setup(item):
-    platforms_for_test = PLATFORMS.intersection(
-        mark.name for mark in item.iter_markers()
-    )
+    platforms_for_test = PLATFORMS.intersection(mark.name for mark in item.iter_markers())
 
     if platforms_for_test and sys.platform not in platforms_for_test:
         pytest.skip("cannot run on platform %s" % sys.platform)
