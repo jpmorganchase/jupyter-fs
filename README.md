@@ -1,11 +1,16 @@
 <p align="center">
-<img alt="jupyter-fs" src="https://raw.githubusercontent.com/jpmorganchase/jupyter-fs/main/docs/brand-icon.svg" width="400">
+<a href="https://github.com/jpmorganchase/jupyter-fs/blob/main/docs/brand-icon.png?raw=true#gh-light-mode-only">
+<img src="https://github.com/jpmorganchase/jupyter-fs/raw/main/docs/brand-icon.png?raw=true#gh-light-mode-only" alt="jupyter-fs" width="260">
+</a>
+<a href="https://github.com/jpmorganchase/jupyter-fs/blob/main/docs/brand-icon-white-text.png?raw=true#gh-dark-mode-only">
+<img src="https://github.com/jpmorganchase/jupyter-fs/raw/main/docs/brand-icon-white-text.png?raw=true#gh-dark-mode-only" alt="jupyter-fs" width="260">
+</a>
 </p>
 
 #
 
-<p>
-<a href="https://github.com/jpmorganchase/jupyter-fs/actions?query=workflow%3A%22Build+Status%22"><img alt="build status" src="https://github.com/jpmorganchase/jupyter-fs/workflows/Build%20Status/badge.svg?branch=main"></a>
+<p align="center">
+<a href="https://github.com/jpmorganchase/jupyter-fs/actions?query=workflow%3A%22Build+Status%22"><img alt="build status" src="https://github.com/jpmorganchase/jupyter-fs/actions/workflows/build.yml/badge.svg?branch=main"></a>
 <a href="https://pypi.python.org/pypi/jupyter-fs"><img alt="pypi package" src="https://img.shields.io/pypi/v/jupyter-fs.svg"></a>
 <a href="https://www.npmjs.com/package/jupyter-fs"><img alt="npm package" src="https://img.shields.io/npm/v/jupyter-fs.svg"></a>
 </p>
