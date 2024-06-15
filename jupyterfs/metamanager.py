@@ -150,7 +150,7 @@ class MetaManagerShared:
     is_hidden = path_first_arg("is_hidden", False, sync=True)
     dir_exists = path_first_arg("dir_exists", False, sync=True)
     file_exists = path_kwarg("file_exists", "", False, sync=True)
-    exists = path_first_arg("exists", False, sync=False)
+    exists = path_first_arg("exists", False, sync=True)
 
     save = path_second_arg("save", "model", True, sync=True)
     rename = path_old_new("rename", False, sync=True)
@@ -170,9 +170,6 @@ class SyncMetaManager(MetaManagerShared, ContentsManager): ...
 
 
 class MetaManager(MetaManagerShared, AsyncContentsManager):
-    async def copy(self, from_path, to_path=None):
-        return super(MetaManagerShared, self).copy(from_path=from_path, to_path=to_path)
-
     is_hidden = path_first_arg("is_hidden", False, sync=False)
     dir_exists = path_first_arg("dir_exists", False, sync=False)
     file_exists = path_kwarg("file_exists", "", False, sync=False)
