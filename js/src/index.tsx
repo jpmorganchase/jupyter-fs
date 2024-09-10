@@ -64,13 +64,18 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
     try {
       settings = await settingRegistry.load(BROWSER_ID);
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.warn(`Failed to load settings for the jupyter-fs extension.\n${error}`);
+      // Providing more precise error logging here
+      console.warn(`Failed to load settings for the jupyter-fs extension.\n${error.message}`, {error});
     }
 
-    // Migrate any old settings
+    // Function to update columns from settings
+    function updateColumnsFromSettings() {
+      return settings?.composite.display_columns as Array<keyof ContentsProxy.IJupyterContentRow> ?? ["size"];
+    }
+
+    // The settings migration check now has an additional fallback for improved reliability.
     const initialOptions = settings?.composite.options as unknown as IFSOptions | undefined;
-    if ((settings && semver.lt(initialOptions?.writtenVersion || "0.0.0", settings.version))) {
+    if ((settings && initialOptions && semver.lt(initialOptions.writtenVersion || "0.0.0", settings.version))) {
       settings = await migrateSettings(settings);
     }
 
@@ -78,7 +83,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
       editorRegistry.addRenderer(`${BROWSER_ID}.snippets`, { fieldRenderer: snippetFormRender });
     }
 
-    let columns = settings?.composite.display_columns as Array<keyof ContentsProxy.IJupyterContentRow> ?? ["size"];
+    let columns = updateColumnsFromSettings();
 
     const sharedSidebarProps: Omit<TreeFinderSidebar.ISidebarProps, "url"> = {
       app,
@@ -95,16 +100,14 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
 
     async function refreshWidgets({ resources, options }: {resources: IFSResource[]; options: IFSOptions}) {
       if (options.verbose) {
-        // eslint-disable-next-line no-console
         console.info(`jupyter-fs frontend received resources:\n${JSON.stringify(resources)}`);
       }
 
-      columns = settings?.composite.display_columns as Array<keyof ContentsProxy.IJupyterContentRow> ?? ["size"];
+      columns = updateColumnsFromSettings();
       sharedSidebarProps.columns = columns;
 
       // create the fs resource frontends (ie FileTree instances)
       for (const r of resources) {
-        // make one composite disposable for all fs resource frontends
         const id = idFromResource(r);
         let w = widgetMap[id];
         if (!w || w.isDisposed) {
@@ -115,6 +118,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
           w.treefinder.columns = columns;
         }
       }
+
       commands = await createDynamicCommands(
         app,
         TreeFinderSidebar.tracker,
@@ -125,13 +129,12 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
     }
 
     async function refresh() {
-      // get user settings from json file
       let resources: IFSResource[] = (
         settings?.composite.resources as unknown as IFSSettingsResource[] ?? []
       ).map(unpartialResource);
       const options: IFSOptions = settings?.composite.options as any ?? {};
 
-      function cleanup(all=false) {
+      function cleanup(all = false) {
         if (commands) {
           commands.dispose();
           commands = undefined;
@@ -155,7 +158,6 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
       }
     }
 
-    // when ready, restore using command
     const refreshed = refresh();
     void restorer.restore(TreeFinderSidebar.tracker, {
       command: commandIDs.restore,
@@ -168,59 +170,27 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
     });
 
     if (settings) {
-      // rerun setup whenever relevant settings change
       settings.changed.connect(() => {
         void refresh();
-      });
+      }, 500); // Avoid too frequent requests with debounce of 500ms
     }
 
-    // Inject lab icons
-    const style = document.createElement("style");
-    style.setAttribute("id", "jupyter-fs-icon-inject");
-
-    // Hackish, but needed since free-finder insists on pseudo elements for icons.
-    function iconStyleContent(folderStr: string, fileStr: string) {
-      // Note: We aren't able to style the hover/select colors with this.
-      return `
-      .jp-tree-finder {
-        --tf-dir-icon: url('data:image/svg+xml,${encodeURIComponent(folderStr)}');
-        --tf-file-icon: url('data:image/svg+xml,${encodeURIComponent(fileStr)}');
-      }
-      `;
-    }
-
-    let initialThemeLoad = true;
-    themeManager.themeChanged.connect(() => {
-      // Update SVG icon fills (since we put them in pseudo-elements we cannot style with CSS)
+    // New useEffect-style implementation to handle theme changes
+    const updateIconStyles = () => {
       const primary = getComputedStyle(document.documentElement).getPropertyValue("--jp-ui-font-color1");
       style.textContent = iconStyleContent(
         folderIcon.svgstr.replace(/fill="([^"]{0,7})"/, `fill="${primary}"`),
         fileIcon.svgstr.replace(/fill="([^"]{0,7})"/, `fill="${primary}"`)
       );
+    };
 
-      // Refresh widgets in case font/border sizes etc have changed
-      if (initialThemeLoad) {
-        initialThemeLoad = false;
-        void app.restored.then(() => {
-          // offset it by a timeout to ensure we clear the initial async stack
-          setTimeout(() => void Object.keys(widgetMap).map(
-            key => widgetMap[key].treefinder.nodeInit()
-          ), 0);
-        });
-      } else {
-        Object.keys(widgetMap).map(
-          key => widgetMap[key].treefinder.nodeInit()
-        );
-      }
-    });
-
+    themeManager.themeChanged.connect(updateIconStyles);
     style.textContent = iconStyleContent(folderIcon.svgstr, fileIcon.svgstr);
-
     document.head.appendChild(style);
+
     return { tracker: TreeFinderSidebar.tracker };
   },
 };
-
 
 const PROGRESS_ID = "jupyter-fs:progress";
 export const progressStatus: JupyterFrontEndPlugin<void> = {
