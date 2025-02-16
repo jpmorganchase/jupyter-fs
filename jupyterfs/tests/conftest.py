@@ -1,5 +1,6 @@
-import pytest
 import sys
+
+import pytest
 
 # ref: http://doc.pytest.org/en/latest/example/markers.html#marking-platform-specific-tests-with-pytest
 

@@ -5,32 +5,33 @@
 # This file is part of the jupyter-fs library, distributed under the terms of
 # the Apache License 2.0.  The full license can be found in the LICENSE file.
 #
-from hashlib import md5
 import json
 import re
+from hashlib import md5
 
-from traitlets import default
-from tornado import web
-
-from fs.errors import FSError
-from fs.opener.errors import OpenerError, ParseError
 from jupyter_server.base.handlers import APIHandler
 from jupyter_server.services.contents.manager import (
     AsyncContentsManager,
     ContentsManager,
 )
+from tornado import web
+from traitlets import default
 
 from .auth import substituteAsk, substituteEnv, substituteNone
 from .config import JupyterFs as JupyterFsConfig
-from .fsmanager import FSManager
+from .manager import FileSystemLoadError, FSManager, FSSpecManager
 from .pathutils import (
     path_first_arg,
-    path_second_arg,
     path_kwarg,
     path_old_new,
+    path_second_arg,
 )
 
-__all__ = ["MetaManager", "SyncMetaManager", "MetaManagerHandler"]
+__all__ = (
+    "MetaManager",
+    "SyncMetaManager",
+    "MetaManagerHandler",
+)
 
 
 class MetaManagerShared:
@@ -40,22 +41,19 @@ class MetaManagerShared:
     def _files_handler_params_default(self):
         return {"path": self.root_dir}
 
-    def __init__(self, **kwargs):
+    def __init__(self, pyfs_kw=None, fsspec_kw=None, **kwargs):
         super().__init__(**kwargs)
         self._jupyterfsConfig = JupyterFsConfig(config=self.config)
 
         self._kwargs = kwargs
-        self._pyfs_kw = {}
 
         self.resources = []
         self._default_root_manager = self._jupyterfsConfig.root_manager_class(**self._kwargs)
         self._managers = dict((("", self._default_root_manager),))
 
         # copy kwargs to pyfs_kw, removing kwargs not relevant to pyfs
-        self._pyfs_kw.update(kwargs)
-        for k in (k for k in ("config", "log", "parent") if k in self._pyfs_kw):
-            self._pyfs_kw.pop(k)
-
+        self._pyfs_kw = pyfs_kw or {}
+        self._fsspec_kw = fsspec_kw or {}
         self.initResource(*self._jupyterfsConfig.resources)
 
     def initResource(self, *resources, options={}):
@@ -69,8 +67,12 @@ class MetaManagerShared:
 
         for resource in resources:
             # server side resources don't have a default 'auth' key
-            if "auth" not in resource:
+            if "auth" not in resource or resource["auth"] not in ("ask", "env", "none"):
+                self.log.warning("Resource %r missing 'auth' key, defaulting to 'ask'", resource)
                 resource["auth"] = "ask"
+            if "type" not in resource or resource["type"] not in ("pyfs", "fsspec"):
+                resource["type"] = "pyfs"
+                self.log.warning("Resource %r missing 'type' key, defaulting to 'pyfs'", resource)
 
             # get deterministic hash of PyFilesystem url
             _hash = md5(resource["url"].encode("utf-8")).hexdigest()[:8]
@@ -101,14 +103,19 @@ class MetaManagerShared:
                     # create new cm
                     default_writable = resource.get("defaultWritable", True)
                     try:
-                        managers[_hash] = FSManager(
+                        if resource["type"] == "pyfs":
+                            manager_type = FSManager
+                        elif resource["type"] == "fsspec":
+                            manager_type = FSSpecManager
+
+                        managers[_hash] = manager_type.create(
                             urlSubbed,
                             default_writable=default_writable,
                             parent=self,
                             **self._pyfs_kw,
                         )
                         init = True
-                    except (FSError, OpenerError, ParseError) as e:
+                    except FileSystemLoadError as e:
                         self.log.exception(
                             "Failed to create manager for resource %r",
                             resource.get("name"),

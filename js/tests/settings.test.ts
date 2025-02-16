@@ -16,7 +16,7 @@ describe("unpartialResource", () => {
   it("should replace non-existing fields with empty string", () => {
 
     // blank resource missing name and url (like after pressing "add")
-    const resource: IFSSettingsResource = { auth: "ask", defaultWritable: true };
+    const resource: IFSSettingsResource = { auth: "ask", type: "pyfs", defaultWritable: true };
     const unpartialed = unpartialResource(resource);
 
     expect(unpartialed.name).toEqual("");

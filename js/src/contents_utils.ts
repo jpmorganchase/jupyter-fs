@@ -7,7 +7,7 @@
  *
  */
 
-import { Content, ContentsModel, IContentRow } from "tree-finder";
+import { Content, ContentsModel, IContentRow } from "@tree-finder/base";
 
 /**
  * Utilities for manipulating the tree-finder contents model

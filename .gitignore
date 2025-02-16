@@ -5,14 +5,10 @@ __pycache__/
 
 # C extensions
 *.so
-
-# JS/TS stuff
-.yarn/
-*.tsbuildinfo
+*.dll
 
 # Distribution / packaging
 .Python
-env/
 build/
 develop-eggs/
 dist/
@@ -24,10 +20,13 @@ lib64/
 parts/
 sdist/
 var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-package-lock.json
+MANIFEST
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -42,17 +41,17 @@ pip-delete-this-directory.txt
 # Unit test / coverage reports
 htmlcov/
 .tox/
+.nox/
 .coverage
 .coverage.*
 .cache
-python_junit.xml
-junit.xml
 nosetests.xml
 coverage.xml
-*,cover
+junit.xml
+*.cover
+*.py,cover
 .hypothesis/
-.pytest_cache
-.ruff_cache
+.pytest_cache/
 
 # Translations
 *.mo
@@ -61,105 +60,92 @@ coverage.xml
 # Django stuff:
 *.log
 local_settings.py
+db.sqlite3
+db.sqlite3-journal
 
-# Flask instance folder
+# Flask stuff:
 instance/
+.webassets-cache
 
 # Scrapy stuff:
 .scrapy
 
-# Sphinx documentation
-docs/_build/
-docs/source
-
 # PyBuilder
 target/
 
-# IPython Notebook
-.ipynb_checkpoints
-*.ipynb
-.autoversion
+# IPython
+profile_default/
+ipython_config.py
 
 # pyenv
 .python-version
 
-# celery beat schedule file
+# pipenv
+#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
+#   However, in case of collaboration, if having platform-specific dependencies or dependencies
+#   having no cross-platform support, pipenv may install dependencies that don't work, or not
+#   install all needed dependencies.
+#Pipfile.lock
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow
+__pypackages__/
+
+# Celery stuff
 celerybeat-schedule
+celerybeat.pid
 
-# dotenv
+# SageMath parsed files
+*.sage.py
+
+# Environments
 .env
-
-# virtualenv
+.venv
+env/
 venv/
 ENV/
+env.bak/
+venv.bak/
 
 # Spyder project settings
 .spyderproject
+.spyproject
 
 # Rope project settings
 .ropeproject
 
-# =========================
-# Operating System Files
-# =========================
+# mkdocs documentation
+/site
 
-# OSX
-# =========================
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
 
-.DS_Store
-.AppleDouble
-.LSOverride
+# Pyre type checker
+.pyre/
 
-# Thumbnails
-._*
+# Documentation
+docs/_build/
+/site
+docs/api
+docs/index.md
+_template/labextension
 
-# Files that might appear in the root of a volume
-.DocumentRevisions-V100
-.fseventsd
-.Spotlight-V100
-.TemporaryItems
-.Trashes
-.VolumeIcon.icns
+# JS
+js/coverage
+js/dist
+js/node_modules
+js/*.tsbuildinfo
+jupyterfs/extension
 
-# Directories potentially created on remote AFP share
-.AppleDB
-.AppleDesktop
-Network Trash Folder
-Temporary Items
-.apdisk
-
-# Windows
-# =========================
-
-# Windows image file caches
-Thumbs.db
-ehthumbs.db
-
-# Folder config file
-Desktop.ini
-
-# Recycle Bin used on file shares
-$RECYCLE.BIN/
-
-# Windows Installer files
-*.cab
-*.msi
-*.msm
-*.msp
-
-# Windows shortcuts
-*.lnk
-
-
-# NPM
-# ----
-**/node_modules/
-
-# Coverage data
-# -------------
-**/coverage/
-
-# Notebook and lab extensions
-jupyterfs/nbextension/static/index.*
-jupyterfs/labextension/*.tgz
+# Jupyter
+.ipynb_checkpoints
+.autoversion
+jupyterfs/nbextension
 jupyterfs/labextension
+
+# Mac
+.DS_Store
+
+# Rust
+target

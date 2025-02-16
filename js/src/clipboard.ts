@@ -8,7 +8,7 @@
  */
 import { WidgetTracker, showErrorMessage } from "@jupyterlab/apputils";
 import { Drive } from "@jupyterlab/services";
-import { ClipboardModel, ContentsModel, IContentRow, Path } from "tree-finder";
+import { ClipboardModel, ContentsModel, IContentRow, Path } from "@tree-finder/base";
 
 import type { ContentsProxy } from "./contents_proxy";
 import type { TreeFinderSidebar } from "./treefinder";

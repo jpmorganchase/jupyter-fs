@@ -6,15 +6,16 @@
 # the Apache License 2.0.  The full license can be found in the LICENSE file.
 #
 import os
-from string import Template
 import urllib.parse
+from string import Template
 
-__all__ = [
+__all__ = (
     "DoubleBraceTemplate",
+    "stdin_prompt",
     "substituteAsk",
     "substituteEnv",
     "substituteNone",
-]
+)
 
 
 class _BaseTemplate(Template):

@@ -45,9 +45,14 @@ export interface IFSSettingsResource {
   url?: string;
 
   /**
-   * Auth scheme to be used for this resource, or false for none
+   * Auth scheme to be used for this resource, or none
    */
-  auth: "ask" | "env" | false;
+  auth: "ask" | "env" | "none";
+
+  /**
+   * Backend type
+   */
+  type: "pyfs" | "fsspec";
 
   /**
    * Fallback for determining if resource is writeable. Used only if the underlying PyFilesystem does not provide this information (eg S3)

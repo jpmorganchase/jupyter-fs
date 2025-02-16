@@ -1,0 +1,10 @@
+# Changes here will be overwritten by Copier
+_commit: '9689455'
+_src_path: https://github.com/python-project-templates/base.git
+add_extension: jupyter
+email: t.paine154@gmail.com
+github: jpmorganchase
+project_description: A Filesystem-like mult-contents manager backend for Jupyter
+project_name: jupyter-fs
+python_version_primary: '3.9'
+team: the jupyter-fs authors

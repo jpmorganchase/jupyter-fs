@@ -66,6 +66,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
     } catch (error) {
       // eslint-disable-next-line no-console
       console.warn(`Failed to load settings for the jupyter-fs extension.\n${error}`);
+      return { tracker: TreeFinderSidebar.tracker };
     }
 
     // Migrate any old settings
@@ -80,7 +81,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
 
     let columns = settings?.composite.display_columns as Array<keyof ContentsProxy.IJupyterContentRow> ?? ["size"];
 
-    const sharedSidebarProps: Omit<TreeFinderSidebar.ISidebarProps, "url"> = {
+    const sharedSidebarProps: Omit<Omit<TreeFinderSidebar.ISidebarProps, "type">, "url"> = {
       app,
       manager,
       paths,
@@ -108,7 +109,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
         const id = idFromResource(r);
         let w = widgetMap[id];
         if (!w || w.isDisposed) {
-          const sidebarProps = { ...sharedSidebarProps, url: r.url, settings: settings! };
+          const sidebarProps = { ...sharedSidebarProps, url: r.url, type: r.type, settings: settings! };
           w = TreeFinderSidebar.sidebarFromResource(r, sidebarProps);
           widgetMap[id] = w;
         } else {
@@ -217,6 +218,9 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
     style.textContent = iconStyleContent(folderIcon.svgstr, fileIcon.svgstr);
 
     document.head.appendChild(style);
+
+    // eslint-disable-next-line no-console
+    console.log("JupyterLab extension jupyter-fs is activated!");
     return { tracker: TreeFinderSidebar.tracker };
   },
 };

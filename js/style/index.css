@@ -7,14 +7,14 @@
  *
  */
 
-:root {
-  --indent: 1em;
-}
-
-@import url('~tree-finder/dist/tree-finder.css');
-@import url('~tree-finder/dist/theme/material.css');
-
-@import url('./auth.css');
-@import url('./filetree.css');
-@import url('./snippets.css');
-@import url('./treefinder.css');
+ :root {
+    --indent: 1em;
+  }
+  
+  @import url('~@tree-finder/base/dist/tree-finder.css');
+  @import url('~@tree-finder/base/dist/theme/material.css');
+  
+  @import url('./auth.css');
+  @import url('./filetree.css');
+  @import url('./snippets.css');
+  @import url('./treefinder.css');

@@ -36,7 +36,7 @@ import { CommandRegistry } from "@lumino/commands";
 import { PromiseDelegate } from "@lumino/coreutils";
 import { Message } from "@lumino/messaging";
 import { PanelLayout, Widget } from "@lumino/widgets";
-import { Content, ContentsModel, Format, Path, TreeFinderGridElement, TreeFinderPanelElement } from "tree-finder";
+import { Content, ContentsModel, Format, Path, TreeFinderGridElement, TreeFinderPanelElement } from "@tree-finder/base";
 
 import { JupyterClipboard } from "./clipboard";
 import { commandIDs, idFromResource } from "./commands";
@@ -194,7 +194,7 @@ export class TreeFinderWidget extends DragDropWidget {
   }
 
   refresh() {
-    this.model?.refreshSub.next();
+    this.model?.refreshSub.next([]);
   }
 
   async nodeInit() {
@@ -602,6 +602,7 @@ export class TreeFinderSidebar extends Widget {
     app,
     columns,
     url,
+    type,
     rootPath = "",
     caption = "TreeFinder",
     id = "jupyterlab-tree-finder",
@@ -612,6 +613,7 @@ export class TreeFinderSidebar extends Widget {
     this.id = id;
     this.node.classList.add("jfs-mod-notRenaming");
     this.url = url;
+    this.type = type;
     this.title.icon = fileTreeIcon;
     this.title.caption = caption;
     this.addClass("jp-tree-finder-sidebar");
@@ -678,6 +680,7 @@ export class TreeFinderSidebar extends Widget {
   treefinder: TreeFinderWidget;
 
   readonly url: string;
+  readonly type: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -691,6 +694,7 @@ export namespace TreeFinderSidebar {
     app: JupyterFrontEnd;
     columns: Array<keyof ContentsProxy.IJupyterContentRow>;
     url: string;
+    type: string;
     rootPath?: string;
     caption?: string;
     id?: string;
@@ -707,6 +711,7 @@ export namespace TreeFinderSidebar {
     router: IRouter;
     side?: string;
     settings?: ISettingRegistry.ISettings;
+    type: string;
   }
 
   export function sidebarFromResource(resource: IFSResource, props: TreeFinderSidebar.ISidebarProps): TreeFinderSidebar {
@@ -717,6 +722,7 @@ export namespace TreeFinderSidebar {
       id: idFromResource(resource),
       preferredDir: resource.preferred_dir,
       url: resource.url,
+      type: resource.type,
     });
   }
 
@@ -728,6 +734,7 @@ export namespace TreeFinderSidebar {
     // router,
     restorer,
     url,
+    type,
     columns,
     settings,
     preferredDir,
@@ -737,7 +744,7 @@ export namespace TreeFinderSidebar {
     id = "jupyterlab-tree-finder",
     side = "left",
   }: TreeFinderSidebar.ISidebarProps): TreeFinderSidebar {
-    const widget = new TreeFinderSidebar({ app, rootPath, columns, caption, id, url, settings, preferredDir });
+    const widget = new TreeFinderSidebar({ app, rootPath, columns, caption, id, url, type, settings, preferredDir });
     void widget.treefinder.ready.then(() => tracker.add(widget));
     app.shell.add(widget, side);
 

@@ -21,6 +21,7 @@ import { ServerConnection } from "@jupyterlab/services";
 describe("instantiateSnippet", () => {
   const knownArgs = [
     "url",
+    "type",
     "path",
     "full_url",
     "full_path",
@@ -32,12 +33,14 @@ describe("instantiateSnippet", () => {
   it("should replace known parameters", () => {
     const pathstr = "drivename/full/path/file.txt";
     const url = "scheme://_:{{creds}}@url/path";
+    const type =  "pyfs";
 
     const template = `{\n  ${knownArgs.map(arg => `"${arg}": "{{${arg}}}"`).join(",\n  ")}\n}`;
 
-    const snippet = instantiateSnippet(template, url, pathstr);
+    const snippet = instantiateSnippet(template, url, type, pathstr);
     expect(snippet).toEqual(`{
   "url": "scheme://_:{{creds}}@url/path",
+  "type": "pyfs",
   "path": "full/path/file.txt",
   "full_url": "scheme://_:{{creds}}@url/path/full/path/file.txt",
   "full_path": "drivename:/full/path/file.txt",
@@ -50,12 +53,14 @@ describe("instantiateSnippet", () => {
   it("should handle root path", () => {
     const pathstr = "drivename";
     const url = "scheme://";
+    const type =  "pyfs";
 
     const template = `{\n  ${knownArgs.map(arg => `"${arg}": "{{${arg}}}"`).join(",\n  ")}\n}`;
 
-    const snippet = instantiateSnippet(template, url, pathstr);
+    const snippet = instantiateSnippet(template, url, type, pathstr);
     expect(snippet).toEqual(`{
   "url": "scheme://",
+  "type": "pyfs",
   "path": "",
   "full_url": "scheme://",
   "full_path": "drivename:/",

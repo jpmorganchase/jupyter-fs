@@ -1,23 +1,24 @@
 <p align="center">
-<a href="https://github.com/jpmorganchase/jupyter-fs/blob/main/docs/brand-icon.png?raw=true#gh-light-mode-only">
-<img src="https://github.com/jpmorganchase/jupyter-fs/raw/main/docs/brand-icon.png?raw=true#gh-light-mode-only" alt="jupyter-fs" width="260">
+<a href="https://github.com/jpmorganchase/jupyter-fs/blob/main/docs/img/brand-icon.png?raw=true#gh-light-mode-only">
+<img src="https://github.com/jpmorganchase/jupyter-fs/raw/main/docs/img/brand-icon.png?raw=true#gh-light-mode-only" alt="jupyter-fs" width="260">
 </a>
-<a href="https://github.com/jpmorganchase/jupyter-fs/blob/main/docs/brand-icon-white-text.png?raw=true#gh-dark-mode-only">
-<img src="https://github.com/jpmorganchase/jupyter-fs/raw/main/docs/brand-icon-white-text.png?raw=true#gh-dark-mode-only" alt="jupyter-fs" width="260">
+<a href="https://github.com/jpmorganchase/jupyter-fs/blob/main/docs/img/brand-icon-white-text.png?raw=true#gh-dark-mode-only">
+<img src="https://github.com/jpmorganchase/jupyter-fs/raw/main/docs/img/brand-icon-white-text.png?raw=true#gh-dark-mode-only" alt="jupyter-fs" width="260">
 </a>
 </p>
 
 #
 
 <p align="center">
-<a href="https://github.com/jpmorganchase/jupyter-fs/actions?query=workflow%3A%22Build+Status%22"><img alt="build status" src="https://github.com/jpmorganchase/jupyter-fs/actions/workflows/build.yml/badge.svg?branch=main"></a>
+<a href="https://github.com/jpmorganchase/jupyter-fs/actions/workflows/build.yml"><img alt="build status" src="https://github.com/jpmorganchase/jupyter-fs/actions/workflows/build.yml/badge.svg?branch=main&event=push"></a>
 <a href="https://pypi.python.org/pypi/jupyter-fs"><img alt="pypi package" src="https://img.shields.io/pypi/v/jupyter-fs.svg"></a>
 <a href="https://www.npmjs.com/package/jupyter-fs"><img alt="npm package" src="https://img.shields.io/npm/v/jupyter-fs.svg"></a>
+<a href="https://mybinder.org/v2/gh/jpmorganchase/jupyter-fs/main?urlpath=lab"><img alt="binder link" src="https://mybinder.org/badge_logo.svg"></a>
 </p>
 
 A plugin for JupyterLab that lets you set up and use as many filebrowsers as you like, connected to whatever local and/or remote filesystem-like resources you want.
 
-The backend is built on top of [PyFilesystem](https://github.com/PyFilesystem/pyfilesystem2), while the frontend is built on top of [JupyterLab Filetree](https://github.com/youngthejames/jupyterlab_filetree).
+The backend is built on top of [PyFilesystem](https://github.com/PyFilesystem/pyfilesystem2) and [fsspec](https://filesystem-spec.readthedocs.io/en/latest/), while the frontend is built on top of [tree-finder](https://github.com/tree-finder/tree-finder).
 
 
 ## Install
@@ -34,7 +35,7 @@ Add the following to your `jupyter_server_config.json`:
 ```json
 {
   "ServerApp": {
-    "contents_manager_class": "jupyterfs.metamanager.MetaManager",
+    "contents_manager_class": "jupyterfs.MetaManager",
     "jpserver_extensions": {
       "jupyterfs.extension": true
     }
@@ -73,12 +74,12 @@ Add specifications for additional contents managers in your user settings (in th
 
 You should see your new filebrowsers pop up in the left-hand sidebar instantly when you save your settings:
 
-![](https://raw.githubusercontent.com/jpmorganchase/jupyter-fs/main/docs/osfs_example.png)
+![](https://raw.githubusercontent.com/jpmorganchase/jupyter-fs/main/docs/img/osfs_example.png)
 
 
 ## Use with auth/credentials
 
-Any stretch of a `"url"` that is enclosed in double-brackets `{{VAR}}` will be treated as a template, and will be handled by jupyter-fs's auth system. For example, you can pass a username/password to the `"samba guest share"` resource in the `Simple use` example above by modifying its `"url"` like so:
+Any stretch of a `"url"` that is enclosed in double-brackets `{{VAR}}` will be treated as a template, and will be handled by `jupyter-fs`'s auth system. For example, you can pass a username/password to the `"samba guest share"` resource in the `Simple use` example above by modifying its `"url"` like so:
 
 ```json
 {
@@ -95,34 +96,56 @@ Any stretch of a `"url"` that is enclosed in double-brackets `{{VAR}}` will be t
 
 When you save the above `"resouces"` config, a dialog box will pop asking for the `username` and `passwd` values:
 
-![](https://raw.githubusercontent.com/jpmorganchase/jupyter-fs/main/docs/remote_example.png)
+![](https://raw.githubusercontent.com/jpmorganchase/jupyter-fs/main/docs/img/remote_example.png)
 
 Once you enter those values and hit ok, the new filebrowsers will then immediately appear in the sidebar:
 
+### The auth dialog will only appear when needed
 
-## The auth dialog will only appear when needed
-
-The jupyter-fs auth dialog will only appear when:
-- JupyterLab first loads, if any fs resources reqiure auth
+The `jupyter-fs` auth dialog will only appear when:
+- JupyterLab first loads, if any fs resources require auth
 - a new fs resouce is added that requires auth, or its `"url"` field is modified
+
+
+> [!NOTE]
+> Additional options are overrideable via environment variables
+> by most backends for PyFilesystem and fsspec
 
 
 ## Supported filesystems
 
 The type of resource each filebrowser will point to is determined by the protocol at the start of its url:
 
+### PyFilesystem
 - **osfs**: **os** **f**ile**s**ystem. The will open a new view of your local filesystem, with the specified root
 - **s3**: opens a filesystem pointing to an Amazon S3 bucket
 - **smb**: opens a filesystem pointing to a Samba share
 
-jupyter-fs can open a filebrowser pointing to any of the diverse [resources supported by PyFilesystem](). Currently, we test only test the S3 and smb/samba backends as part of our CI, so your milleage may vary with the other PyFilesystem backends.
+`jupyter-fs` can open a filebrowser pointing to any of the diverse [resources supported by PyFilesystem](https://www.pyfilesystem.org/page/index-of-filesystems/). Currently, we test only test the S3 and smb/samba backends as part of our CI, so your milleage may vary with the other PyFilesystem backends.
 
+### fsspec
+- **local** / **file**: Local filesystem
+- [**s3fs**](https://s3fs.readthedocs.io/en/latest/): S3 filesystem
+
+`jupyter-fs` should also support any of the [fsspec builtin](https://filesystem-spec.readthedocs.io/en/latest/api.html#built-in-implementations) or [known](https://filesystem-spec.readthedocs.io/en/latest/api.html#other-known-implementations) backends.
+
+In many cases, these will be customized via environment variables. As an example for [s3fs](https://s3fs.readthedocs.io/en/latest/), to customize the backend and auth:
+
+```
+export FSSPEC_S3_ENDPOINT_URL=<YOUR BACKEND>
+export FSSPEC_S3_KEY=<YOUR KEY>
+export FSSPEC_S3_SECRET=<YOUR SECRET>
+```
 
 ## The filesystem url
 
-The `"url"` field jupyter-fs config is based on the PyFilesystem [opener url](https://docs.pyfilesystem.org/en/latest/openers.html) standard. For more info on how to write these urls, see the documentation of the relevant PyFilesystem plugin:
+### PyFilesystem
+The `"url"` field `jupyter-fs` config is based on the PyFilesystem [opener url](https://docs.pyfilesystem.org/en/latest/openers.html) standard. For more info on how to write these urls, see the documentation of the relevant PyFilesystem plugin:
 - S3: [S3FS docs](https://fs-s3fs.readthedocs.io/en/latest/)
 - smb: [fs.smbfs docs](https://github.com/althonos/fs.smbfs#usage)
+
+### fsspec
+Similar to PyFilesystem, `fsspec` also allows for a `"url"` based opening scheme as documented [here](https://filesystem-spec.readthedocs.io/en/latest/api.html#fsspec.open).
 
 
 ## Server-side settings
@@ -138,7 +161,7 @@ c.JupyterFs.resources = [
 ]
 ```
 
-ALternatively, you can add resource specifications alongside the basic jupyter-fs config in your `jupyter_server_config.json` file:
+ALternatively, you can add resource specifications alongside the basic `jupyter-fs` config in your `jupyter_server_config.json` file:
 
 ```json
 {
@@ -164,7 +187,7 @@ Any filesystem resources specified in any server-side config file will be merged
 
 ## Development
 
-See [CONTRIBUTING.md](https://github.com/jpmorganchase/jupyter-fs/blob/main/CONTRIBUTING.md) for guidelines.
+See [CONTRIBUTING.md](https://github.com/jpmorganchase/jupyter-fs/blob/main/.github/CONTRIBUTING.md) for guidelines.
 
 
 ## License

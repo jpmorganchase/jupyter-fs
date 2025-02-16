@@ -10,25 +10,10 @@ If you have any questions about the contribution process, please feel free to se
 
 ### Install
 
-Note: You will need NodeJS to build the extension package.
+Note: You will need NodeJS and `pnpm` to build the extension package.
 
 ```bash
 pip install -e .[dev]
-```
-
-The `jlpm` command is JupyterLab's pinned version of
-[yarn](https://yarnpkg.com/) that is installed with JupyterLab. You may use
-`yarn` or `npm` in lieu of `jlpm` below.
-
-```bash
-# Clone the repo to your local environment
-# Change directory to the jupyter-fs directory
-# Install package in development mode
-jlpm
-cd js
-jlpm build
-cd ..
-jlpm develop
 ```
 
 ### Configure
@@ -57,14 +42,14 @@ After you make a change to the Typescript sources, you can rebuild jupyter-fs on
 
 ```bash
 # Rebuild extension Typescript source after making changes
-(cd js; jlpm run build)
+(cd js; pnpm run build)
 ```
 
 You can watch the source directory and run JupyterLab at the same time in different terminals to watch for changes in the extension's source and automatically rebuild the extension.
 
 ```bash
 # Watch the source directory in one terminal, automatically rebuilding when needed
-(cd js; jlpm run watch)
+(cd js; pnpm run watch)
 # Run JupyterLab in another terminal
 jupyter lab
 ```
@@ -73,7 +58,7 @@ With the watch command running, every saved change will immediately be built loc
 
 ### Sourcemaps
 
-By default, the `jlpm run build` command generates the source maps for this extension to make it easier to debug using the browser dev tools. To also generate source maps for the JupyterLab core extensions, you can run the following command:
+By default, the `pnpm run build` command generates the source maps for this extension to make it easier to debug using the browser dev tools. To also generate source maps for the JupyterLab core extensions, you can run the following command:
 
 ```bash
 jupyter lab build --minimize=False

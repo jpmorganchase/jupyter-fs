@@ -25,7 +25,7 @@ class JupyterFs(Configurable):
     resources = List(
         config=True,
         default_value=[],
-        help=_i18n("server-side definitions of fsspec resources for jupyter-fs"),
+        help=_i18n("server-side definitions of pyfilesystem/fsspec resources for jupyter-fs"),
         # trait=Dict(traits={"name": Unicode, "url": Unicode}),
     )
 
