@@ -86,7 +86,7 @@
     "eslint-plugin-jsdoc": "^44.2.7",
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "eslint-plugin-react": "^7.37.4",
-    "eslint-plugin-unicorn": "^47.0.0",
+    "eslint-plugin-unicorn": "^56.0.1",
     "isomorphic-fetch": "^3.0.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
