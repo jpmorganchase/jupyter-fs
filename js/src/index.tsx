@@ -6,6 +6,7 @@
  * the Apache License 2.0.  The full license can be found in the LICENSE file.
  *
  */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { ILayoutRestorer, IRouter, JupyterFrontEnd, JupyterFrontEndPlugin } from "@jupyterlab/application";
 import { IThemeManager, IWindowResolver } from "@jupyterlab/apputils";
@@ -13,7 +14,7 @@ import { IDocumentManager } from "@jupyterlab/docmanager";
 import { ISettingRegistry } from "@jupyterlab/settingregistry";
 import { IStatusBar } from "@jupyterlab/statusbar";
 import { ITranslator } from "@jupyterlab/translation";
-import { folderIcon, fileIcon, IFormRendererRegistry } from "@jupyterlab/ui-components";
+import { folderIcon, fileIcon, notebookIcon, IFormRendererRegistry } from "@jupyterlab/ui-components";
 import { IDisposable } from "@lumino/disposable";
 import * as semver from "semver";
 
@@ -180,12 +181,13 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
     style.setAttribute("id", "jupyter-fs-icon-inject");
 
     // Hackish, but needed since free-finder insists on pseudo elements for icons.
-    function iconStyleContent(folderStr: string, fileStr: string) {
+    function iconStyleContent(folderStr: string, fileStr: string, notebookStr: string) {
       // Note: We aren't able to style the hover/select colors with this.
       return `
       .jp-tree-finder {
         --tf-dir-icon: url('data:image/svg+xml,${encodeURIComponent(folderStr)}');
         --tf-file-icon: url('data:image/svg+xml,${encodeURIComponent(fileStr)}');
+        --tf-notebook-icon: url('data:image/svg+xml,${encodeURIComponent(notebookStr)}');
       }
       `;
     }
@@ -196,7 +198,8 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
       const primary = getComputedStyle(document.documentElement).getPropertyValue("--jp-ui-font-color1");
       style.textContent = iconStyleContent(
         folderIcon.svgstr.replace(/fill="([^"]{0,7})"/, `fill="${primary}"`),
-        fileIcon.svgstr.replace(/fill="([^"]{0,7})"/, `fill="${primary}"`)
+        fileIcon.svgstr.replace(/fill="([^"]{0,7})"/, `fill="${primary}"`),
+        notebookIcon.svgstr.replace(/fill="([^"]{0,7})"/, `fill="${primary}"`)
       );
 
       // Refresh widgets in case font/border sizes etc have changed
@@ -215,7 +218,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
       }
     });
 
-    style.textContent = iconStyleContent(folderIcon.svgstr, fileIcon.svgstr);
+    style.textContent = iconStyleContent(folderIcon.svgstr, fileIcon.svgstr, notebookIcon.svgstr);
 
     document.head.appendChild(style);
 

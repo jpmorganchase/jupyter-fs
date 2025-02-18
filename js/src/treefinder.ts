@@ -1,11 +1,12 @@
 /******************************************************************************
  *
  * Copyright (c) 2019, the jupyter-fs authors.
- *
- * This file is part of the jupyter-fs library, distributed under the terms of
- * the Apache License 2.0.  The full license can be found in the LICENSE file.
- *
- */
+*
+* This file is part of the jupyter-fs library, distributed under the terms of
+* the Apache License 2.0.  The full license can be found in the LICENSE file.
+*
+*/
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { ILayoutRestorer, IRouter, JupyterFrontEnd } from "@jupyterlab/application";
 import {
   Dialog,
@@ -200,6 +201,7 @@ export class TreeFinderWidget extends DragDropWidget {
   async nodeInit() {
     // The contents of root passed to node.init is not (currently) considered, so do not ask for it.
     let root = null;
+
     try {
       root = await this.contentsProxy.get(this.rootPath, { content: false });
     } catch (error) {

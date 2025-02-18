@@ -6,6 +6,7 @@
  * the Apache License 2.0.  The full license can be found in the LICENSE file.
  *
  */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { JupyterFrontEnd } from "@jupyterlab/application";
 import { Dialog, showDialog } from "@jupyterlab/apputils";

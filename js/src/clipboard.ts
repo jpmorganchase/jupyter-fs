@@ -6,6 +6,7 @@
  * the Apache License 2.0.  The full license can be found in the LICENSE file.
  *
  */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { WidgetTracker, showErrorMessage } from "@jupyterlab/apputils";
 import { Drive } from "@jupyterlab/services";
 import { ClipboardModel, ContentsModel, IContentRow, Path } from "@tree-finder/base";

@@ -172,6 +172,11 @@ tree-finder-panel tree-finder-grid table {
   min-width: 1em;
 }
 
+/* treefinder comes with file/directory icons, so inject notebook icon */
+.jp-tree-finder tree-finder-grid .tf-grid-notebook-icon:before {
+  background-image: var(--tf-notebook-icon);
+}
+
 .jp-tree-finder span.rt-tree-group {
   height: 100%;
   margin-left: 0.45em;
