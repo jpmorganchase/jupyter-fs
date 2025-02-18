@@ -2,8 +2,9 @@
 # This file reproduces https://github.com/jupyterlab/jupyterlab/blob/master/jupyterlab/browser_check.py
 # but patch the global `here` to use the local browser-test.js
 import os
-import jupyterlab.browser_check
 from unittest.mock import patch
+
+import jupyterlab.browser_check
 
 
 class JupyterfsBrowserApp(jupyterlab.browser_check.BrowserApp):

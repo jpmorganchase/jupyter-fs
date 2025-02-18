@@ -1,21 +1,19 @@
 [build-system]
 requires = [
-    "hatchling>=1.3.1",
+    "hatchling",
     "hatch-jupyter-builder",
     "jupyterlab>=4,<5",
 ]
-build-backend = "hatchling.build"
+build-backend="hatchling.build"
 
 [project]
 name = "jupyter-fs"
+authors = [{name = "the jupyter-fs authors", email = "t.paine154@gmail.com"}]
 description = "A Filesystem-like mult-contents manager backend for Jupyter"
-version = "1.0.1"
 readme = "README.md"
-license = { file = "LICENSE" }
-requires-python = ">=3.7"
-authors = [
-    { name = "Tim Paine", email = "t.paine154@gmail.com" },
-]
+license = { text = "Apache-2.0" }
+version = "0.1.0"
+requires-python = ">=3.9"
 keywords = [
     "Jupyter",
     "JupyterLab",
@@ -30,71 +28,132 @@ classifiers = [
     "Framework :: Jupyter",
     "Framework :: Jupyter :: JupyterLab",
     "Programming Language :: Python",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "License :: OSI Approved :: Apache Software License",
 ]
+
 dependencies = [
-    "fs>=2.4.11",
-    "fs-s3fs>=1.1.1",
-    "fs.smbfs>=0.6.3",
     "jupyterlab>=4,<5",
     "jupyter_server>=2,<3",
 ]
 
 [project.optional-dependencies]
 develop = [
-    # Test deps
-    "boto3",
-    "fs-miniofs",
-    "pysmb",
+    "build",
+    "bump-my-version",
+    "check-manifest",
+    "hatch-jupyter-builder",
+    "hatchling",
+    "jupyterlab>=4,<5",
     "pytest",
     "pytest-asyncio",
     "pytest-cov",
     "pytest-jupyter[server]",
     "pytest-sugar",
     "pytest-xdist",
-    "pytest-asyncio",
-    "pytest-jupyter[server]",
-    # Other deps
-    "bump2version>=1.0.0",
-    "check-manifest",
-    "ruff>=0.3.5,<0.10",
+    "ruff>=0.9,<0.10",
+    "twine",
+    "wheel",
+    # tests
+    "boto3",
+    "fs-miniofs",
+    "pysmb",
+    # fs
+    "fs>=2.4.11",
+    "fs-s3fs>=1.1.1",
+    "fs.smbfs>=0.6.3",
+    # fsspec
+    "fsspec>=2023.6.0",
+]
+fs = [
+    "fs>=2.4.11",
+    "fs-s3fs>=1.1.1",
+    "fs.smbfs>=0.6.3",
+]
+fsspec = [
+    "fsspec>=2023.6.0",
 ]
 
-test = [
-    "boto3",
-    "docker",
-    "fs-miniofs",
-    "mock",
-    "pysmb",
-    "pytest",
-    "pytest-asyncio",
-    "pytest-cov",
-    "pytest-jupyter[server]",
-    "pytest-sugar",
-    "pytest-xdist",
-    "pytest-asyncio",
-    "pytest-jupyter[server]",
-]
+[project.scripts]
 
 [project.urls]
-repository = "https://github.com/jpmorganchase/jupyter-fs"
-homepage = "https://github.com/jpmorganchase/jupyter-fs"
+Repository = "https://github.com/jpmorganchase/jupyter-fs"
+Homepage = "https://github.com/jpmorganchase/jupyter-fs"
+
+[tool.bumpversion]
+current_version = "0.1.0"
+commit = true
+tag = true
+
+[[tool.bumpversion.files]]
+filename = "jupyterfs/__init__.py"
+search = '__version__ = "{current_version}"'
+replace = '__version__ = "{new_version}"'
+
+[[tool.bumpversion.files]]
+filename = "pyproject.toml"
+search = 'version = "{current_version}"'
+replace = 'version = "{new_version}"'
+
+[[tool.bumpversion.files]]
+filename = "js/package.json"
+search = '"version": "{current_version}"'
+replace = '"version": "{new_version}"'
 
 [tool.check-manifest]
 ignore = [
-	"jupyterfs/labextension/**",
-	"js/**"
+    ".copier-answers.yml",
+    "js/pnpm-lock.yaml",
+    "js/tsconfig.tsbuildinfo",
+    "Makefile",
+    "README.md",
+    ".vscode/**/*",
+    "binder/**/*",
+    "ci/**/*",
+    "docs/**/*",
+    "examples/**/*",
+    "js/dist/**/*",
+    "js/lib/**/*",
+    "jupyterfs/extension/**",
+    "jupyterfs/labextension/**",
+    "jupyterfs/nbextension/**",
 ]
+
+[tool.coverage.run]
+branch = true
+omit = [
+    "jupyterfs/tests/integration/",
+]
+[tool.coverage.report]
+exclude_also = [
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "@(abc\\.)?abstractmethod",
+]
+ignore_errors = true
+fail_under = 50
 
 [tool.hatch.build]
 artifacts = [
-    "jupyterfs/labextension"
+    "jupyterfs/nbextension",
+    "jupyterfs/labextension",
+]
+
+[tool.hatch.build.sources]
+src = "/"
+
+[tool.hatch.build.targets.sdist]
+packages = ["jupyterfs", "js"]
+exclude = [
+    "/js/dist",
+    "/js/node_modules",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -106,13 +165,6 @@ packages = ["jupyterfs"]
 "jupyterfs/extension/install.json" = "share/jupyter/labextensions/jupyter-fs/install.json"
 "jupyterfs/extension/jupyter_server_config.d/jupyterfs.json" = "etc/jupyter/jupyter_server_config.d/jupyterfs.json"
 
-[tool.hatch.build.targets.sdist]
-exclude = [
-    ".github",
-    "binder",
-    "docs",
-]
-
 [tool.hatch.build.hooks.jupyter-builder]
 build-function = "hatch_jupyter_builder.npm_builder"
 ensured-targets = [
@@ -122,16 +174,30 @@ skip-if-exists = [
     "jupyterfs/labextension/package.json",
 ]
 dependencies = [
-    "hatch-jupyter-builder>=0.5.0",
+    "hatch-jupyter-builder",
 ]
 
 [tool.hatch.build.hooks.jupyter-builder.build-kwargs]
 path = "js"
 build_cmd = "build"
-npm = "jlpm"
+npm = "pnpm"
+
+[tool.pytest.ini_options]
+addopts = ["-vvv", "--junitxml=junit.xml"]
+asyncio_mode = "strict"
+testpaths = "jupyterfs/tests"
 
 [tool.ruff]
 line-length = 150
 
+[tool.ruff.lint]
+extend-select = ["I"]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+default-section = "third-party"
+known-first-party = ["jupyterfs"]
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+
 [tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401"]
+"__init__.py" = ["F401", "F403"]

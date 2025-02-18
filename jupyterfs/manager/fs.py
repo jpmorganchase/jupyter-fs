@@ -5,28 +5,21 @@
 # This file is part of the jupyter-fs library, distributed under the terms of
 # the Apache License 2.0.  The full license can be found in the LICENSE file.
 #
-from base64 import encodebytes, decodebytes
-from contextlib import contextmanager
-from datetime import datetime
-from fs import errors, open_fs
-from fs.base import FS
-from fs.errors import NoSysPath, ResourceNotFound, PermissionDenied
 import mimetypes
 import pathlib
 import stat
-from tornado import web
+from base64 import decodebytes, encodebytes
+from contextlib import contextmanager
 
 import nbformat
-from jupyter_server import _tz as tz
-from jupyter_server.services.contents.checkpoints import Checkpoints
-from jupyter_server.services.contents.filecheckpoints import GenericFileCheckpoints
 from jupyter_server.services.contents.filemanager import FileContentsManager
+from tornado import web
 from traitlets import default
 
-__all__ = ["FSManager"]
+from .checkpoints import NullCheckpoints
+from .common import EPOCH_START, FileSystemLoadError
 
-
-EPOCH_START = datetime(1970, 1, 1, 0, 0, tzinfo=tz.UTC)
+__all__ = ("FSManager",)
 
 
 class FSManager(FileContentsManager):
@@ -111,6 +104,8 @@ class FSManager(FileContentsManager):
 
     @classmethod
     def open_fs(cls, *args, **kwargs):
+        from fs import open_fs
+
         return cls(open_fs(*args, **kwargs))
 
     @classmethod
@@ -120,26 +115,42 @@ class FSManager(FileContentsManager):
     @contextmanager
     def perm_to_403(self, path=None):
         """context manager for turning permission errors into 403."""
+        from fs.errors import PermissionDenied
+
         try:
             yield
         except PermissionDenied as e:
             path = path or e.path or "unknown file"
             raise web.HTTPError(403, "Permission denied: %r" % path) from e
 
-    def __init__(self, pyfs, *args, default_writable=True, parent=None, **kwargs):
+    def __init__(self, fs, *args, default_writable=True, parent=None, **kwargs):
         super().__init__(parent=parent)
+        from fs import open_fs
+        from fs.base import FS
+
         self._default_writable = default_writable
-        if isinstance(pyfs, str):
+        if isinstance(fs, str):
             # pyfs is an opener url
-            self._pyfilesystem_instance = open_fs(pyfs, *args, **kwargs)
-        elif isinstance(pyfs, type) and issubclass(pyfs, FS):
+            self._pyfilesystem_instance = open_fs(fs, *args, **kwargs)
+        elif isinstance(fs, type) and issubclass(fs, FS):
             # pyfs is an FS subclass
-            self._pyfilesystem_instance = pyfs(*args, **kwargs)
-        elif isinstance(pyfs, FS):
+            self._pyfilesystem_instance = fs(*args, **kwargs)
+        elif isinstance(fs, FS):
             # pyfs is a FS instance
-            self._pyfilesystem_instance = pyfs
+            self._pyfilesystem_instance = fs
         else:
-            raise TypeError("pyfs must be a url, an FS subclass, or an FS instance")
+            raise TypeError("fs must be a url, an FS subclass, or an FS instance")
+
+    @staticmethod
+    def create(*args, **kwargs):
+        from fs.errors import FSError
+        from fs.opener.errors import OpenerError, ParseError
+
+        try:
+            return FSManager(*args, **kwargs)
+        except (TypeError, FSError, OpenerError, ParseError) as e:
+            # reraise as common error
+            raise FileSystemLoadError from e
 
     @default("checkpoints_class")
     def _checkpoints_class_default(self):
@@ -153,6 +164,8 @@ class FSManager(FileContentsManager):
         Returns:
             hidden (bool): Whether the path is hidden.
         """
+        from fs.errors import NoSysPath, PermissionDenied, ResourceNotFound
+
         # We do not know the OS of the actual FS, so let us be careful
 
         # We treat entries with leading . in the name as hidden (unix convention)
@@ -240,21 +253,23 @@ class FSManager(FileContentsManager):
 
         info (<Info>): FS Info object for file/dir at path -- used for values and reduces needed network calls
         """
+        from fs.errors import MissingInfoNamespace, NoSysPath, PermissionDenied
+
         try:
             # size of file
             size = info.size
-        except (errors.MissingInfoNamespace,):
+        except (MissingInfoNamespace,):
             size = None
 
         # Use the Unix epoch as a fallback so we don't crash.
         try:
             last_modified = info.modified or EPOCH_START
-        except (errors.MissingInfoNamespace,):
+        except (MissingInfoNamespace,):
             last_modified = EPOCH_START
 
         try:
             created = info.created or last_modified
-        except (errors.MissingInfoNamespace,):
+        except (MissingInfoNamespace,):
             created = EPOCH_START
 
         # Create the base model.
@@ -281,7 +296,7 @@ class FSManager(FileContentsManager):
             try:
                 # Fall back on "u_w" check, even if we don't know if our user == owner...
                 model["writable"] = info.permissions.check("u_w")
-            except (errors.MissingInfoNamespace, AttributeError):
+            except (MissingInfoNamespace, AttributeError):
                 # use default if access namespace is missing
                 model["writable"] = self._default_writable
         except (OSError, PermissionDenied):
@@ -296,6 +311,8 @@ class FSManager(FileContentsManager):
         if content is requested, will include a listing of the directory
         info (<Info>): FS Info object for file/dir at path
         """
+        from fs.errors import PermissionDenied
+
         four_o_four = "directory does not exist: %r" % path
 
         if not info.is_dir:
@@ -601,33 +618,3 @@ class FSManager(FileContentsManager):
             raise
         except Exception as e:
             raise web.HTTPError(500, "Unknown error renaming file: %s %s" % (old_path, e))
-
-
-class PyFilesystemCheckpoints(GenericFileCheckpoints):
-    pass
-
-
-class NullCheckpoints(Checkpoints):
-    def null_checkpoint(self):
-        """Return a null checkpoint."""
-        return dict(id="checkpoint", last_modified="")
-
-    def create_checkpoint(self, contents_mgr, path):
-        """Return a null checkpoint."""
-        return self.null_checkpoint()
-
-    def restore_checkpoint(self, contents_mgr, checkpoint_id, path):
-        """No-op."""
-        pass
-
-    def rename_checkpoint(self, checkpoint_id, old_path, new_path):
-        """No-op."""
-        pass
-
-    def delete_checkpoint(self, checkpoint_id, path):
-        """No-op."""
-        pass
-
-    def list_checkpoints(self, path):
-        """Return an empty list."""
-        return [self.null_checkpoint()]

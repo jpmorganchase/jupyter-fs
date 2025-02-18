@@ -8,12 +8,12 @@
 
 # for Coverage
 from unittest.mock import MagicMock
-import tornado.web
 
 import pytest
+import tornado.web
 
 from jupyterfs.extension import _load_jupyter_server_extension
-from jupyterfs.metamanager import MetaManagerHandler, MetaManager
+from jupyterfs.metamanager import MetaManager, MetaManagerHandler
 
 
 class TestExtension:

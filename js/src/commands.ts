@@ -23,7 +23,7 @@ import {
 } from "@jupyterlab/ui-components";
 import { DisposableSet, IDisposable } from "@lumino/disposable";
 import { Menu } from "@lumino/widgets";
-import { Content, Path } from "tree-finder";
+import { Content, Path } from "@tree-finder/base";
 
 
 import { JupyterClipboard } from "./clipboard";
@@ -185,7 +185,7 @@ export function createStaticCommands(
       isEnabled: () => currentWidgetSelectionIsWritable(tracker),
     }),
     app.commands.addCommand(commandIDs.open, {
-      execute: args => tracker.currentWidget!.treefinder.model!.openSub.next(tracker.currentWidget!.treefinder.selection?.map(c => c.row)),
+      execute: args => tracker.currentWidget!.treefinder.model!.openSub.next(tracker.currentWidget!.treefinder.selection?.map(c => c.row) || []),
       label: "Open",
       isEnabled: () => !!tracker.currentWidget,
     }),
@@ -243,7 +243,7 @@ export function createStaticCommands(
         target.invalidate();
         const content = await revealAndSelectPath(model, row.path);
         // Is this really needed?
-        model.refreshSub.next(getRefreshTargets([target.row], model.root));
+        model.refreshSub.next(getRefreshTargets([target.row], model.root) || []);
         // Scroll into view if not visible
         await TreeFinderSidebar.scrollIntoView(widget.treefinder, content.pathstr);
         const newContent = await TreeFinderSidebar.doRename(widget, content);
@@ -277,7 +277,7 @@ export function createStaticCommands(
         target.invalidate();
         const content = await revealAndSelectPath(model, row.path);
         // Is this really needed?
-        model.refreshSub.next(getRefreshTargets([target.row], model.root));
+        model.refreshSub.next(getRefreshTargets([target.row], model.root) || []);
         // Scroll into view if not visible
         await TreeFinderSidebar.scrollIntoView(widget.treefinder, content.pathstr);
         const newContent = await TreeFinderSidebar.doRename(widget, content);
@@ -399,7 +399,7 @@ export async function createDynamicCommands(
       execute: async (args: unknown) => {
         const sidebar = tracker.currentWidget!;
         const content = sidebar.treefinder.selection![0];
-        const instantiated = instantiateSnippet(snippet.template, sidebar.url, content.pathstr);
+        const instantiated = instantiateSnippet(snippet.template, sidebar.url, sidebar.type, content.pathstr);
         await navigator.clipboard.writeText(instantiated);
       },
       label: snippet.label,
@@ -407,6 +407,11 @@ export async function createDynamicCommands(
       isVisible: () => {
         const sidebar = tracker.currentWidget;
         const selection = sidebar?.treefinder.selection;
+        // discard if not for backend type
+        if (snippet.type !== "" && snippet.type !== sidebar?.type) {
+          return false;
+        }
+        // include if matches pattern
         if (selection?.length) {
           return snippet.pattern.test(_normalizedUrlForSnippet(selection[0], sidebar!.url));
         }

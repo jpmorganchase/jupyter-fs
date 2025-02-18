@@ -1,24 +1,102 @@
 DOCKER_COMPOSE := podman-compose
 
-###############
-# Build Tools #
-###############
-.PHONY: build develop install
-build:  ## build python/javascript
-	python -m build .
+#########
+# BUILD #
+#########
+.PHONY: develop-py develop-js develop
+develop-py:
+	python -m pip install -e .[develop]
 
-develop:  ## install to site-packages in editable mode
-	python -m pip install --upgrade build jupyterlab pip setuptools twine wheel
-	python -m pip install -vvv .[develop]
+develop-js:
+	cd js; pnpm install
 
-install:  ## install to site-packages
+develop: develop-js develop-py  ## setup project for development
+
+.PHONY: build-py build-js build
+build-py:
+	python -m build -w -n
+
+build-js:
+	cd js; pnpm build
+
+build: build-js build-py  ## build the project
+
+.PHONY: install
+install:  ## install python library
 	python -m pip install .
 
-###########
-# Testing #
-###########
-.PHONY: setup-infra-ubuntu setup-infra-mac setup-infra-win setup-infra-common teardown-infra-ubuntu teardown-infra-mac teardown-infra-win teardown-infra-common dockerup dockerdown dockerlogs testpy testjs test tests
+#########
+# LINTS #
+#########
+.PHONY: lint-py lint-js lint lints
+lint-py:  ## run python linter with ruff
+	python -m ruff check jupyterfs
+	python -m ruff format --check jupyterfs
 
+lint-js:  ## run js linter
+	cd js; pnpm lint
+
+lint: lint-js lint-py  ## run project linters
+
+# alias
+lints: lint
+
+.PHONY: fix-py fix-js fix format
+fix-py:  ## fix python formatting with ruff
+	python -m ruff check --fix jupyterfs
+	python -m ruff format jupyterfs
+
+fix-js:  ## fix js formatting
+	cd js; pnpm fix
+
+fix: fix-js fix-py  ## run project autoformatters
+
+# alias
+format: fix
+
+################
+# Other Checks #
+################
+.PHONY: check-manifest checks check
+
+check-manifest:  ## check python sdist manifest with check-manifest
+	check-manifest -v
+
+checks: check-manifest
+
+# alias
+check: checks
+
+#########
+# TESTS #
+#########
+.PHONY: test-py tests-py coverage-py
+test-py:  ## run python tests
+	python -m pytest -v jupyterfs/tests
+
+# alias
+tests-py: test-py
+
+coverage-py:  ## run python tests and collect test coverage
+	python -m pytest -v jupyterfs/tests --cov=jupyterfs --cov-report term-missing --cov-report xml
+
+.PHONY: test-js tests-js coverage-js
+test-js:  ## run js tests
+	cd js; pnpm test
+
+# alias
+tests-js: test-js
+
+coverage-js: test-js  ## run js tests and collect test coverage
+
+.PHONY: test coverage tests
+test: test-py test-js  ## run all tests
+coverage: coverage-py coverage-js  ## run all tests and collect test coverage
+
+# alias
+tests: test
+
+.PHONY: setup-infra-ubuntu setup-infra-mac setup-infra-win setup-infra-common teardown-infra-ubuntu teardown-infra-mac teardown-infra-win teardown-infra-common dockerup dockerdown dockerlogs
 setup-infra-ubuntu: dockerup
 
 setup-infra-mac:
@@ -47,89 +125,58 @@ dockerdown:
 dockerlogs:
 	${DOCKER_COMPOSE} -f ci/docker-compose.yml logs
 
-testpy: ## Clean and Make unit tests
-	python -m pytest -v jupyterfs/tests --junitxml=junit.xml --cov=jupyterfs --cov-report=xml:.coverage.xml --cov-branch --cov-fail-under=20 --cov-report term-missing
-
-testjs: ## Clean and Make js tests
-	cd js; jlpm test
-
-test: tests
-tests: testpy testjs ## run the tests
-
 ###########
-# Linting #
+# VERSION #
 ###########
-.PHONY: lintpy lintjs lint fixpy fixjs fix format
+.PHONY: show-version patch minor major
 
-lintpy:  ## Lint Python with Ruff
-	python -m ruff check jupyterfs setup.py
-	python -m ruff format --check jupyterfs setup.py
+show-version:  ## show current library version
+	@bump-my-version show current_version
 
-lintjs:  ## Lint Javascript with ESlint
-	cd js; jlpm lint
+patch:  ## bump a patch version
+	@bump-my-version bump patch
 
-lint: lintpy lintjs  ## run linter
+minor:  ## bump a minor version
+	@bump-my-version bump minor
 
-fixpy:  ## Autoformat Python with Ruff
-	python -m ruff format jupyterfs/ setup.py
+major:  ## bump a major version
+	@bump-my-version bump major
 
-fixjs:  ## Autoformat JavaScript with ESlint
-	cd js; jlpm fix
+########
+# DIST #
+########
+.PHONY: dist dist-py dist-js dist-check publish
 
-fix: fixpy fixjs  ## run black/tslint fix
-format: fix
+dist-py:  # build python dists
+	python -m build -w -s
 
-#################
-# Other Checks #
-#################
-.PHONY: check checks check-manifest semgrep
+dist-js:  # build js dists
+	cd js; pnpm pack
 
-check: checks
-
-checks: check-manifest  ## run security, packaging, and other checks
-
-check-manifest:  ## run manifest checker for sdist
-	check-manifest -v
-
-semgrep:  ## run semgrep
-	semgrep ci --config auto
-
-################
-# Distribution #
-################
-.PHONY: dist publishpy publishjs publish
-
-dist: build  ## create dists
+dist-check:  ## run python dist checker with twine
 	python -m twine check dist/*
 
-publishpy:  ## dist to pypi
-	python -m twine upload dist/* --skip-existing
+dist: clean build dist-js dist-py dist-check  ## build all dists
 
-publishjs:  ## dist to npm
-	cd js; npm publish || echo "can't publish - might already exist"
+publish: dist  # publish python assets
 
-publish: dist publishpy publishjs  ## dist to pypi and npm
+#########
+# CLEAN #
+#########
+.PHONY: deep-clean clean
 
-############
-# Cleaning #
-############
-.PHONY: clean
+deep-clean: ## clean everything from the repository
+	git clean -fdx
 
 clean: ## clean the repository
-	find . -name "__pycache__" | xargs  rm -rf
-	find . -name "*.pyc" | xargs rm -rf
-	find . -name ".ipynb_checkpoints" | xargs  rm -rf
-	rm -rf .coverage coverage *.xml build dist *.egg-info lib node_modules .pytest_cache *.egg-info
-	rm -rf jupyterfs/labextension jupyterfs/nbextension/static/index*
-	cd js && jlpm clean
-	git clean -fd
+	rm -rf .coverage coverage cover htmlcov logs build dist *.egg-info
 
-###########
-# Helpers #
-###########
+############################################################################################
+
+.PHONY: help
+
 # Thanks to Francoise at marmelab.com for this
 .DEFAULT_GOAL := help
-.PHONY: help
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 

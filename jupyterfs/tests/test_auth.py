@@ -1,10 +1,10 @@
 import os
 import unittest.mock
 
-from fs.opener.parse import parse_fs_url
-from jupyterfs.auth import substituteAsk, substituteEnv
 import pytest
+from fs.opener.parse import parse_fs_url
 
+from jupyterfs.auth import substituteAsk, substituteEnv
 
 # we use `prefix_username` as `username` is often present in os.environ
 

@@ -74,6 +74,11 @@ export interface Snippet {
    * A template string to build up the snippet
    */
   template: string;
+
+  /**
+   * A template string to build up the snippet
+   */
+  type?: string;
 }
 
 
@@ -119,13 +124,13 @@ export async function getAllSnippets(settings?: ISettingRegistry.ISettings): Pro
  * @param resource The resource the entry belongs to
  * @param path The local path of the entry
  */
-export function instantiateSnippet(template: string, url: string, pathstr: string) {
+export function instantiateSnippet(template: string, url: string, type: string, pathstr: string) {
   const parsed = processUrlRegex.exec(url);
-  // eslint-disable-next-line prefer-const
   const [drive, relativePath] = splitPathstrDrive(pathstr);
   const args = {
     ...parsed?.groups,
     url,
+    type,
     path: relativePath,
     full_url: `${url.replace(/\/$/, "")}/${relativePath}`,
     full_path: `${drive}:/${relativePath}`,

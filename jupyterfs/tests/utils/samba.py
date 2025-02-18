@@ -7,8 +7,9 @@
 # the Apache License 2.0.  The full license can be found in the LICENSE file.
 
 import os
-from smb.SMBConnection import SMBConnection
 import socket
+
+from smb.SMBConnection import SMBConnection
 
 __all__ = ["smb_user", "smb_passwd", "RootDirUtil"]
 

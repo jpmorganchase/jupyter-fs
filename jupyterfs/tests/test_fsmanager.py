@@ -5,13 +5,13 @@
 # This file is part of the jupyter-fs library, distributed under the terms of
 # the Apache License 2.0.  The full license can be found in the LICENSE file.
 
-from contextlib import nullcontext
-from pathlib import Path
-import pytest
 import os
 import shutil
 import socket
+from contextlib import nullcontext
+from pathlib import Path
 
+import pytest
 import tornado.web
 
 from .utils import s3, samba

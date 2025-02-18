@@ -3,7 +3,7 @@
 import { PromiseDelegate } from "@lumino/coreutils";
 import { showErrorMessage } from "@jupyterlab/apputils";
 import { Contents } from "@jupyterlab/services";
-import { IContentRow, Path } from "tree-finder";
+import { IContentRow, Path } from "@tree-finder/base";
 
 
 /**
