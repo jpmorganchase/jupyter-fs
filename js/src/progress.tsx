@@ -6,6 +6,7 @@
  * the Apache License 2.0.  The full license can be found in the LICENSE file.
  *
  */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 /* Based on code from JupyterLab, copied under the following license:
 

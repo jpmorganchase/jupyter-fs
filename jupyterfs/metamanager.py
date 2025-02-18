@@ -74,6 +74,14 @@ class MetaManagerShared:
                 resource["type"] = "pyfs"
                 self.log.warning("Resource %r missing 'type' key, defaulting to 'pyfs'", resource)
 
+            if resource.get("kwargs", None):
+                if isinstance(resource["kwargs"], str):
+                    try:
+                        resource["kwargs"] = json.loads(resource["kwargs"])
+                    except json.JSONDecodeError:
+                        self.log.warning("Resource %r has invalid kwargs, defaulting to '{}'", resource)
+                        resource["kwargs"] = {}
+
             # get deterministic hash of PyFilesystem url
             _hash = md5(resource["url"].encode("utf-8")).hexdigest()[:8]
             init = False
@@ -112,12 +120,21 @@ class MetaManagerShared:
                             urlSubbed,
                             default_writable=default_writable,
                             parent=self,
-                            **self._pyfs_kw,
+                            **{
+                                **self._pyfs_kw,
+                                **resource.get("kwargs", {}),
+                            },
                         )
                         init = True
                     except FileSystemLoadError as e:
                         self.log.exception(
                             "Failed to create manager for resource %r",
+                            resource.get("name"),
+                        )
+                        errors.append(str(e))
+                    except ImportError as e:
+                        self.log.exception(
+                            "Missing dependencies to create manager for resource %r",
                             resource.get("name"),
                         )
                         errors.append(str(e))

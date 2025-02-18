@@ -6,9 +6,11 @@
  * the Apache License 2.0.  The full license can be found in the LICENSE file.
  *
  */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { JupyterFrontEnd } from "@jupyterlab/application";
 import { Dialog, showDialog } from "@jupyterlab/apputils";
+import { DocumentRegistry } from "@jupyterlab/docregistry";
 import {
   closeIcon,
   copyIcon,
@@ -20,9 +22,12 @@ import {
   refreshIcon,
   fileIcon,
   newFolderIcon,
+  RankedMenu,
+  IDisposableMenuItem,
 } from "@jupyterlab/ui-components";
+import { map } from "@lumino/algorithm";
 import { DisposableSet, IDisposable } from "@lumino/disposable";
-import { Menu } from "@lumino/widgets";
+import { ContextMenu, Menu } from "@lumino/widgets";
 import { Content, Path } from "@tree-finder/base";
 
 
@@ -42,6 +47,7 @@ export const commandNames = [
   "cut",
   "delete",
   "open",
+  "openWith",
   "paste",
   "refresh",
   "rename",
@@ -116,12 +122,14 @@ async function _commandKeyForSnippet(snippet: Snippet): Promise<string>  {
   return `jupyterfs:snippet-${snippet.label}-${await _digestString(snippet.label + snippet.caption + snippet.pattern.source + snippet.template)}`;
 }
 
+function _openWithKeyForFactory(factory: string): string  {
+  return `jupyterfs:openwith-${factory}`;
+}
 
 function _normalizedUrlForSnippet(content: Content<ContentsProxy.IJupyterContentRow>, baseUrl: string): string {
   const path = splitPathstrDrive(content.pathstr)[1];
   return `${baseUrl}/${path}${content.hasChildren ? "/" : ""}`;
 }
-
 
 /**
  * Create commands that will have the same IDs indepent of settings/resources
@@ -189,6 +197,7 @@ export function createStaticCommands(
       label: "Open",
       isEnabled: () => !!tracker.currentWidget,
     }),
+
     app.commands.addCommand(commandIDs.paste, {
       execute: args => clipboard.model.pasteSelection(tracker.currentWidget!.treefinder.model!),
       icon: pasteIcon,
@@ -420,6 +429,64 @@ export async function createDynamicCommands(
     }));
   }
 
+  const openWithCommands = [] as IDisposable[];
+  const openWithMenu = new Menu({ commands: app.commands });
+  openWithMenu.title.label = "Open With";
+  openWithMenu.id = "treefinder:open-with";
+  const { docRegistry } = app;
+
+  let items: IDisposableMenuItem[] = [];
+
+  function updateOpenWithMenu(contextMenu: ContextMenu) {
+    const openWith =
+      (contextMenu.menu.items.find(
+        item =>
+          item.type === "submenu" &&
+          item.submenu?.id === "treefinder:open-with"
+      )?.submenu as RankedMenu) ?? null;
+
+    if (!openWith) {
+      return; // Bail early if the open with menu is not displayed
+    }
+
+    // clear the current menu items
+    // items.forEach(item => item.dispose());
+    items.length = 0;
+    // Ensure that the menu is empty
+    openWith.clearItems();
+
+    // clear the commands
+    openWithCommands.forEach(item => item.dispose());
+    openWithCommands.length = 0;
+
+    // get the widget factories that could be used to open all of the items
+    // in the current filebrowser selection
+    const widget = tracker.currentWidget!;
+    const treefinder = widget.treefinder;
+    const model = treefinder.model!;
+    const factories = tracker.currentWidget
+      ? intersection<DocumentRegistry.WidgetFactory>(
+        map(model.selection, i => getFactories(docRegistry, widget, i))
+      )
+      : new Set<DocumentRegistry.WidgetFactory>();
+
+    // make new menu items from the widget factories
+    items = [...factories].map(factory => {
+      const key = _openWithKeyForFactory(factory.label || factory.name);
+      const label = factory.label || factory.name;
+      openWithCommands.push(app.commands.addCommand(key, {
+        execute: args => Promise.all(Array.from(map(model.selection, item => app.commands.execute("docmanager:open", { path: Path.fromarray(item.row.path), ...args })))),
+        label,
+        isVisible: () => true,
+      }));
+      return openWith.addItem({
+        args: { factory: factory.name, label: factory.label || factory.name },
+        command: key,
+      });
+    });
+  }
+  app.contextMenu.opened.connect(updateOpenWithMenu);
+
   const selector = ".jp-tree-finder-sidebar";
   let contextMenuRank = 1;
 
@@ -433,7 +500,12 @@ export async function createDynamicCommands(
       selector,
       rank: contextMenuRank++,
     }),
-
+    app.contextMenu.addItem({
+      type: "submenu",
+      submenu: openWithMenu,
+      selector,
+      rank: contextMenuRank++,
+    }),
     app.contextMenu.addItem({
       command: commandIDs.copy,
       selector,
@@ -520,4 +592,47 @@ export async function createDynamicCommands(
   ].reduce((set: DisposableSet, d) => {
     set.add(d); return set;
   }, new DisposableSet());
+}
+
+
+export function getFactories(
+  docRegistry: DocumentRegistry,
+  widget: TreeFinderSidebar,
+  item: Content<ContentsProxy.IJupyterContentRow>,
+): DocumentRegistry.WidgetFactory[] {
+  const path = [widget.url.trimEnd().replace(/\/+$/, ""), item.getPathAtDepth(1).join("/")].join("/");
+  const factories = docRegistry.preferredWidgetFactories(path);
+  const notebookFactory = docRegistry.getWidgetFactory("notebook");
+  if (
+    notebookFactory &&
+    item.row.kind === "notebook" &&
+    factories.indexOf(notebookFactory) === -1
+  ) {
+    factories.unshift(notebookFactory);
+  }
+  return factories;
+}
+
+function intersection<T>(iterables: Iterable<Iterable<T>>): Set<T> {
+  let accumulator: Set<T> | undefined;
+  for (const current of iterables) {
+    // Initialize accumulator.
+    if (accumulator === undefined) {
+      accumulator = new Set(current);
+      continue;
+    }
+    // Return early if empty.
+    if (accumulator.size === 0) {
+      return accumulator;
+    }
+    // Keep the intersection of accumulator and current.
+    const intersection_set = new Set<T>();
+    for (const value of current) {
+      if (accumulator.has(value)) {
+        intersection_set.add(value);
+      }
+    }
+    accumulator = intersection_set;
+  }
+  return accumulator ?? new Set();
 }
