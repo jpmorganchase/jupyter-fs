@@ -62,7 +62,13 @@ export interface IFSSettingsResource {
   /**
    * Directory to be first opened
    */
-  preferred_dir?: string;
+  preferredDir?: string;
+
+  /**
+   * Generic arguments to pass through to instantiation, for elements
+   * that cannot be placed in the resource url. Represented as JSON
+   */
+  kwargs?: JSON;
 }
 
 
@@ -79,7 +85,6 @@ export interface IFSResource extends IFSSettingsResource {
    * The fsurl specifying this resource
    */
   url: string;
-
 
   /**
    * The jupyterlab drive name associated with this resource. This is defined
@@ -109,6 +114,7 @@ export interface IFSResource extends IFSSettingsResource {
    * Any errors during initialization
    */
   errors?: string[];
+
 }
 
 export interface IFSComm {

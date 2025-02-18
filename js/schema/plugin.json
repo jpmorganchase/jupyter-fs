@@ -54,7 +54,7 @@
           "enum": ["pyfs", "fsspec"],
           "default": "pyfs"
         },
-        "preferred_dir": {
+        "preferredDir": {
           "description": "Directory to be first opened (e.g., myDir/mySubdir)",
           "type": "string"
         },
@@ -68,6 +68,11 @@
           "description": "Fallback for determining if resource is writeable. Used only if the underlying PyFilesystem does not provide this information (eg S3)",
           "type": "boolean",
           "default": true
+        },
+        "kwargs": {
+          "description": "Generic kwargs JSON to pass through to resource construction, for any arguments that cannot go in the resource url",
+          "type": "string",
+          "default": "{}"
         }
       }
     },

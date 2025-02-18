@@ -199,7 +199,12 @@ export class TreeFinderWidget extends DragDropWidget {
 
   async nodeInit() {
     // The contents of root passed to node.init is not (currently) considered, so do not ask for it.
-    const root = await this.contentsProxy.get(this.rootPath, { content: false });
+    let root = null;
+    try {
+      root = await this.contentsProxy.get(this.rootPath, { content: false });
+    } catch (error) {
+      return;
+    }
     this._currentFolder = this.model?.root.pathstr;
     await this.node.init({
       root,
@@ -718,9 +723,9 @@ export namespace TreeFinderSidebar {
     return sidebar({
       ...props,
       rootPath: resource.drive,
-      caption: `${resource.name}\nFile Tree`,
+      caption: resource.name,
       id: idFromResource(resource),
-      preferredDir: resource.preferred_dir,
+      preferredDir: resource.preferredDir,
       url: resource.url,
       type: resource.type,
     });
