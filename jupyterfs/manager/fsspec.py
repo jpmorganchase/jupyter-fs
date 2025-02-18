@@ -131,14 +131,25 @@ class FSSpecManager(FileContentsManager):
                 If 'base64', the raw bytes contents will be encoded as base64.
                 If not specified, try to decode as UTF-8, and fall back to base64
         """
-        bcontent = self._fs.cat(path)
+        try:
+            bcontent = self._fs.cat(path)
+        except OSError:
+            # sometimes this causes errors:
+            # e.g. fir s3fs it causes
+            # OSError: [Errno 22] Unsupported header 'x-amz-checksum-mode' received for this API call.
+            # So try non-binary
+            try:
+                bcontent = self._fs.open(path, mode="r").read()
+                return bcontent, "text"
+            except OSError as e:
+                raise web.HTTPError(400, path, reason=str(e))
 
         if format is None or format == "text":
             # Try to interpret as unicode if format is unknown or if unicode
             # was explicitly requested.
             try:
                 return bcontent.decode("utf8"), "text"
-            except UnicodeError:
+            except (UnicodeError, UnicodeDecodeError):
                 if format == "text":
                     raise web.HTTPError(
                         400,
@@ -205,6 +216,14 @@ class FSSpecManager(FileContentsManager):
             self.validate_notebook_model(model)
         return model
 
+    def _normalize_path(self, path):
+        if path and self._fs.root_marker and not path.startswith(self._fs.root_marker):
+            path = f"{self._fs.root_marker}{path}"
+        if path and not path.startswith(self.root):
+            path = f"{self.root}/{path}"
+        path = path or self.root
+        return path
+
     def get(self, path, content=True, type=None, format=None):
         """Takes a path for an entity and returns its model
         Args:
@@ -215,11 +234,7 @@ class FSSpecManager(FileContentsManager):
         Returns
             model (dict): the contents model. If content=True, returns the contents of the file or directory as well.
         """
-        if path and self._fs.root_marker and not path.startswith(self._fs.root_marker):
-            path = f"{self._fs.root_marker}{path}"
-        if path and not path.startswith(self.root):
-            path = f"{self.root}/{path}"
-        path = path or self.root
+        path = self._normalize_path(path)
 
         try:
             if self._fs.isdir(path):
@@ -270,9 +285,7 @@ class FSSpecManager(FileContentsManager):
 
     def save(self, model, path=""):
         """Save the file model and return the model with no content."""
-        path = path.strip("/")
-        if path and self._fs.root_marker and not path.startswith(self._fs.root_marker):
-            path = self._fs.root_marker + path
+        path = self._normalize_path(path)
 
         self.run_pre_save_hook(model=model, path=path)
 
@@ -309,15 +322,13 @@ class FSSpecManager(FileContentsManager):
 
     def delete_file(self, path):
         """Delete file at path."""
-        path = path.strip("/")
-        if path and self._fs.root_marker and not path.startswith(self._fs.root_marker):
-            path = self._fs.root_marker + path
+        path = self._normalize_path(path)
         self._fs.rm(path, recursive=True)
 
     def rename_file(self, old_path, new_path):
         """Rename a file."""
-        old_path = old_path.strip("/")
-        new_path = new_path.strip("/")
+        old_path = self._normalize_path(old_path).strip("/")
+        new_path = self._normalize_path(new_path).strip("/")
         if new_path == old_path:
             return
 
