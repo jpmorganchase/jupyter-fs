@@ -132,6 +132,12 @@ class MetaManagerShared:
                             resource.get("name"),
                         )
                         errors.append(str(e))
+                    except ImportError as e:
+                        self.log.exception(
+                            "Missing dependencies to create manager for resource %r",
+                            resource.get("name"),
+                        )
+                        errors.append(str(e))
 
             # assemble resource from spec + hash
             newResource = {}
