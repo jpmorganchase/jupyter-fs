@@ -82,7 +82,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
 
     let columns = settings?.composite.display_columns as Array<keyof ContentsProxy.IJupyterContentRow> ?? ["size"];
 
-    const sharedSidebarProps: Omit<Omit<TreeFinderSidebar.ISidebarProps, "type">, "url"> = {
+    const sharedSidebarProps: Omit<TreeFinderSidebar.ISidebarProps, "type" | "url"> = {
       app,
       manager,
       paths,

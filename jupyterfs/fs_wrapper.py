@@ -37,7 +37,7 @@ class FSWrapper:
 
     def __exit__(self, *args):
         if self.type == "pyfs":
-            self.fs.__exit__(*args)
+            return self.fs.__exit__(*args)
 
     def _wrap_path(self, path):
         if self.type == "pyfs":
@@ -89,20 +89,14 @@ class FSWrapper:
 
     def exists(self, path):
         path = self._wrap_path(path)
-        if self.type == "pyfs":
-            return self.fs.exists(path)
         return self.fs.exists(path)
 
     def isdir(self, path):
         path = self._wrap_path(path)
-        if self.type == "pyfs":
-            return self.fs.isdir(path)
         return self.fs.isdir(path)
 
     def isfile(self, path):
         path = self._wrap_path(path)
-        if self.type == "pyfs":
-            return self.fs.isfile(path)
         return self.fs.isfile(path)
 
     def listdir(self, path):
