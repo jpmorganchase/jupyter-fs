@@ -117,7 +117,7 @@ class MetaManagerShared:
                             manager_type = FSSpecManager
                         else:
                             # Ensure we don't use manager_type from previous loop iteration
-                            raise FileSystemLoadError(f"Unrecognized filesystem type {resource["type"]!r}")
+                            raise FileSystemLoadError(f"Unrecognized filesystem type {resource['type']!r}")
 
                         managers[_hash] = manager_type.create(
                             urlSubbed,
