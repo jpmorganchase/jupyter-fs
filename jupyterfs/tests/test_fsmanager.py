@@ -9,6 +9,7 @@ import os
 import shutil
 import socket
 from contextlib import nullcontext
+from itertools import product
 from pathlib import Path
 
 import pytest
@@ -23,7 +24,8 @@ test_fname = "foo.txt"
 
 test_root_osfs = "osfs_local"
 
-test_url_s3 = "http://127.0.0.1/"
+# test_url_s3 = "http://127.0.0.1/"
+test_url_s3 = f"http://{socket.gethostname().replace('.local', '')}"
 test_port_s3 = "9000"
 
 test_host_smb_docker_share = socket.gethostbyname(socket.gethostname())
@@ -66,17 +68,14 @@ configs = [
 class _TestBase:
     """Contains tests universal to all PyFilesystemContentsManager flavors"""
 
-    @pytest.fixture
-    def resource_uri(self):
-        raise NotImplementedError
-
-    @pytest.mark.parametrize("jp_server_config", configs)
-    async def test_write_read(self, jp_fetch, resource_uri, jp_server_config):
+    @pytest.mark.parametrize("jp_server_config,resource_type", list(product(configs, ["pyfs", "fsspec"])))
+    async def test_write_read(self, jp_fetch, jp_server_config, resource_type, tmp_path):
         allow_hidden = jp_server_config["ContentsManager"]["allow_hidden"]
 
         cc = ContentsClient(jp_fetch)
 
-        resources = await cc.set_resources([{"url": resource_uri}])
+        resource = self.get_resource(resource_type, tmp_path)
+        resources = await cc.set_resources([resource])
         drive = resources[0]["drive"]
 
         fpaths = [
@@ -131,9 +130,11 @@ class Test_FSManager_osfs(_TestBase):
     def teardown_method(self, method):
         shutil.rmtree(self._test_dir, ignore_errors=True)
 
-    @pytest.fixture
-    def resource_uri(self, tmp_path):
-        yield f"osfs://{tmp_path}"
+    def get_resource(self, resource_type, tmp_path=None):
+        if resource_type == "pyfs":
+            return {"url": f"osfs://{tmp_path}", "type": resource_type}
+        elif resource_type == "fsspec":
+            return {"url": f"file://{tmp_path}", "type": resource_type}
 
 
 class Test_FSManager_s3(_TestBase):
@@ -159,16 +160,28 @@ class Test_FSManager_s3(_TestBase):
     def teardown_method(self, method):
         self._rootDirUtil.delete()
 
-    @pytest.fixture
-    def resource_uri(self):
-        uri = "s3://{id}:{key}@{bucket}?endpoint_url={url}:{port}".format(
-            id=s3.aws_access_key_id,
-            key=s3.aws_secret_access_key,
-            bucket=test_dir,
-            url=test_url_s3.strip("/"),
-            port=test_port_s3,
-        )
-        yield uri
+    def get_resource(self, resource_type, tmp_path=None):
+        if resource_type == "pyfs":
+            uri = "s3://{id}:{key}@{bucket}?endpoint_url={url}:{port}".format(
+                id=s3.aws_access_key_id,
+                key=s3.aws_secret_access_key,
+                bucket=test_dir,
+                url=test_url_s3.strip("/"),
+                port=test_port_s3,
+            )
+            return {"url": uri, "type": resource_type}
+        elif resource_type == "fsspec":
+            uri = f"s3://{test_dir}"
+            return {
+                "url": uri,
+                "type": resource_type,
+                "kwargs": {
+                    "key": s3.aws_access_key_id,
+                    "secret": s3.aws_secret_access_key,
+                    "endpoint_url": f"{test_url_s3}:{test_port_s3}",
+                    "default_cache_type": "none",
+                },
+            }
 
 
 @pytest.mark.darwin
@@ -195,12 +208,6 @@ class Test_FSManager_smb_docker_share(_TestBase):
         smb_port=test_name_port_smb_docker_share,
     )
 
-    # direct_tcp=False,
-    # host=None,
-    # hostname=None,
-    # my_name="local",
-    # name_port=137,
-    # smb_port=None,
     @classmethod
     def setup_class(cls):
         # delete any existing root
@@ -217,17 +224,25 @@ class Test_FSManager_smb_docker_share(_TestBase):
         # delete any existing root
         self._rootDirUtil.delete()
 
-    @pytest.fixture
-    def resource_uri(self):
-        uri = "smb://{username}:{passwd}@{host}:{smb_port}/{share}?name-port={name_port}".format(
-            username=samba.smb_user,
-            passwd=samba.smb_passwd,
-            host=test_host_smb_docker_share,
-            share=test_hostname_smb_docker_share,
-            smb_port=test_name_port_smb_docker_share,
-            name_port=test_name_port_smb_docker_nameport,
-        )
-        yield uri
+    def get_resource(self, resource_type, tmp_path=None):
+        if resource_type == "pyfs":
+            uri = "smb://{username}:{passwd}@{host}:{smb_port}/{share}?name-port={name_port}".format(
+                username=samba.smb_user,
+                passwd=samba.smb_passwd,
+                host=test_host_smb_docker_share,
+                share=test_hostname_smb_docker_share,
+                smb_port=test_name_port_smb_docker_share,
+                name_port=test_name_port_smb_docker_nameport,
+            )
+        elif resource_type == "fsspec":
+            uri = "smb://{username}:{passwd}@{host}:{smb_port}/{share}".format(
+                username=samba.smb_user,
+                passwd=samba.smb_passwd,
+                host=test_host_smb_docker_share,
+                share=test_hostname_smb_docker_share,
+                smb_port=test_name_port_smb_docker_share,
+            )
+        return {"url": uri, "type": resource_type}
 
 
 # @pytest.mark.darwin
