@@ -71,6 +71,8 @@ develop = [
     "fs.smbfs>=0.6.3",
     # fsspec
     "fsspec>=2023.6.0",
+    "s3fs>=2024",
+    "smbprotocol",
 ]
 fs = [
     "fs>=2.4.11",

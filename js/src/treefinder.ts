@@ -745,7 +745,6 @@ export namespace TreeFinderSidebar {
     columns,
     settings,
     preferredDir,
-
     rootPath = "",
     caption = "TreeFinder",
     id = "jupyterlab-tree-finder",
@@ -779,7 +778,6 @@ export namespace TreeFinderSidebar {
       },
       tooltip: "Refresh",
     });
-
 
     widget.toolbar.addItem("new file", new_file_button);
     widget.toolbar.addItem("upload", uploader_button);
