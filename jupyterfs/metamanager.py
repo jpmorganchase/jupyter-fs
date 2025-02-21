@@ -83,7 +83,7 @@ class MetaManagerShared:
                         resource["kwargs"] = {}
 
             # get deterministic hash of PyFilesystem url
-            _hash = md5(resource["url"].encode("utf-8")).hexdigest()[:8]
+            _hash = md5((resource["url"] + resource["type"]).encode("utf-8")).hexdigest()[:8]
             init = False
             missingTokens = None
             errors = []
