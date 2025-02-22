@@ -281,4 +281,8 @@ class MetaManagerHandler(APIHandler):
             else:
                 resources = valid_resources
 
+        for resource in resources:
+            if not isinstance(resource, dict):
+                raise web.HTTPError(400, f"Resources must be a list of dicts, got: {resource}")
+
         self.finish(json.dumps(self.contents_manager.initResource(*resources, options=options)))

@@ -85,7 +85,7 @@ jobs:
 
     - name: Test
       run: make coverage
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.os != 'windows-latest'
 
     - name: Teardown Linux testing infra
       run: make teardown-infra-ubuntu DOCKER_COMPOSE="docker compose"

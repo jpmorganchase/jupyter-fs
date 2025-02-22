@@ -8,6 +8,7 @@
 import mimetypes
 from base64 import decodebytes, encodebytes
 from datetime import datetime
+from pathlib import PurePosixPath
 
 import nbformat
 from jupyter_server.services.contents.filemanager import FileContentsManager
@@ -68,6 +69,38 @@ class FSSpecManager(FileContentsManager):
     def _checkpoints_class_default(self):
         return NullCheckpoints
 
+    def _normalize_path(self, path):
+        if path and self._fs.root_marker and not path.startswith(self._fs.root_marker):
+            path = f"{self._fs.root_marker}{path}"
+        if path and not path.startswith(self.root):
+            path = f"{self.root}/{path}"
+        path = path or self.root
+
+        # Fix any differences due to root markers
+        path = path.replace("//", "/")
+
+        # TODO better carveouts
+        # S3 doesn't like spaces in paths
+        if self._fs.__class__.__name__.startswith("S3"):
+            path = path.replace(" ", "_")
+
+        return path
+
+    def _is_path_hidden(self, path):
+        """Does the specific API style path correspond to a hidden node?
+        Args:
+            path (str): The path to check.
+        Returns:
+            hidden (bool): Whether the path is hidden.
+        """
+        # We treat entries with leading . in the name as hidden (unix convention)
+        # We can (and should) check this even if the path does not exist
+        if PurePosixPath(path).name.startswith("."):
+            return True
+
+        # TODO PyFilesystem implementation does more, perhaps we should as well
+        return False
+
     def is_hidden(self, path):
         """Does the API style path correspond to a hidden directory or file?
         Args:
@@ -75,7 +108,16 @@ class FSSpecManager(FileContentsManager):
         Returns:
             hidden (bool): Whether the path exists and is hidden.
         """
-        return path.rsplit("/", 1)[-1].startswith(".")
+        path = self._normalize_path(path)
+        ppath = PurePosixPath(path)
+        # Path checks are quick, so we do it first to avoid unnecessary stat calls
+        if any(part.startswith(".") for part in ppath.parts):
+            return True
+        while ppath.parents:
+            if self._is_path_hidden(str(path)):
+                return True
+            ppath = ppath.parent
+        return False
 
     def file_exists(self, path):
         """Returns True if the file exists, else returns False.
@@ -84,6 +126,7 @@ class FSSpecManager(FileContentsManager):
         Returns:
             exists (bool): Whether the file exists.
         """
+        path = self._normalize_path(path)
         return self._fs.isfile(path)
 
     def dir_exists(self, path):
@@ -93,6 +136,7 @@ class FSSpecManager(FileContentsManager):
         Returns:
             exists (bool): Whether the path is indeed a directory.
         """
+        path = self._normalize_path(path)
         return self._fs.isdir(path)
 
     def exists(self, path):
@@ -102,12 +146,16 @@ class FSSpecManager(FileContentsManager):
         Returns:
             exists (bool): Whether the target exists.
         """
+        path = self._normalize_path(path)
         return self._fs.exists(path)
 
     def _base_model(self, path):
         """Build the common base of a contents model"""
 
-        model = self._fs.info(path).copy()
+        try:
+            model = self._fs.info(path).copy()
+        except FileNotFoundError:
+            model = {"type": "file", "size": 0}
         model["name"] = path.rstrip("/").rsplit("/", 1)[-1]
         model["path"] = path.replace(self.root, "", 1)
         model["last_modified"] = datetime.fromtimestamp(model["mtime"]).isoformat() if "mtime" in model else EPOCH_START
@@ -129,6 +177,13 @@ class FSSpecManager(FileContentsManager):
         if content is requested, will include a listing of the directory
         """
         model = self._base_model(path)
+
+        four_o_four = "directory does not exist: %r" % path
+
+        if not self.allow_hidden and self.is_hidden(path):
+            self.log.debug("Refusing to serve hidden directory %r, via 404 Error", path)
+            raise web.HTTPError(404, four_o_four)
+
         if content:
             files = self._fs.ls(path, detail=True, refresh=True)
             model["content"] = [self._base_model(f["name"]) for f in files if self.allow_hidden or not self.is_hidden(f["name"])]
@@ -146,16 +201,8 @@ class FSSpecManager(FileContentsManager):
         """
         try:
             bcontent = self._fs.cat(path)
-        except OSError:
-            # sometimes this causes errors:
-            # e.g. fir s3fs it causes
-            # OSError: [Errno 22] Unsupported header 'x-amz-checksum-mode' received for this API call.
-            # So try non-binary
-            try:
-                bcontent = self._fs.open(path, mode="r").read()
-                return bcontent, "text"
-            except OSError as e:
-                raise web.HTTPError(400, path, reason=str(e))
+        except OSError as e:
+            raise web.HTTPError(400, path, reason=str(e))
 
         if format is None or format == "text":
             # Try to interpret as unicode if format is unknown or if unicode
@@ -185,6 +232,7 @@ class FSSpecManager(FileContentsManager):
           If not specified, try to decode as UTF-8, and fall back to base64
         """
         model = self._base_model(path)
+        model["type"] = "file"
         model["mimetype"] = mimetypes.guess_type(path)[0]
 
         if content:
@@ -229,14 +277,6 @@ class FSSpecManager(FileContentsManager):
             self.validate_notebook_model(model)
         return model
 
-    def _normalize_path(self, path):
-        if path and self._fs.root_marker and not path.startswith(self._fs.root_marker):
-            path = f"{self._fs.root_marker}{path}"
-        if path and not path.startswith(self.root):
-            path = f"{self.root}/{path}"
-        path = path or self.root
-        return path
-
     def get(self, path, content=True, type=None, format=None):
         """Takes a path for an entity and returns its model
         Args:
@@ -263,8 +303,17 @@ class FSSpecManager(FileContentsManager):
 
     def _save_directory(self, path, model):
         """create a directory"""
-        if not self._fs.exists(path):
-            self._fs.mkdir(path)
+        if not self.allow_hidden and self.is_hidden(path):
+            raise web.HTTPError(400, f"Cannot create directory {path!r}")
+
+        if not self.exists(path):
+            # TODO better carveouts
+            if self._fs.__class__.__name__.startswith("S3"):
+                # need to make a file temporarily
+                # use the convention of a hidden file
+                self._fs.touch(f"{path}/.s3fskeep")
+            else:
+                self._fs.mkdir(path)
         elif not self._fs.isdir(path):
             raise web.HTTPError(400, "Not a directory: %s" % (path))
         else:
@@ -290,11 +339,7 @@ class FSSpecManager(FileContentsManager):
                 bcontent = decodebytes(b64_bytes)
         except Exception as e:
             raise web.HTTPError(400, "Encoding error saving %s: %s" % (path, e))
-
-        if format == "text":
-            self._fs.pipe(path, bcontent)
-        else:
-            self._fs.pipe(path, bcontent)
+        self._fs.pipe(path, bcontent)
 
     def save(self, model, path=""):
         """Save the file model and return the model with no content."""
@@ -346,7 +391,7 @@ class FSSpecManager(FileContentsManager):
             return
 
         # Should we proceed with the move?
-        if self._fs.exists(new_path):  # TODO and not samefile(old_os_path, new_os_path):
+        if self.exists(new_path):  # TODO and not samefile(old_os_path, new_os_path):
             raise web.HTTPError(409, "File already exists: %s" % new_path)
 
         # Move the file
