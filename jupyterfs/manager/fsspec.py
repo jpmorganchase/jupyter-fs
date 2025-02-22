@@ -37,7 +37,20 @@ class FSSpecManager(FileContentsManager):
             if self.root.endswith("/"):
                 self.root = self.root[:-1]
 
-            if self.root.count("/") > 1 and not self._fs.exists(self.root):
+            # Run this once but don't worry about the result,
+            # this is just to ensure the connection to the
+            # backend service works.
+            # In case it lazily connects, we want to not
+            # show the file browser if the backend is broken.
+            try:
+                self._fs.isdir(self.root)
+            except Exception as e:
+                # Wrap the potentially backend-dependent exception
+                # in a generic RuntimeError
+                raise RuntimeError(f"Could not connect to fs {fs}") from e
+
+            # Ensure that the user has chosen a root directory that exists
+            if self.root.count("/") > 1 and not self._fs.exists(self.root) and not self._fs.isdir(self.root):
                 raise RuntimeError(f"Root {self.root} does not exist in fs {fs}")
 
         else:
