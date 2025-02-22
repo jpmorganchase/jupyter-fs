@@ -51,11 +51,13 @@ async function* walkPath<T extends IContentRow>(path: string[], root: Content<T>
  */
 export async function revealPath<T extends IContentRow>(contents: ContentsModel<T>, path: string[]): Promise<Content<T>> {
   let node: Content<T>;
+  const promises: Array<Promise<void>> = [];
   for await (node of walkPath(path, contents.root)) {
     if (!node.isExpand && node.hasChildren) {
-      await node.expand();
+      promises.push(node.expand());
     }
   }
+  await Promise.all(promises);
   return node!;
 }
 
@@ -84,11 +86,13 @@ export async function revealAndSelectPath<T extends IContentRow>(contents: Conte
  * @param path Array of directory names to be opened in order
  */
 export async function openDirRecursive<T extends IContentRow>(model: ContentsModel<T>, path: string[]) {
+  const promises: Array<Promise<void>> = [];
   for await (const node of walkPath(path, model.root)) {
     if (node.pathstr !== model.root.pathstr) {
-      await model.openDir(node.row);
+      promises.push(model.openDir(node.row));
     }
   }
+  await Promise.all(promises);
 }
 
 
