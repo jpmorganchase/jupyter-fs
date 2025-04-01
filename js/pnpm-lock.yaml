@@ -101,7 +101,7 @@ importers:
         version: 4.3.5
       '@rjsf/utils':
         specifier: ^5.24.3
-        version: 5.24.3(react@18.3.1)
+        version: 5.24.8(react@18.3.1)
       '@types/file-saver':
         specifier: ^2.0.7
         version: 2.0.7
@@ -1103,8 +1103,8 @@ packages:
       '@rjsf/utils': ^5.24.x
       react: ^16.14.0 || >=17
 
-  '@rjsf/utils@5.24.3':
-    resolution: {integrity: sha512-IFzMyr6RDRgSi9jdfFBomwc8LMul6zLBsRSAgzD9wAB9laDcYHwPNEL2kZhOkAGrc+4iNQSPsawGFOA6CXH87Q==}
+  '@rjsf/utils@5.24.8':
+    resolution: {integrity: sha512-Y/D1orNsTnIswp23QtWKq7QEme07/nSdnSJoK4gSsm2cDBkSCW+9KUsWSvmE7poqHwCn3zpbIaa3ZWEAQUJEEg==}
     engines: {node: '>=14'}
     peerDependencies:
       react: ^16.14.0 || >=17
@@ -5351,7 +5351,7 @@ snapshots:
       '@lumino/coreutils': 2.2.0
       '@lumino/disposable': 2.1.3
       '@lumino/signaling': 2.1.3
-      '@rjsf/utils': 5.24.3(react@18.3.1)
+      '@rjsf/utils': 5.24.8(react@18.3.1)
       ajv: 8.17.1
       json5: 2.2.3
       react: 18.3.1
@@ -5408,8 +5408,8 @@ snapshots:
       '@lumino/signaling': 2.1.3
       '@lumino/virtualdom': 2.0.2
       '@lumino/widgets': 2.6.0
-      '@rjsf/core': 5.24.3(@rjsf/utils@5.24.3(react@18.3.1))(react@18.3.1)
-      '@rjsf/utils': 5.24.3(react@18.3.1)
+      '@rjsf/core': 5.24.3(@rjsf/utils@5.24.8(react@18.3.1))(react@18.3.1)
+      '@rjsf/utils': 5.24.8(react@18.3.1)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       typestyle: 2.4.0
@@ -5588,9 +5588,9 @@ snapshots:
 
   '@pkgr/core@0.1.1': {}
 
-  '@rjsf/core@5.24.3(@rjsf/utils@5.24.3(react@18.3.1))(react@18.3.1)':
+  '@rjsf/core@5.24.3(@rjsf/utils@5.24.8(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@rjsf/utils': 5.24.3(react@18.3.1)
+      '@rjsf/utils': 5.24.8(react@18.3.1)
       lodash: 4.17.21
       lodash-es: 4.17.21
       markdown-to-jsx: 7.7.3(react@18.3.1)
@@ -5598,7 +5598,7 @@ snapshots:
       prop-types: 15.8.1
       react: 18.3.1
 
-  '@rjsf/utils@5.24.3(react@18.3.1)':
+  '@rjsf/utils@5.24.8(react@18.3.1)':
     dependencies:
       json-schema-merge-allof: 0.8.1
       jsonpointer: 5.0.1
