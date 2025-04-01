@@ -36,24 +36,14 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+    - uses: actions-ext/python/setup@v2
       with:
-        python-version: ${{ matrix.python-version }}
-        cache: 'pip'
-        cache-dependency-path: 'pyproject.toml'
+        version: ${{ matrix.python-version }}
 
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
+    - uses: actions-ext/node/setup@v1
       with:
-        node-version: ${{ matrix.node-version }}
-  
-    - name: Install pnpm
-      uses: pnpm/action-setup@v4
-      with:
-        version: 9
-        package_json_file: js/package.json
-  
+        version: ${{ matrix.node-version }}
+
     - name: Install dependencies
       run: make develop
 
