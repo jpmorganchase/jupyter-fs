@@ -40,7 +40,7 @@ jobs:
       with:
         version: ${{ matrix.python-version }}
 
-    - uses: actions-ext/node/setup@v1
+    - uses: actions-ext/node/setup@v2
       with:
         version: ${{ matrix.node-version }}
 
