@@ -49,7 +49,7 @@ importers:
         version: 2.0.3
       '@lumino/commands':
         specifier: ^2.3.1
-        version: 2.3.1
+        version: 2.3.2
       '@lumino/coreutils':
         specifier: ^2.2.0
         version: 2.2.0
@@ -999,8 +999,8 @@ packages:
   '@lumino/collections@2.0.2':
     resolution: {integrity: sha512-o0QmfV1D3WhAeA8GI1/YmEPaK89JtHVa764rQ5T0LdbDEwUtUDbjavHs1E/+y66tNTXz9RUJ4D2rcSb9tysYsg==}
 
-  '@lumino/commands@2.3.1':
-    resolution: {integrity: sha512-DpX1kkE4PhILpvK1T4ZnaFb6UP4+YTkdZifvN3nbiomD64O2CTd+wcWIBpZMgy6MMgbVgrE8dzHxHk1EsKxNxw==}
+  '@lumino/commands@2.3.2':
+    resolution: {integrity: sha512-aAFEiUpp2hrkQU82Z85w1L80g0iDzsQRncLBa+pqVR/k0k1lz6H9F6xZ1ff+lBumZKKtsxBxNomvd0hfxLLqGw==}
 
   '@lumino/coreutils@2.2.0':
     resolution: {integrity: sha512-x5wnQ/GjWBayJ6vXVaUi6+Q6ETDdcUiH9eSfpRZFbgMQyyM6pi6baKqJBK2CHkCc/YbAEl6ipApTgm3KOJ/I3g==}
@@ -1017,11 +1017,17 @@ packages:
   '@lumino/domutils@2.0.2':
     resolution: {integrity: sha512-2Kp6YHaMNI1rKB0PrALvOsZBHPy2EvVVAvJLWjlCm8MpWOVETjFp0MA9QpMubT9I76aKbaI5s1o1NJyZ8Y99pQ==}
 
+  '@lumino/domutils@2.0.3':
+    resolution: {integrity: sha512-bXAbZg3mf2ZDNdBBpCGDike3U+osRGHePTh8H2Ud2KwaN4g/5IryFJm/TiO4K5IYs91bWF2Zqhf3FsdbZKHlGw==}
+
   '@lumino/dragdrop@2.1.5':
     resolution: {integrity: sha512-zqwR4GakrQBKZOW6S5pj2nfrQDurOErAoe9x3HS3BKLa1AzWA+t9PD5NESOKd81NqXFHjiMirSyFkTUs6pw+uA==}
 
   '@lumino/keyboard@2.0.2':
     resolution: {integrity: sha512-icRUpvswDaFjqmAJNbQRb/aTu6Iugo6Y2oC08TiIwhQtLS9W+Ee9VofdqvbPSvCm6DkyP+DCWMuA3KXZ4V4g4g==}
+
+  '@lumino/keyboard@2.0.3':
+    resolution: {integrity: sha512-bU2OxAR8a9eNBdV0YFjU6/lVVpbOw1gM7yHOuDGDdNu4J0UpKapFoR9gopNGSaHTmTwDtx9RHdFfIAgHwjZ+VQ==}
 
   '@lumino/messaging@2.0.2':
     resolution: {integrity: sha512-2sUF07cYA0f3mDil41Eh5sfBk0aGAH/mOh1I4+vyRUsKyBqp4WTUtpJFd8xVJGAntygxwnebIygkIaXXTIQvxA==}
@@ -5144,7 +5150,7 @@ snapshots:
       '@jupyterlab/ui-components': 4.3.6(react@18.3.1)
       '@lumino/algorithm': 2.0.3
       '@lumino/application': 2.4.2
-      '@lumino/commands': 2.3.1
+      '@lumino/commands': 2.3.2
       '@lumino/coreutils': 2.2.0
       '@lumino/disposable': 2.1.3
       '@lumino/messaging': 2.0.2
@@ -5169,7 +5175,7 @@ snapshots:
       '@jupyterlab/translation': 4.3.6(react@18.3.1)
       '@jupyterlab/ui-components': 4.3.6(react@18.3.1)
       '@lumino/algorithm': 2.0.3
-      '@lumino/commands': 2.3.1
+      '@lumino/commands': 2.3.2
       '@lumino/coreutils': 2.2.0
       '@lumino/disposable': 2.1.3
       '@lumino/domutils': 2.0.2
@@ -5188,7 +5194,7 @@ snapshots:
     dependencies:
       '@lumino/algorithm': 2.0.3
       '@lumino/application': 2.4.2
-      '@lumino/commands': 2.3.1
+      '@lumino/commands': 2.3.2
       '@lumino/coreutils': 2.2.0
       '@lumino/disposable': 2.1.3
       '@lumino/domutils': 2.0.2
@@ -5414,7 +5420,7 @@ snapshots:
     dependencies:
       '@jupyterlab/nbformat': 4.3.5
       '@jupyterlab/statedb': 4.3.5
-      '@lumino/commands': 2.3.1
+      '@lumino/commands': 2.3.2
       '@lumino/coreutils': 2.2.0
       '@lumino/disposable': 2.1.3
       '@lumino/signaling': 2.1.3
@@ -5427,7 +5433,7 @@ snapshots:
     dependencies:
       '@jupyterlab/nbformat': 4.3.6
       '@jupyterlab/statedb': 4.3.6
-      '@lumino/commands': 2.3.1
+      '@lumino/commands': 2.3.2
       '@lumino/coreutils': 2.2.0
       '@lumino/disposable': 2.1.3
       '@lumino/signaling': 2.1.3
@@ -5438,7 +5444,7 @@ snapshots:
 
   '@jupyterlab/statedb@4.3.5':
     dependencies:
-      '@lumino/commands': 2.3.1
+      '@lumino/commands': 2.3.2
       '@lumino/coreutils': 2.2.0
       '@lumino/disposable': 2.1.3
       '@lumino/properties': 2.0.2
@@ -5446,7 +5452,7 @@ snapshots:
 
   '@jupyterlab/statedb@4.3.6':
     dependencies:
-      '@lumino/commands': 2.3.1
+      '@lumino/commands': 2.3.2
       '@lumino/coreutils': 2.2.0
       '@lumino/disposable': 2.1.3
       '@lumino/properties': 2.0.3
@@ -5487,7 +5493,7 @@ snapshots:
       '@jupyterlab/rendermime-interfaces': 3.11.6
       '@jupyterlab/translation': 4.3.6(react@18.3.1)
       '@lumino/algorithm': 2.0.3
-      '@lumino/commands': 2.3.1
+      '@lumino/commands': 2.3.2
       '@lumino/coreutils': 2.2.0
       '@lumino/disposable': 2.1.3
       '@lumino/messaging': 2.0.2
@@ -5509,7 +5515,7 @@ snapshots:
 
   '@lumino/application@2.4.2':
     dependencies:
-      '@lumino/commands': 2.3.1
+      '@lumino/commands': 2.3.2
       '@lumino/coreutils': 2.2.0
       '@lumino/widgets': 2.6.0
 
@@ -5517,15 +5523,15 @@ snapshots:
     dependencies:
       '@lumino/algorithm': 2.0.3
 
-  '@lumino/commands@2.3.1':
+  '@lumino/commands@2.3.2':
     dependencies:
       '@lumino/algorithm': 2.0.3
-      '@lumino/coreutils': 2.2.0
-      '@lumino/disposable': 2.1.3
-      '@lumino/domutils': 2.0.2
-      '@lumino/keyboard': 2.0.2
-      '@lumino/signaling': 2.1.3
-      '@lumino/virtualdom': 2.0.2
+      '@lumino/coreutils': 2.2.1
+      '@lumino/disposable': 2.1.4
+      '@lumino/domutils': 2.0.3
+      '@lumino/keyboard': 2.0.3
+      '@lumino/signaling': 2.1.4
+      '@lumino/virtualdom': 2.0.3
 
   '@lumino/coreutils@2.2.0':
     dependencies:
@@ -5545,12 +5551,16 @@ snapshots:
 
   '@lumino/domutils@2.0.2': {}
 
+  '@lumino/domutils@2.0.3': {}
+
   '@lumino/dragdrop@2.1.5':
     dependencies:
       '@lumino/coreutils': 2.2.0
       '@lumino/disposable': 2.1.3
 
   '@lumino/keyboard@2.0.2': {}
+
+  '@lumino/keyboard@2.0.3': {}
 
   '@lumino/messaging@2.0.2':
     dependencies:
@@ -5594,7 +5604,7 @@ snapshots:
   '@lumino/widgets@2.6.0':
     dependencies:
       '@lumino/algorithm': 2.0.3
-      '@lumino/commands': 2.3.1
+      '@lumino/commands': 2.3.2
       '@lumino/coreutils': 2.2.0
       '@lumino/disposable': 2.1.3
       '@lumino/domutils': 2.0.2
