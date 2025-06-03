@@ -1,6 +1,6 @@
 {
   "name": "jupyter-fs",
-  "version": "1.1.0rc0",
+  "version": "1.1.0",
   "description": "A Filesystem-like mult-contents manager backend for Jupyter",
   "author": "The jupyter-fs authors",
   "license": "Apache-2.0",
