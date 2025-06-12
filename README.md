@@ -43,6 +43,10 @@ Add the following to your `jupyter_server_config.json`:
 }
 ```
 
+Resources can then be added via the `Settings -> Settings Editor`.
+
+![](https://raw.githubusercontent.com/jpmorganchase/jupyter-fs/main/docs/img/settings.png)
+
 
 ## Simple use (no auth/credentials)
 
@@ -136,6 +140,14 @@ export FSSPEC_S3_ENDPOINT_URL=<YOUR BACKEND>
 export FSSPEC_S3_KEY=<YOUR KEY>
 export FSSPEC_S3_SECRET=<YOUR SECRET>
 ```
+
+## Choosing the backend
+
+Your resource can include a `"type"` field, set to either `pyfs` or `fsspec`.
+The default is `pyfs`.
+This field can be configured via JSON Settings or graphically.
+
+![](https://raw.githubusercontent.com/jpmorganchase/jupyter-fs/main/docs/img/settings_choose_backend.png)
 
 ## The filesystem url
 
