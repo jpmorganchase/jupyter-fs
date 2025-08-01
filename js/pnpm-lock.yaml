@@ -101,7 +101,7 @@ importers:
         version: 4.4.3
       '@rjsf/utils':
         specifier: ^5.24.3
-        version: 5.24.10(react@18.3.1)
+        version: 5.24.12(react@18.3.1)
       '@types/file-saver':
         specifier: ^2.0.7
         version: 2.0.7
@@ -1146,8 +1146,8 @@ packages:
       '@rjsf/utils': ^5.24.x
       react: ^16.14.0 || >=17
 
-  '@rjsf/utils@5.24.10':
-    resolution: {integrity: sha512-afsi+oKNV12p6OnBydJ0R4M87h7SaArqAhqJPqVXbMldnbPnW632THCtod5GG+IYtkqUkx0iQq2xpHw1OBf+3A==}
+  '@rjsf/utils@5.24.12':
+    resolution: {integrity: sha512-fDwQB0XkjZjpdFUz5UAnuZj8nnbxDbX5tp+jTOjjJKw2TMQ9gFFYCQ12lSpdhezA2YgEGZfxyYTGW0DKDL5Drg==}
     engines: {node: '>=14'}
     peerDependencies:
       react: ^16.14.0 || >=17
@@ -5546,7 +5546,7 @@ snapshots:
       '@lumino/coreutils': 2.2.1
       '@lumino/disposable': 2.1.4
       '@lumino/signaling': 2.1.4
-      '@rjsf/utils': 5.24.10(react@18.3.1)
+      '@rjsf/utils': 5.24.12(react@18.3.1)
       ajv: 8.17.1
       json5: 2.2.3
       react: 18.3.1
@@ -5559,7 +5559,7 @@ snapshots:
       '@lumino/coreutils': 2.2.1
       '@lumino/disposable': 2.1.4
       '@lumino/signaling': 2.1.4
-      '@rjsf/utils': 5.24.10(react@18.3.1)
+      '@rjsf/utils': 5.24.12(react@18.3.1)
       ajv: 8.17.1
       json5: 2.2.3
       react: 18.3.1
@@ -5642,8 +5642,8 @@ snapshots:
       '@lumino/signaling': 2.1.4
       '@lumino/virtualdom': 2.0.3
       '@lumino/widgets': 2.7.1
-      '@rjsf/core': 5.24.12(@rjsf/utils@5.24.10(react@18.3.1))(react@18.3.1)
-      '@rjsf/utils': 5.24.10(react@18.3.1)
+      '@rjsf/core': 5.24.12(@rjsf/utils@5.24.12(react@18.3.1))(react@18.3.1)
+      '@rjsf/utils': 5.24.12(react@18.3.1)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       typestyle: 2.4.0
@@ -5820,9 +5820,9 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.19.0
 
-  '@rjsf/core@5.24.12(@rjsf/utils@5.24.10(react@18.3.1))(react@18.3.1)':
+  '@rjsf/core@5.24.12(@rjsf/utils@5.24.12(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@rjsf/utils': 5.24.10(react@18.3.1)
+      '@rjsf/utils': 5.24.12(react@18.3.1)
       lodash: 4.17.21
       lodash-es: 4.17.21
       markdown-to-jsx: 7.7.10(react@18.3.1)
@@ -5830,7 +5830,7 @@ snapshots:
       prop-types: 15.8.1
       react: 18.3.1
 
-  '@rjsf/utils@5.24.10(react@18.3.1)':
+  '@rjsf/utils@5.24.12(react@18.3.1)':
     dependencies:
       json-schema-merge-allof: 0.8.1
       jsonpointer: 5.0.1
