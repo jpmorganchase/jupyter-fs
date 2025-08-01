@@ -94,7 +94,7 @@
     "jest-raw-loader": "^1.0.1",
     "mkdirp": "^3.0.1",
     "rimraf": "^6.0.1",
-    "shx": "^0.3.4",
+    "shx": "^0.4.0",
     "ts-jest": "^29.2.5",
     "typescript": "^5.7.3"
   },
