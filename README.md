@@ -25,6 +25,12 @@ The backend is built on top of [PyFilesystem](https://github.com/PyFilesystem/py
 
 ```bash
 pip install jupyter-fs
+
+# To use with PyFilesystem2
+# pip install jupyter-fs[fs]
+
+# To use with fsspec
+# pip install jupyter-fs[fsspec]
 ```
 
 
@@ -57,20 +63,24 @@ Add specifications for additional contents managers in your user settings (in th
   "resources": [
     {
       "name": "root at test dir",
-      "url": "osfs:///Users/foo/test"
+      "url": "osfs:///Users/foo/test",
+      "type": "pyfs"
     },
     {
       "name": "s3 test bucket",
-      "url": "s3://test"
+      "url": "s3://test",
+      "type": "pyfs"
     },
     {
       "name": "s3 test key",
       "url": "s3://test-2/prefix/",
+      "type": "pyfs",
       "defaultWritable": false
     },
     {
       "name": "samba guest share",
-      "url": "smb://guest@127.0.0.1/test?name-port=3669"
+      "url": "smb://guest@127.0.0.1/test?name-port=3669",
+      "type": "pyfs"
     }
   ]
 }
@@ -92,7 +102,8 @@ Any stretch of a `"url"` that is enclosed in double-brackets `{{VAR}}` will be t
 
     {
       "name": "samba share",
-      "url": "smb://{{user}}:{{passwd}}@127.0.0.1/test?name-port=3669"
+      "url": "smb://{{user}}:{{passwd}}@127.0.0.1/test?name-port=3669",
+      "type": "pyfs"
     }
   ]
 }
@@ -121,6 +132,7 @@ The `jupyter-fs` auth dialog will only appear when:
 The type of resource each filebrowser will point to is determined by the protocol at the start of its url:
 
 ### PyFilesystem
+
 - **osfs**: **os** **f**ile**s**ystem. The will open a new view of your local filesystem, with the specified root
 - **s3**: opens a filesystem pointing to an Amazon S3 bucket
 - **smb**: opens a filesystem pointing to a Samba share
@@ -128,6 +140,7 @@ The type of resource each filebrowser will point to is determined by the protoco
 `jupyter-fs` can open a filebrowser pointing to any of the diverse [resources supported by PyFilesystem](https://www.pyfilesystem.org/page/index-of-filesystems/). Currently, we test only test the S3 and smb/samba backends as part of our CI, so your milleage may vary with the other PyFilesystem backends.
 
 ### fsspec
+
 - **local** / **file**: Local filesystem
 - [**s3fs**](https://s3fs.readthedocs.io/en/latest/): S3 filesystem
 
@@ -152,6 +165,7 @@ This field can be configured via JSON Settings or graphically.
 ## The filesystem url
 
 ### PyFilesystem
+
 The `"url"` field `jupyter-fs` config is based on the PyFilesystem [opener url](https://docs.pyfilesystem.org/en/latest/openers.html) standard. For more info on how to write these urls, see the documentation of the relevant PyFilesystem plugin:
 - S3: [S3FS docs](https://fs-s3fs.readthedocs.io/en/latest/)
 - smb: [fs.smbfs docs](https://github.com/althonos/fs.smbfs#usage)
@@ -168,7 +182,8 @@ If you prefer to set up your filesystem resources in the server-side config, you
 c.JupyterFs.resources = [
     {
         "name": "local_test",
-        "url": "osfs:///Users/foo/test"
+        "url": "osfs:///Users/foo/test",
+        "type": "pyfs"
     },
 ]
 ```
@@ -187,7 +202,8 @@ ALternatively, you can add resource specifications alongside the basic `jupyter-
     "resources": [
       {
         "name": "local_test",
-        "url": "osfs:///Users/foo/test"
+        "url": "osfs:///Users/foo/test",
+        "type": "pyfs"
       }
     ]
   }
