@@ -385,8 +385,8 @@ class FSSpecManager(FileContentsManager):
 
     def rename_file(self, old_path, new_path):
         """Rename a file."""
-        old_path = self._normalize_path(old_path).strip("/")
-        new_path = self._normalize_path(new_path).strip("/")
+        old_path = self._normalize_path(old_path)
+        new_path = self._normalize_path(new_path)
         if new_path == old_path:
             return
 
