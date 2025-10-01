@@ -149,3 +149,8 @@ jupyterfs/labextension
 
 # Rust
 target
+
+# Local
+tmp.csv
+tmp.parquet
+*.ipynb
