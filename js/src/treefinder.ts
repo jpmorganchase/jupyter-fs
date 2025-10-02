@@ -816,7 +816,7 @@ export namespace TreeFinderSidebar {
       return oldContent.row;
     }
     const textNode = widget.node.querySelector("tr.tf-mod-select .rt-tree-container .rt-group-name")!.firstChild as HTMLElement;
-    const original = textNode.textContent!.replace(/(.*)\/$/, "$1");
+    const original = textNode.textContent.replace(/(.*)\/$/, "$1");
     const editNode = document.createElement("input");
     editNode.value = original;
     try {
@@ -835,7 +835,7 @@ export namespace TreeFinderSidebar {
       }
       const oldPath = oldContent.getPathAtDepth(1).join("/");
       const newPath = oldPath.slice(0, -1 * original.length) + newName;
-      const suffix = textNode.textContent!.endsWith("/") ? "/" : "";
+      const suffix = textNode.textContent.endsWith("/") ? "/" : "";
       let newContent;
       try {
         newContent = await widget.treefinder.contentsProxy.rename(oldPath + suffix, newPath + suffix);
