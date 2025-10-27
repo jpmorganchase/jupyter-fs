@@ -93,7 +93,7 @@ jobs:
       run: make teardown-infra-common
 
     - name: Upload test results (Python)
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: test-results-${{ matrix.os }}-${{ matrix.python-version }}-${{ matrix.node-version }}
         path: '**/junit.xml'
@@ -109,7 +109,7 @@ jobs:
       run: make dist
       if: matrix.os == 'ubuntu-latest'
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v5
       with:
         name: dist-${{matrix.os}}
         path: dist
