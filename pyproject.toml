@@ -58,7 +58,7 @@ develop = [
     "pytest-jupyter[server]",
     "pytest-sugar",
     "pytest-xdist",
-    "ruff>=0.9,<0.13",
+    "ruff>=0.9,<0.15",
     "twine",
     "wheel",
     # tests
