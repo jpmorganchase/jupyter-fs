@@ -78,7 +78,10 @@ const COLUMN_NAMES = [
 
 
 export function idFromResource(resource: IFSResource): string {
-  return [resource.name.split(" ").join(""), resource.drive].join("_");
+  // Use encodeURIComponent to properly handle special characters (including spaces)
+  // instead of just removing spaces, which can cause collisions
+  const encodedName = encodeURIComponent(resource.name);
+  return [encodedName, resource.drive].join("_");
 }
 
 
