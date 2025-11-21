@@ -108,18 +108,13 @@ function _getRelativePaths(selectedFiles: Array<Content<ContentsProxy.IJupyterCo
 }
 
 
-async function _digestString(value: string): Promise<string> {
-  const encoded = new TextEncoder().encode(value); // encode as (utf-8) Uint8Array
-  const buffer = await crypto.subtle.digest("SHA-256", encoded); // hash the message
-  const hash = Array.from(new Uint8Array(buffer)); // convert buffer to byte array
-  return hash
-    .map(b => b.toString(16).padStart(2, "0"))
-    .join(""); // convert bytes to hex string
+function _digestString(value: string): string {
+  return value.split("").reduce((a: number, b: string) => (((a << 5) - a) + b.charCodeAt(0)) | 0, 0).toString(16);
 }
 
 
 async function _commandKeyForSnippet(snippet: Snippet): Promise<string>  {
-  return `jupyterfs:snippet-${snippet.label}-${await _digestString(snippet.label + snippet.caption + snippet.pattern.source + snippet.template)}`;
+  return `jupyterfs:snippet-${snippet.label}-${_digestString(snippet.label + snippet.caption + snippet.pattern.source + snippet.template)}`;
 }
 
 function _openWithKeyForFactory(factory: string): string  {
