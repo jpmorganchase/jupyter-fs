@@ -78,10 +78,7 @@ const COLUMN_NAMES = [
 
 
 export function idFromResource(resource: IFSResource): string {
-  // Use encodeURIComponent to properly handle special characters (including spaces)
-  // instead of just removing spaces, which can cause collisions
-  const encodedName = encodeURIComponent(resource.name);
-  return [encodedName, resource.drive].join("_");
+  return [resource.name.split(" ").join(""), resource.drive].join("_");
 }
 
 
@@ -111,13 +108,18 @@ function _getRelativePaths(selectedFiles: Array<Content<ContentsProxy.IJupyterCo
 }
 
 
-function _digestString(value: string): string {
-  return value.split("").reduce((a: number, b: string) => (((a << 5) - a) + b.charCodeAt(0)) | 0, 0).toString(16);
+async function _digestString(value: string): Promise<string> {
+  const encoded = new TextEncoder().encode(value); // encode as (utf-8) Uint8Array
+  const buffer = await crypto.subtle.digest("SHA-256", encoded); // hash the message
+  const hash = Array.from(new Uint8Array(buffer)); // convert buffer to byte array
+  return hash
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join(""); // convert bytes to hex string
 }
 
 
 async function _commandKeyForSnippet(snippet: Snippet): Promise<string>  {
-  return `jupyterfs:snippet-${snippet.label}-${_digestString(snippet.label + snippet.caption + snippet.pattern.source + snippet.template)}`;
+  return `jupyterfs:snippet-${snippet.label}-${await _digestString(snippet.label + snippet.caption + snippet.pattern.source + snippet.template)}`;
 }
 
 function _openWithKeyForFactory(factory: string): string  {
@@ -599,7 +601,7 @@ export function getFactories(
   item: Content<ContentsProxy.IJupyterContentRow>,
 ): DocumentRegistry.WidgetFactory[] {
   const path = [widget.url.trimEnd().replace(/\/+$/, ""), item.getPathAtDepth(1).join("/")].join("/");
-  const factories = docRegistry.preferredWidgetFactories(path);
+  let factories = docRegistry.preferredWidgetFactories(path);
   const notebookFactory = docRegistry.getWidgetFactory("notebook");
   if (
     notebookFactory &&
@@ -608,6 +610,33 @@ export function getFactories(
   ) {
     factories.unshift(notebookFactory);
   }
+
+  // Prefer explicit HTML-capable factories for .html/.htm files when present.
+  // This increases the chance the file is rendered (HTML viewer) instead of
+  // opened as raw text. We detect factories whose name or label contains
+  // "html" or "viewer" heuristically.
+  try {
+    const ext = path.split("?")[0].split("#")[0].split(".").pop()?.toLowerCase();
+    if (ext === "html" || ext === "htm") {
+      const htmlFactories: DocumentRegistry.WidgetFactory[] = [];
+      const otherFactories: DocumentRegistry.WidgetFactory[] = [];
+      for (const f of factories) {
+        const n = (f.name || "").toString().toLowerCase();
+        const l = ((f as any).label || "").toString().toLowerCase();
+        if (n.includes("html") || l.includes("html") || n.includes("viewer") || l.includes("viewer")) {
+          htmlFactories.push(f);
+        } else {
+          otherFactories.push(f);
+        }
+      }
+      if (htmlFactories.length) {
+        factories = [...htmlFactories, ...otherFactories];
+      }
+    }
+  } catch (e) {
+    // Be resilient: if anything goes wrong, return the original factories.
+  }
+
   return factories;
 }
 
