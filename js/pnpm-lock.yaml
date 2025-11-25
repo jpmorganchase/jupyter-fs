@@ -72,8 +72,8 @@ importers:
         specifier: ^4.12.4
         version: 4.12.4(@types/react@18.3.26)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tree-finder/base':
-        specifier: ^1.0.0
-        version: 1.0.0
+        specifier: ^1.0.1
+        version: 1.0.1
       file-saver:
         specifier: ^2.0.5
         version: 2.0.5
@@ -1133,8 +1133,8 @@ packages:
     resolution: {integrity: sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==}
     engines: {node: '>= 10'}
 
-  '@tree-finder/base@1.0.0':
-    resolution: {integrity: sha512-ThMaYdO+1guHcMzrjANBPT1poBa7CAbxOEJ3FC7boQ3wb011tIAjAYNm8ba9oc8Bf+jR0wNLunq6EZ27OpGH9Q==}
+  '@tree-finder/base@1.0.1':
+    resolution: {integrity: sha512-PTHqmfpRqqgX/qIemaBeyfhXdeqqBF+EZIVfo3GhAWQR+tZCGTHERzPGQGsoZUAfG0BPXV7A5dj7E5ReUhYi7w==}
 
   '@types/babel__core@7.20.5':
     resolution: {integrity: sha512-qoQprZvz5wQFJwMDqeseRXWv3rqMvhgpbXFfVyWhbx9X47POIA6i/+dXefEmZKoAgOaTdaIgNSMqMIU61yRyzA==}
@@ -5709,7 +5709,7 @@ snapshots:
 
   '@tootallnate/once@2.0.0': {}
 
-  '@tree-finder/base@1.0.0':
+  '@tree-finder/base@1.0.1':
     dependencies:
       regular-table: 0.6.8
       rxjs: 7.8.2
