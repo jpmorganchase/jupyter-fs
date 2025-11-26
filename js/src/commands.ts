@@ -477,11 +477,17 @@ export async function createDynamicCommands(
     items = [...factories].map(factory => {
       const key = _openWithKeyForFactory(factory.label || factory.name);
       const label = factory.label || factory.name;
-      openWithCommands.push(app.commands.addCommand(key, {
-        execute: args => Promise.all(Array.from(map(model.selection, item => app.commands.execute("docmanager:open", { path: Path.fromarray(item.row.path), ...args })))),
-        label,
-        isVisible: () => true,
-      }));
+      if (!app.commands.hasCommand(key)) {
+        openWithCommands.push(app.commands.addCommand(key, {
+          execute: args => Promise.all(Array.from(map(model.selection, item => app.commands.execute("docmanager:open", { path: Path.fromarray(item.row.path), ...args })))),
+          label,
+          isVisible: () => true,
+        }));
+      } else {
+        // Update label in case it has changed
+        // eslint-disable-next-line no-console
+        console.log("Skipping existing command:", key);
+      }
       return openWith.addItem({
         args: { factory: factory.name, label: factory.label || factory.name },
         command: key,

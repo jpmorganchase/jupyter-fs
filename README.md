@@ -20,6 +20,7 @@ A plugin for JupyterLab that lets you set up and use as many filebrowsers as you
 
 The backend is built on top of [PyFilesystem](https://github.com/PyFilesystem/pyfilesystem2) and [fsspec](https://filesystem-spec.readthedocs.io/en/latest/), while the frontend is built on top of [tree-finder](https://github.com/tree-finder/tree-finder).
 
+![](https://raw.githubusercontent.com/jpmorganchase/jupyter-fs/main/docs/img/demo.gif)
 
 ## Install
 
@@ -176,7 +177,7 @@ Similar to PyFilesystem, `fsspec` also allows for a `"url"` based opening scheme
 
 ## Server-side settings
 
-If you prefer to set up your filesystem resources in the server-side config, you can do so. For example, you can set up a local filesystem by adding the following to your `jupyter_server_config.py` file:
+If you prefer to set up your filesystem resources in the server-side config, you can do so. For example, you can set up a local filesystem by adding the following to your `jupyter_server_config.py` file (or `jupyter_lab_config.py` or `jupyter_notebook_config.py` depending on your setup):
 
 ```python
 c.JupyterFs.resources = [
