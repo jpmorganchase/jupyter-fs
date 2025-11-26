@@ -52,14 +52,15 @@ export const commandNames = [
   "refresh",
   "rename",
   "download",
-  "create_folder",
-  "create_file",
+  "createFolder",
+  "createFile",
   // "navigate",
   "copyFullPath",
   "copyRelativePath",
   "restore",
   "toggleColumnPath",
   "toggleColumn",
+  "newLauncher",
 ] as const;
 
 
@@ -225,7 +226,7 @@ export function createStaticCommands(
         tracker.currentWidget?.treefinder.model?.selection?.some(s => !s.hasChildren)
       ),
     }),
-    app.commands.addCommand(commandIDs.create_folder, {
+    app.commands.addCommand(commandIDs.createFolder, {
       execute: async args =>  {
         const widget = tracker.currentWidget!;
         const model = widget.treefinder.model!;
@@ -259,7 +260,7 @@ export function createStaticCommands(
       label: "New Folder",
       isEnabled: () => !!tracker.currentWidget,
     }),
-    app.commands.addCommand(commandIDs.create_file, {
+    app.commands.addCommand(commandIDs.createFile, {
       execute: async args =>  {
         const widget = tracker.currentWidget!;
         const model = widget.treefinder.model!;
@@ -347,6 +348,13 @@ export function createStaticCommands(
           await tracker.save(sidebar);
         }
       },
+    }),
+    app.commands.addCommand(commandIDs.newLauncher, {
+      execute: async args => {
+        void app.commands.execute("launcher:create");
+      },
+      label: "New Launcher",
+      isEnabled: () => true,
     }),
   ].reduce((set: DisposableSet, d) => {
     set.add(d); return set;
@@ -558,12 +566,12 @@ export async function createDynamicCommands(
       rank: contextMenuRank++,
     }),
     app.contextMenu.addItem({
-      command: commandIDs.create_file,
+      command: commandIDs.createFile,
       selector,
       rank: contextMenuRank++,
     }),
     app.contextMenu.addItem({
-      command: commandIDs.create_folder,
+      command: commandIDs.createFolder,
       selector,
       rank: contextMenuRank++,
     }),

@@ -24,12 +24,6 @@ tree-finder-panel {
   flex: 1 1 auto;
 }
 
-tree-finder-panel tree-finder-grid {
-  flex-direction: column;
-  display: flex;
-  flex: 1 1 auto;
-}
-
 tree-finder-panel tree-finder-grid table {
   color: var(--jp-ui-font-color1);
 }
@@ -39,7 +33,8 @@ tree-finder-panel tree-finder-grid table {
   border-bottom: none;
   height: auto;
   padding: 0px;
-  margin: 8px 12px 0px 12px;
+  margin: 0px 0px 4px 0px;
+  border-bottom: 1px solid var(--jp-border-color0);
   box-shadow: none;
   justify-content: flex-start;
 }
@@ -48,6 +43,17 @@ tree-finder-panel tree-finder-grid table {
   flex: 0 0 auto;
   padding-left: 0px;
   padding-right: 2px;
+}
+
+.jp-tree-finder-toolbar.jp-Toolbar .jp-Toolbar-item:nth-child(1) .jp-ToolbarButtonComponent {
+  width: 72px;
+  background: var(--jp-accept-color-normal, var(--jp-brand-color1));
+}
+.jp-tree-finder-toolbar.jp-Toolbar .jp-Toolbar-item:nth-child(1) .jp-ToolbarButtonComponent svg path {
+    fill: var(--jp-ui-inverse-font-color1) !important;
+}
+.jp-tree-finder-toolbar.jp-Toolbar .jp-Toolbar-item:nth-child(1) .jp-ToolbarButtonComponent:hover {
+    background-color: var(--jp-accept-color-hover);
 }
 
 .jp-tree-finder-toolbar.jp-Toolbar .jp-ToolbarButtonComponent {
@@ -153,7 +159,7 @@ tree-finder-panel tree-finder-grid table {
   left: 0px;
   color: var(--jp-ui-font-color1);
   font-size: var(--jp-ui-font-size1);
-  font-weight: 500; 
+  font-weight: 500;
 }
 
 .jp-tree-finder .tf-filter-input {

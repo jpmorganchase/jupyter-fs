@@ -205,15 +205,11 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
       // Refresh widgets in case font/border sizes etc have changed
       if (initialThemeLoad) {
         initialThemeLoad = false;
-        void app.restored.then(() => {
-          // offset it by a timeout to ensure we clear the initial async stack
-          setTimeout(() => void Object.keys(widgetMap).map(
-            key => widgetMap[key].treefinder.nodeInit()
-          ), 0);
-        });
+        // Don't refresh on first load since we will do it below after initial creation
+        // in the onAfterAttach lifecycle method.
       } else {
         Object.keys(widgetMap).map(
-          key => widgetMap[key].treefinder.nodeInit()
+          key => widgetMap[key].treefinder.load()
         );
       }
     });
