@@ -158,7 +158,15 @@ class FSSpecManager(FileContentsManager):
             model = {"type": "file", "size": 0}
         model["name"] = path.rstrip("/").rsplit("/", 1)[-1]
         model["path"] = path.replace(self.root, "", 1)
-        model["last_modified"] = datetime.fromtimestamp(model["mtime"]).isoformat() if "mtime" in model else EPOCH_START
+        if "LastModified" in model:
+            # S3FS format: datetime object from AWS S3 API
+            last_modified = model["LastModified"]
+            model["last_modified"] = last_modified.isoformat()
+        elif "mtime" in model:
+            # Legacy/other implementations: Unix timestamp
+            model["last_modified"] = datetime.fromtimestamp(model["mtime"]).isoformat()
+        else:
+            model["last_modified"] = EPOCH_START
         model["created"] = datetime.fromtimestamp(model["created"]).isoformat() if "created" in model else EPOCH_START
         model["content"] = None
         model["format"] = None
