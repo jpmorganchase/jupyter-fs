@@ -4,23 +4,25 @@
     "allowSyntheticDefaultImports": true,
     "composite": true,
     "declaration": true,
+    "declarationMap": true,
     "esModuleInterop": true,
     "incremental": true,
     "jsx": "react",
+    "lib": ["ES2019", "DOM", "DOM.Iterable"],
     "module": "esnext",
     "moduleResolution": "node",
     "noEmitOnError": true,
     "noImplicitAny": true,
     "noUnusedLocals": true,
+    "outDir": "lib",
     "preserveWatchOutput": true,
     "resolveJsonModule": true,
+    "rootDir": "src",
     "sourceMap": true,
     "strictNullChecks": true,
     "target": "es2019",
-    "skipLibCheck": true,
+    "skipLibCheck": true
     // "types": ["jest"],
-    "outDir": "lib",
-    "rootDir": "src"
   },
   "include": ["src/**/*"]
 }

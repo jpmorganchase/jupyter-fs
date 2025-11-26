@@ -30,6 +30,7 @@ import {
 import {
   refreshIcon,
   newFolderIcon,
+  addIcon,
 } from "@jupyterlab/ui-components";
 // import JSZip from "jszip";
 import { ArrayExt } from "@lumino/algorithm";
@@ -190,7 +191,7 @@ export class TreeFinderWidget extends DragDropWidget {
     await this.settings?.set("display_columns", this._columns);
   }
 
-  draw() {
+  draw(props: { reset?: boolean } = {}) {
     this.model?.requestDraw();
   }
 
@@ -208,7 +209,9 @@ export class TreeFinderWidget extends DragDropWidget {
       return;
     }
     this._currentFolder = this.model?.root.pathstr;
-    await this.node.init({
+
+    await customElements.whenDefined("tree-finder-panel");
+    this.node.init({
       root,
       gridOptions: {
         columnFormatters: {
@@ -225,6 +228,7 @@ export class TreeFinderWidget extends DragDropWidget {
     });
 
     const grid = this.node.querySelector<TreeFinderGridElement<ContentsProxy.IJupyterContentRow>>("tree-finder-grid");
+
     grid?.addStyleListener(() => {
       // Set root-level load indicator
       grid.classList.toggle("jfs-mod-loading", this._initialLoad);
@@ -241,7 +245,7 @@ export class TreeFinderWidget extends DragDropWidget {
 
       // Fix focus and tabbing
       let lastSelectIdx = this.model?.selectedLast ? this.model?.contents.indexOf(this.model.selectedLast) : -1;
-      const lostFocus = document.activeElement === document.body;
+      const lostFocus = document.activeElement !== this.node;
       for (const rowHeader of grid.querySelectorAll<HTMLTableCellElement>("tr > th")) {
         const tableHeader = rowHeader.querySelector<HTMLSpanElement>("span.tf-header-name");
 
@@ -362,25 +366,26 @@ export class TreeFinderWidget extends DragDropWidget {
     }
   }
 
+  async load() {
+    if (this._initialLoad) {
+      const node = this.node;
+      await this.nodeInit();
+      this._readyDelegate.resolve();
+      node.addEventListener("keydown", this);
+      node.addEventListener("dragenter", this);
+      node.addEventListener("dragover", this);
+      node.addEventListener("dragleave", this);
+      node.addEventListener("dragend", this);
+      node.addEventListener("drop", this);
+    }
+  }
 
   /**
    * A message handler invoked on an `'after-attach'` message.
    */
   protected onAfterAttach(msg: Message): void {
     super.onAfterAttach(msg);
-    const node = this.node;
-    const initPromise = this.nodeInit();
-    if (this._initialLoad) {
-      void initPromise.then(() => {
-        this._readyDelegate.resolve();
-      });
-    }
-    node.addEventListener("keydown", this);
-    node.addEventListener("dragenter", this);
-    node.addEventListener("dragover", this);
-    node.addEventListener("dragleave", this);
-    node.addEventListener("dragend", this);
-    node.addEventListener("drop", this);
+    void this.load();
   }
 
   /**
@@ -619,6 +624,7 @@ export class TreeFinderSidebar extends Widget {
     super();
     this.id = id;
     this.node.classList.add("jfs-mod-notRenaming");
+
     this.url = url;
     this.type = type;
     this.title.icon = fileTreeIcon;
@@ -634,10 +640,14 @@ export class TreeFinderSidebar extends Widget {
     this.layout = new PanelLayout();
     (this.layout as PanelLayout).addWidget(this.toolbar);
     (this.layout as PanelLayout).addWidget(this.treefinder);
+
   }
 
   restore() { // restore expansion prior to rebuild
-    void this.treefinder.ready.then(() => this.treefinder.refresh());
+    void this.treefinder.ready.then(() => {
+      this.treefinder.refresh();
+      this.treefinder.draw({ reset: true });
+    });
   }
 
   async download(path: string, folder: boolean): Promise<void> {
@@ -673,9 +683,11 @@ export class TreeFinderSidebar extends Widget {
   //   await next;
   // }
 
-  protected onBeforeShow(msg: any): void {
+  protected onAfterShow(msg: any): void {
     this.treefinder.refresh();
-    this.treefinder.draw();
+    this.treefinder.draw({ reset: true });
+    // Temporary workaround for grid size issues
+    (this.treefinder.node.querySelector("tree-finder-grid")?.shadowRoot?.querySelector("div.rt-scroll-table-clip") as HTMLElement).style.height = "110%";
   }
 
   protected onResize(msg: any): void {
@@ -754,10 +766,18 @@ export namespace TreeFinderSidebar {
     void widget.treefinder.ready.then(() => tracker.add(widget));
     app.shell.add(widget, side);
 
+    const new_launcher_button = new ToolbarButton({
+      icon: addIcon,
+      onClick: () => {
+        void app.commands.execute(commandIDs.newLauncher);
+      },
+      tooltip: "Open Launcher",
+    });
+
     const new_file_button = new ToolbarButton({
       icon: newFolderIcon,
       onClick: () => {
-        void app.commands.execute((commandIDs.create_folder));
+        void app.commands.execute((commandIDs.createFolder));
       },
       tooltip: "New Folder",
     });
@@ -779,6 +799,7 @@ export namespace TreeFinderSidebar {
       tooltip: "Refresh",
     });
 
+    widget.toolbar.addItem("launcher", new_launcher_button);
     widget.toolbar.addItem("new file", new_file_button);
     widget.toolbar.addItem("upload", uploader_button);
     widget.toolbar.addItem("refresh", refresh_button);

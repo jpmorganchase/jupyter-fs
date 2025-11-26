@@ -20,7 +20,7 @@ export class JupyterClipboard {
     this._tracker = tracker;
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    this._model.deleteSub.subscribe(async memo => {
+    this._model.deleteSub.subscribe(async (memo: IContentRow[]) => {
       await Promise.all(memo.map(s => this._onDelete(s)));
       const contentsModel = this._tracker.currentWidget!.treefinder.model!;
       const toRefresh = getRefreshTargets<ContentsProxy.IJupyterContentRow>(
@@ -32,7 +32,7 @@ export class JupyterClipboard {
     });
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    this._model.pasteSub.subscribe(async ({ destination, doCut, memo }) => {
+    this._model.pasteSub.subscribe(async ({ destination, doCut, memo }: { destination: IContentRow; doCut: boolean; memo: IContentRow[] }) => {
       const destPath = destination.kind === "dir" ? destination.path : destination.path.slice(0, -1);
       const destPathstr = Path.fromarray(destPath);
       await Promise.all(memo.map(s => this._onPaste(s, destPathstr, doCut)));

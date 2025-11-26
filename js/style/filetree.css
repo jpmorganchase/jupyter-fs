@@ -27,28 +27,6 @@
   text-transform: uppercase;
 }
 
-.filetree-toolbar {
-  padding: 0px;
-  border-bottom: none;
-  height: auto;
-  margin: var(--jp-toolbar-header-margin);
-  box-shadow: none;
-}
-.filetree-toolbar .jp-ToolbarButtonComponent {
-  padding: 0px 16px;
-}
-
-.filetree-icon {
-  min-width: 16px;
-  min-height: 16px;
-  background-size: 16px;
-  display: inline-block;
-  vertical-align: middle;
-  background-repeat: no-repeat;
-  background-position: center;
-  margin: auto;
-}
-
 .filetree-head {
   width: 100%;
   border-spacing: 0px;
