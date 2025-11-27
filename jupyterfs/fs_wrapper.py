@@ -15,7 +15,7 @@ def _fs_instance_and_root(fs_url, type="pyfs", **kwargs):
         return fs.opener.open(fs_url, **kwargs)
 
 
-def fs_instance(fs_url, type="pyfs", **kwargs):
+def fs_instance(fs_url, type="fsspec", **kwargs):
     return _fs_instance_and_root(fs_url=fs_url, type=type, **kwargs)[0]
 
 
@@ -23,7 +23,7 @@ class FSWrapper:
     """Helper wrapper class around PyFilesystem/fsspec instance to make
     some operations easier/unified for snippets"""
 
-    def __init__(self, fs, type="pyfs", root=None):
+    def __init__(self, fs, type="fsspec", root=None):
         self.fs = fs
         self.type = type
         self.root = root
@@ -130,6 +130,6 @@ class FSWrapper:
         return self.fs
 
 
-def fs(fs_url, type="pyfs", **kwargs):
+def fs(fs_url, type="fsspec", **kwargs):
     fs, root = _fs_instance_and_root(fs_url=fs_url, type=type, **kwargs)
     return FSWrapper(fs=fs, type=type, root=root)

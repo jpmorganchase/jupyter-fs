@@ -30,10 +30,10 @@ class TestInit:
     @patch("getpass.getpass", return_value="test return getpass <>/|")
     def test_open_fs(self, mock_getpass, mock_fs_open_fs):
         mock_fs_open_fs.return_value = "mock fs instance", "mock root"
-        fs("osfs://foo/bar.txt")
+        fs("osfs://foo/bar.txt", "pyfs")
         mock_getpass.assert_not_called()
         mock_fs_open_fs.assert_called_with("osfs://foo/bar.txt")
 
-        fs("osfs://{{foo}}/bar.txt")
+        fs("osfs://{{foo}}/bar.txt", "pyfs")
         mock_getpass.assert_called_with("Enter value for 'foo': ")
         mock_fs_open_fs.assert_called_with("osfs://test%20return%20getpass%20%3C%3E/%7C/bar.txt")

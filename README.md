@@ -158,7 +158,7 @@ export FSSPEC_S3_SECRET=<YOUR SECRET>
 ## Choosing the backend
 
 Your resource can include a `"type"` field, set to either `pyfs` or `fsspec`.
-The default is `pyfs`.
+The default is `fsspec`.
 This field can be configured via JSON Settings or graphically.
 
 ![](https://raw.githubusercontent.com/jpmorganchase/jupyter-fs/main/docs/img/settings_choose_backend.png)
