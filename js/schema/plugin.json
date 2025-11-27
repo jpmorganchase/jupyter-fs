@@ -52,7 +52,7 @@
           "description": "The backend type to use for the resource (PyFS or fsspec)",
           "type": "string",
           "enum": ["pyfs", "fsspec"],
-          "default": "pyfs"
+          "default": "fsspec"
         },
         "preferredDir": {
           "description": "Directory to be first opened (e.g., myDir/mySubdir)",
