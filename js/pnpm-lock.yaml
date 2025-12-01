@@ -67,7 +67,7 @@ importers:
         version: 2.1.4
       '@lumino/widgets':
         specifier: ^2.7.1
-        version: 2.7.1
+        version: 2.7.2
       '@material-ui/core':
         specifier: ^4.12.4
         version: 4.12.4(@types/react@18.3.26)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1053,9 +1053,6 @@ packages:
 
   '@lumino/virtualdom@2.0.4':
     resolution: {integrity: sha512-7MFthA9KUsqZTGm/D98FZt1QupjIGyd3XyB4SIugn6DQAqhjBiyykCZydnRq3qmuMHybQel33dNIbHpzyNyQwA==}
-
-  '@lumino/widgets@2.7.1':
-    resolution: {integrity: sha512-gGq3zB1260gG1aK1m3SkqVoWZ/yfUxCKZvUOmRKLIcZPJUs33bgessm4P65oY5C1eAXalU4erLmKBiBaOn5gtw==}
 
   '@lumino/widgets@2.7.2':
     resolution: {integrity: sha512-svp4Si10PcTr6Hfd1hZgkue1rKPYpnuCheGWkou/RlMZih94mVbQoDO1xppo/haYQg4GX2IgCFpUKsNb19oBAg==}
@@ -5249,7 +5246,7 @@ snapshots:
       '@lumino/polling': 2.1.4
       '@lumino/properties': 2.0.3
       '@lumino/signaling': 2.1.4
-      '@lumino/widgets': 2.7.1
+      '@lumino/widgets': 2.7.2
     transitivePeerDependencies:
       - bufferutil
       - react
@@ -5274,7 +5271,7 @@ snapshots:
       '@lumino/messaging': 2.0.4
       '@lumino/signaling': 2.1.4
       '@lumino/virtualdom': 2.0.3
-      '@lumino/widgets': 2.7.1
+      '@lumino/widgets': 2.7.2
       '@types/react': 18.3.26
       react: 18.3.1
       sanitize-html: 2.12.1
@@ -5340,7 +5337,7 @@ snapshots:
       '@lumino/dragdrop': 2.1.6
       '@lumino/messaging': 2.0.4
       '@lumino/signaling': 2.1.4
-      '@lumino/widgets': 2.7.1
+      '@lumino/widgets': 2.7.2
       react: 18.3.1
     transitivePeerDependencies:
       - bufferutil
@@ -5372,7 +5369,7 @@ snapshots:
       '@lumino/polling': 2.1.4
       '@lumino/properties': 2.0.3
       '@lumino/signaling': 2.1.4
-      '@lumino/widgets': 2.7.1
+      '@lumino/widgets': 2.7.2
       react: 18.3.1
     transitivePeerDependencies:
       - bufferutil
@@ -5396,7 +5393,7 @@ snapshots:
       '@lumino/messaging': 2.0.4
       '@lumino/properties': 2.0.3
       '@lumino/signaling': 2.1.4
-      '@lumino/widgets': 2.7.1
+      '@lumino/widgets': 2.7.2
       react: 18.3.1
     transitivePeerDependencies:
       - bufferutil
@@ -5422,7 +5419,7 @@ snapshots:
       '@lumino/polling': 2.1.4
       '@lumino/signaling': 2.1.4
       '@lumino/virtualdom': 2.0.3
-      '@lumino/widgets': 2.7.1
+      '@lumino/widgets': 2.7.2
       jest-environment-jsdom: 29.7.0
       react: 18.3.1
     transitivePeerDependencies:
@@ -5446,7 +5443,7 @@ snapshots:
   '@jupyterlab/rendermime-interfaces@3.12.10':
     dependencies:
       '@lumino/coreutils': 2.2.1
-      '@lumino/widgets': 2.7.1
+      '@lumino/widgets': 2.7.2
 
   '@jupyterlab/rendermime@4.4.10(react@18.3.1)':
     dependencies:
@@ -5460,7 +5457,7 @@ snapshots:
       '@lumino/coreutils': 2.2.1
       '@lumino/messaging': 2.0.4
       '@lumino/signaling': 2.1.4
-      '@lumino/widgets': 2.7.1
+      '@lumino/widgets': 2.7.2
       lodash.escape: 4.0.1
     transitivePeerDependencies:
       - bufferutil
@@ -5514,7 +5511,7 @@ snapshots:
       '@lumino/disposable': 2.1.5
       '@lumino/messaging': 2.0.4
       '@lumino/signaling': 2.1.4
-      '@lumino/widgets': 2.7.1
+      '@lumino/widgets': 2.7.2
       react: 18.3.1
     transitivePeerDependencies:
       - bufferutil
@@ -5549,7 +5546,7 @@ snapshots:
       '@lumino/properties': 2.0.3
       '@lumino/signaling': 2.1.4
       '@lumino/virtualdom': 2.0.3
-      '@lumino/widgets': 2.7.1
+      '@lumino/widgets': 2.7.2
       '@rjsf/core': 5.24.13(@rjsf/utils@5.24.13(react@18.3.1))(react@18.3.1)
       '@rjsf/utils': 5.24.13(react@18.3.1)
       react: 18.3.1
@@ -5567,7 +5564,7 @@ snapshots:
     dependencies:
       '@lumino/commands': 2.3.2
       '@lumino/coreutils': 2.2.1
-      '@lumino/widgets': 2.7.1
+      '@lumino/widgets': 2.7.2
 
   '@lumino/application@2.4.5':
     dependencies:
@@ -5661,20 +5658,6 @@ snapshots:
   '@lumino/virtualdom@2.0.4':
     dependencies:
       '@lumino/algorithm': 2.0.4
-
-  '@lumino/widgets@2.7.1':
-    dependencies:
-      '@lumino/algorithm': 2.0.3
-      '@lumino/commands': 2.3.2
-      '@lumino/coreutils': 2.2.1
-      '@lumino/disposable': 2.1.5
-      '@lumino/domutils': 2.0.3
-      '@lumino/dragdrop': 2.1.6
-      '@lumino/keyboard': 2.0.3
-      '@lumino/messaging': 2.0.4
-      '@lumino/properties': 2.0.3
-      '@lumino/signaling': 2.1.4
-      '@lumino/virtualdom': 2.0.3
 
   '@lumino/widgets@2.7.2':
     dependencies:
