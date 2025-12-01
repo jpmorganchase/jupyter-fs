@@ -55,7 +55,7 @@ importers:
         version: 2.2.1
       '@lumino/disposable':
         specifier: ^2.1.4
-        version: 2.1.4
+        version: 2.1.5
       '@lumino/dragdrop':
         specifier: ^2.1.6
         version: 2.1.6
@@ -1011,9 +1011,6 @@ packages:
 
   '@lumino/coreutils@2.2.2':
     resolution: {integrity: sha512-zaKJaK7rawPATn2BGHkbMrR6oK3s9PxNe9KreLwWF2dB4ZBHDiEmNLRyHRorfJ7XqVOEXAsAAj0jFn+qJPC/4Q==}
-
-  '@lumino/disposable@2.1.4':
-    resolution: {integrity: sha512-qTJiDbglPE2QnG4x4gtBcRbcfKQibxyyinNGKcNDrcK2TGTbbhK5PpMQ8d70l2V2Xw2pb/LfksBAg5pxkJ/G4A==}
 
   '@lumino/disposable@2.1.5':
     resolution: {integrity: sha512-hO9AkJK0oEGzxopuxI8LaZqwzSNwXJTGCdr5K4gh6al+zxpN7rOCh6Aq3zDxkIHJU4zybxv8r02ardx9XJsG3A==}
@@ -5232,7 +5229,7 @@ snapshots:
     dependencies:
       '@jupyterlab/nbformat': 4.4.10
       '@lumino/coreutils': 2.2.1
-      '@lumino/disposable': 2.1.4
+      '@lumino/disposable': 2.1.5
       '@lumino/signaling': 2.1.4
       y-protocols: 1.0.6(yjs@13.6.27)
       yjs: 13.6.27
@@ -5253,7 +5250,7 @@ snapshots:
       '@lumino/application': 2.4.4
       '@lumino/commands': 2.3.2
       '@lumino/coreutils': 2.2.1
-      '@lumino/disposable': 2.1.4
+      '@lumino/disposable': 2.1.5
       '@lumino/messaging': 2.0.3
       '@lumino/polling': 2.1.4
       '@lumino/properties': 2.0.3
@@ -5278,7 +5275,7 @@ snapshots:
       '@lumino/algorithm': 2.0.3
       '@lumino/commands': 2.3.2
       '@lumino/coreutils': 2.2.1
-      '@lumino/disposable': 2.1.4
+      '@lumino/disposable': 2.1.5
       '@lumino/domutils': 2.0.3
       '@lumino/messaging': 2.0.3
       '@lumino/signaling': 2.1.4
@@ -5345,7 +5342,7 @@ snapshots:
       '@jupyterlab/translation': 4.4.10(react@18.3.1)
       '@jupyterlab/ui-components': 4.4.10(react@18.3.1)
       '@lumino/coreutils': 2.2.1
-      '@lumino/disposable': 2.1.4
+      '@lumino/disposable': 2.1.5
       '@lumino/dragdrop': 2.1.6
       '@lumino/messaging': 2.0.3
       '@lumino/signaling': 2.1.4
@@ -5358,7 +5355,7 @@ snapshots:
   '@jupyterlab/coreutils@6.4.10':
     dependencies:
       '@lumino/coreutils': 2.2.1
-      '@lumino/disposable': 2.1.4
+      '@lumino/disposable': 2.1.5
       '@lumino/signaling': 2.1.4
       minimist: 1.2.8
       path-browserify: 1.0.1
@@ -5376,7 +5373,7 @@ snapshots:
       '@jupyterlab/ui-components': 4.4.10(react@18.3.1)
       '@lumino/algorithm': 2.0.3
       '@lumino/coreutils': 2.2.1
-      '@lumino/disposable': 2.1.4
+      '@lumino/disposable': 2.1.5
       '@lumino/messaging': 2.0.3
       '@lumino/polling': 2.1.4
       '@lumino/properties': 2.0.3
@@ -5401,7 +5398,7 @@ snapshots:
       '@jupyterlab/ui-components': 4.4.10(react@18.3.1)
       '@lumino/algorithm': 2.0.3
       '@lumino/coreutils': 2.2.1
-      '@lumino/disposable': 2.1.4
+      '@lumino/disposable': 2.1.5
       '@lumino/messaging': 2.0.3
       '@lumino/properties': 2.0.3
       '@lumino/signaling': 2.1.4
@@ -5424,7 +5421,7 @@ snapshots:
       '@jupyterlab/ui-components': 4.4.10(react@18.3.1)
       '@lumino/algorithm': 2.0.3
       '@lumino/coreutils': 2.2.1
-      '@lumino/disposable': 2.1.4
+      '@lumino/disposable': 2.1.5
       '@lumino/domutils': 2.0.3
       '@lumino/dragdrop': 2.1.6
       '@lumino/messaging': 2.0.3
@@ -5448,7 +5445,7 @@ snapshots:
     dependencies:
       '@lumino/algorithm': 2.0.3
       '@lumino/coreutils': 2.2.1
-      '@lumino/disposable': 2.1.4
+      '@lumino/disposable': 2.1.5
       '@lumino/messaging': 2.0.3
       '@lumino/signaling': 2.1.4
 
@@ -5484,7 +5481,7 @@ snapshots:
       '@jupyterlab/settingregistry': 4.4.10(react@18.3.1)
       '@jupyterlab/statedb': 4.4.10
       '@lumino/coreutils': 2.2.1
-      '@lumino/disposable': 2.1.4
+      '@lumino/disposable': 2.1.5
       '@lumino/polling': 2.1.4
       '@lumino/properties': 2.0.3
       '@lumino/signaling': 2.1.4
@@ -5500,7 +5497,7 @@ snapshots:
       '@jupyterlab/statedb': 4.4.10
       '@lumino/commands': 2.3.2
       '@lumino/coreutils': 2.2.1
-      '@lumino/disposable': 2.1.4
+      '@lumino/disposable': 2.1.5
       '@lumino/signaling': 2.1.4
       '@rjsf/utils': 5.24.13(react@18.3.1)
       ajv: 8.17.1
@@ -5511,7 +5508,7 @@ snapshots:
     dependencies:
       '@lumino/commands': 2.3.2
       '@lumino/coreutils': 2.2.1
-      '@lumino/disposable': 2.1.4
+      '@lumino/disposable': 2.1.5
       '@lumino/properties': 2.0.3
       '@lumino/signaling': 2.1.4
 
@@ -5520,7 +5517,7 @@ snapshots:
       '@jupyterlab/ui-components': 4.4.10(react@18.3.1)
       '@lumino/algorithm': 2.0.3
       '@lumino/coreutils': 2.2.1
-      '@lumino/disposable': 2.1.4
+      '@lumino/disposable': 2.1.5
       '@lumino/messaging': 2.0.3
       '@lumino/signaling': 2.1.4
       '@lumino/widgets': 2.7.1
@@ -5552,7 +5549,7 @@ snapshots:
       '@lumino/algorithm': 2.0.3
       '@lumino/commands': 2.3.2
       '@lumino/coreutils': 2.2.1
-      '@lumino/disposable': 2.1.4
+      '@lumino/disposable': 2.1.5
       '@lumino/messaging': 2.0.3
       '@lumino/polling': 2.1.4
       '@lumino/properties': 2.0.3
@@ -5596,7 +5593,7 @@ snapshots:
     dependencies:
       '@lumino/algorithm': 2.0.3
       '@lumino/coreutils': 2.2.1
-      '@lumino/disposable': 2.1.4
+      '@lumino/disposable': 2.1.5
       '@lumino/domutils': 2.0.3
       '@lumino/keyboard': 2.0.3
       '@lumino/signaling': 2.1.4
@@ -5620,10 +5617,6 @@ snapshots:
     dependencies:
       '@lumino/algorithm': 2.0.4
 
-  '@lumino/disposable@2.1.4':
-    dependencies:
-      '@lumino/signaling': 2.1.4
-
   '@lumino/disposable@2.1.5':
     dependencies:
       '@lumino/signaling': 2.1.5
@@ -5635,7 +5628,7 @@ snapshots:
   '@lumino/dragdrop@2.1.6':
     dependencies:
       '@lumino/coreutils': 2.2.1
-      '@lumino/disposable': 2.1.4
+      '@lumino/disposable': 2.1.5
 
   '@lumino/dragdrop@2.1.7':
     dependencies:
@@ -5659,7 +5652,7 @@ snapshots:
   '@lumino/polling@2.1.4':
     dependencies:
       '@lumino/coreutils': 2.2.1
-      '@lumino/disposable': 2.1.4
+      '@lumino/disposable': 2.1.5
       '@lumino/signaling': 2.1.4
 
   '@lumino/properties@2.0.3': {}
@@ -5689,7 +5682,7 @@ snapshots:
       '@lumino/algorithm': 2.0.3
       '@lumino/commands': 2.3.2
       '@lumino/coreutils': 2.2.1
-      '@lumino/disposable': 2.1.4
+      '@lumino/disposable': 2.1.5
       '@lumino/domutils': 2.0.3
       '@lumino/dragdrop': 2.1.6
       '@lumino/keyboard': 2.0.3
