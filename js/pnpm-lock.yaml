@@ -61,7 +61,7 @@ importers:
         version: 2.1.6
       '@lumino/messaging':
         specifier: ^2.0.3
-        version: 2.0.3
+        version: 2.0.4
       '@lumino/signaling':
         specifier: ^2.1.4
         version: 2.1.4
@@ -994,9 +994,6 @@ packages:
   '@lumino/application@2.4.5':
     resolution: {integrity: sha512-b6JLzjQ0qAV7wJWS0v6z+9FeY8HTuteKjdXaHZQToLutGb67leOtp+/JoKI37HFn1FQdeMgoMHIBXxrT58xXGA==}
 
-  '@lumino/collections@2.0.3':
-    resolution: {integrity: sha512-Y9Wtvuk8SD6xcKgkqe3SUx5RywOcRz6DyWE4f5FvBT3OdANq76p9r0wtf8OKPt4BGE41kAQR+bdq3k+MfHlUsQ==}
-
   '@lumino/collections@2.0.4':
     resolution: {integrity: sha512-D/Py9L5HET6+XUYGxFqDEEth4B65X2c7B/GQVRR8q5Fl7EArVL6e98ZXw8BMkuPcTNa0zlENpCKXzlcoJZxXgQ==}
 
@@ -1032,9 +1029,6 @@ packages:
 
   '@lumino/keyboard@2.0.4':
     resolution: {integrity: sha512-kIVkdSz8F5wtZr8hZp0CMX+E0eMCOnFH6XCT7j2UBQ80ERJHFy0eX+IbNo3dtRQ7+CcDhBV4hQquFNFa+/04QQ==}
-
-  '@lumino/messaging@2.0.3':
-    resolution: {integrity: sha512-//NAE+FG9UWSoXs4i5imduGY1XDvhjMGNF82aMyFTv8wVU6bdRfRmj0xLlQ8ixzA0eXPOFL4ugWZNdlu48P1+Q==}
 
   '@lumino/messaging@2.0.4':
     resolution: {integrity: sha512-NbZnchAPOciSe9Qn/g6EzG0LRaw7bygFIXbCD440ZhzvugdBeAerwYhrA795jkXPNrrl3olp5AlO0cBB/XZNtg==}
@@ -5251,7 +5245,7 @@ snapshots:
       '@lumino/commands': 2.3.2
       '@lumino/coreutils': 2.2.1
       '@lumino/disposable': 2.1.5
-      '@lumino/messaging': 2.0.3
+      '@lumino/messaging': 2.0.4
       '@lumino/polling': 2.1.4
       '@lumino/properties': 2.0.3
       '@lumino/signaling': 2.1.4
@@ -5277,7 +5271,7 @@ snapshots:
       '@lumino/coreutils': 2.2.1
       '@lumino/disposable': 2.1.5
       '@lumino/domutils': 2.0.3
-      '@lumino/messaging': 2.0.3
+      '@lumino/messaging': 2.0.4
       '@lumino/signaling': 2.1.4
       '@lumino/virtualdom': 2.0.3
       '@lumino/widgets': 2.7.1
@@ -5344,7 +5338,7 @@ snapshots:
       '@lumino/coreutils': 2.2.1
       '@lumino/disposable': 2.1.5
       '@lumino/dragdrop': 2.1.6
-      '@lumino/messaging': 2.0.3
+      '@lumino/messaging': 2.0.4
       '@lumino/signaling': 2.1.4
       '@lumino/widgets': 2.7.1
       react: 18.3.1
@@ -5374,7 +5368,7 @@ snapshots:
       '@lumino/algorithm': 2.0.3
       '@lumino/coreutils': 2.2.1
       '@lumino/disposable': 2.1.5
-      '@lumino/messaging': 2.0.3
+      '@lumino/messaging': 2.0.4
       '@lumino/polling': 2.1.4
       '@lumino/properties': 2.0.3
       '@lumino/signaling': 2.1.4
@@ -5399,7 +5393,7 @@ snapshots:
       '@lumino/algorithm': 2.0.3
       '@lumino/coreutils': 2.2.1
       '@lumino/disposable': 2.1.5
-      '@lumino/messaging': 2.0.3
+      '@lumino/messaging': 2.0.4
       '@lumino/properties': 2.0.3
       '@lumino/signaling': 2.1.4
       '@lumino/widgets': 2.7.1
@@ -5424,7 +5418,7 @@ snapshots:
       '@lumino/disposable': 2.1.5
       '@lumino/domutils': 2.0.3
       '@lumino/dragdrop': 2.1.6
-      '@lumino/messaging': 2.0.3
+      '@lumino/messaging': 2.0.4
       '@lumino/polling': 2.1.4
       '@lumino/signaling': 2.1.4
       '@lumino/virtualdom': 2.0.3
@@ -5446,7 +5440,7 @@ snapshots:
       '@lumino/algorithm': 2.0.3
       '@lumino/coreutils': 2.2.1
       '@lumino/disposable': 2.1.5
-      '@lumino/messaging': 2.0.3
+      '@lumino/messaging': 2.0.4
       '@lumino/signaling': 2.1.4
 
   '@jupyterlab/rendermime-interfaces@3.12.10':
@@ -5464,7 +5458,7 @@ snapshots:
       '@jupyterlab/services': 7.4.10(react@18.3.1)
       '@jupyterlab/translation': 4.4.10(react@18.3.1)
       '@lumino/coreutils': 2.2.1
-      '@lumino/messaging': 2.0.3
+      '@lumino/messaging': 2.0.4
       '@lumino/signaling': 2.1.4
       '@lumino/widgets': 2.7.1
       lodash.escape: 4.0.1
@@ -5518,7 +5512,7 @@ snapshots:
       '@lumino/algorithm': 2.0.3
       '@lumino/coreutils': 2.2.1
       '@lumino/disposable': 2.1.5
-      '@lumino/messaging': 2.0.3
+      '@lumino/messaging': 2.0.4
       '@lumino/signaling': 2.1.4
       '@lumino/widgets': 2.7.1
       react: 18.3.1
@@ -5550,7 +5544,7 @@ snapshots:
       '@lumino/commands': 2.3.2
       '@lumino/coreutils': 2.2.1
       '@lumino/disposable': 2.1.5
-      '@lumino/messaging': 2.0.3
+      '@lumino/messaging': 2.0.4
       '@lumino/polling': 2.1.4
       '@lumino/properties': 2.0.3
       '@lumino/signaling': 2.1.4
@@ -5580,10 +5574,6 @@ snapshots:
       '@lumino/commands': 2.3.3
       '@lumino/coreutils': 2.2.2
       '@lumino/widgets': 2.7.2
-
-  '@lumino/collections@2.0.3':
-    dependencies:
-      '@lumino/algorithm': 2.0.3
 
   '@lumino/collections@2.0.4':
     dependencies:
@@ -5639,11 +5629,6 @@ snapshots:
 
   '@lumino/keyboard@2.0.4': {}
 
-  '@lumino/messaging@2.0.3':
-    dependencies:
-      '@lumino/algorithm': 2.0.3
-      '@lumino/collections': 2.0.3
-
   '@lumino/messaging@2.0.4':
     dependencies:
       '@lumino/algorithm': 2.0.4
@@ -5686,7 +5671,7 @@ snapshots:
       '@lumino/domutils': 2.0.3
       '@lumino/dragdrop': 2.1.6
       '@lumino/keyboard': 2.0.3
-      '@lumino/messaging': 2.0.3
+      '@lumino/messaging': 2.0.4
       '@lumino/properties': 2.0.3
       '@lumino/signaling': 2.1.4
       '@lumino/virtualdom': 2.0.3
