@@ -192,7 +192,6 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
       `;
     }
 
-    let initialThemeLoad = true;
     themeManager.themeChanged.connect(() => {
       // Update SVG icon fills (since we put them in pseudo-elements we cannot style with CSS)
       const primary = getComputedStyle(document.documentElement).getPropertyValue("--jp-ui-font-color1");
@@ -201,17 +200,6 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
         fileIcon.svgstr.replace(/fill="([^"]{0,7})"/, `fill="${primary}"`),
         notebookIcon.svgstr.replace(/fill="([^"]{0,7})"/, `fill="${primary}"`)
       );
-
-      // Refresh widgets in case font/border sizes etc have changed
-      if (initialThemeLoad) {
-        initialThemeLoad = false;
-        // Don't refresh on first load since we will do it below after initial creation
-        // in the onAfterAttach lifecycle method.
-      } else {
-        Object.keys(widgetMap).map(
-          key => widgetMap[key].treefinder.load()
-        );
-      }
     });
 
     style.textContent = iconStyleContent(folderIcon.svgstr, fileIcon.svgstr, notebookIcon.svgstr);
