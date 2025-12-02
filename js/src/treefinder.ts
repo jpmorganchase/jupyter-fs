@@ -233,6 +233,9 @@ export class TreeFinderWidget extends DragDropWidget {
       // Set root-level load indicator
       grid.classList.toggle("jfs-mod-loading", this._initialLoad);
 
+      // Temporary workaround for grid size issues
+      // (grid.children[0] as HTMLElement).style.height = "100%";
+
       // Fix corner cleanup (workaround for underlying bug where we end up with two resize handles)
       const resizeSpans = grid.querySelectorAll(`thead tr > th:first-child > span.rt-column-resize`);
       const nHeaderRows = grid.querySelectorAll("thead tr").length;
@@ -367,25 +370,16 @@ export class TreeFinderWidget extends DragDropWidget {
   }
 
   async load() {
-    if (this._initialLoad) {
-      const node = this.node;
-      await this.nodeInit();
-      this._readyDelegate.resolve();
-      node.addEventListener("keydown", this);
-      node.addEventListener("dragenter", this);
-      node.addEventListener("dragover", this);
-      node.addEventListener("dragleave", this);
-      node.addEventListener("dragend", this);
-      node.addEventListener("drop", this);
-    }
-  }
-
-  /**
-   * A message handler invoked on an `'after-attach'` message.
-   */
-  protected onAfterAttach(msg: Message): void {
-    super.onAfterAttach(msg);
-    void this.load();
+    const node = this.node;
+    await this.nodeInit();
+    this._readyDelegate.resolve();
+    node.addEventListener("keydown", this);
+    node.addEventListener("dragenter", this);
+    node.addEventListener("dragover", this);
+    node.addEventListener("dragleave", this);
+    node.addEventListener("dragend", this);
+    node.addEventListener("drop", this);
+    this.draw({ reset: true });
   }
 
   /**
@@ -684,10 +678,7 @@ export class TreeFinderSidebar extends Widget {
   // }
 
   protected onAfterShow(msg: any): void {
-    this.treefinder.refresh();
-    this.treefinder.draw({ reset: true });
-    // Temporary workaround for grid size issues
-    (this.treefinder.node.querySelector("tree-finder-grid")?.shadowRoot?.querySelector("div.rt-scroll-table-clip") as HTMLElement).style.height = "110%";
+    void this.treefinder.load();
   }
 
   protected onResize(msg: any): void {
