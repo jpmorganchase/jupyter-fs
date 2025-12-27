@@ -7,7 +7,7 @@
 </a>
 </p>
 
-#
+# 
 
 <p align="center">
 <a href="https://github.com/jpmorganchase/jupyter-fs/actions/workflows/build.yml"><img alt="build status" src="https://github.com/jpmorganchase/jupyter-fs/actions/workflows/build.yml/badge.svg?branch=main&event=push"></a>
@@ -34,7 +34,6 @@ pip install jupyter-fs
 # pip install jupyter-fs[fsspec]
 ```
 
-
 ## Configure
 
 Add the following to your `jupyter_server_config.json`:
@@ -53,7 +52,6 @@ Add the following to your `jupyter_server_config.json`:
 Resources can then be added via the `Settings -> Settings Editor`.
 
 ![](https://raw.githubusercontent.com/jpmorganchase/jupyter-fs/main/docs/img/settings.png)
-
 
 ## Simple use (no auth/credentials)
 
@@ -91,7 +89,6 @@ You should see your new filebrowsers pop up in the left-hand sidebar instantly w
 
 ![](https://raw.githubusercontent.com/jpmorganchase/jupyter-fs/main/docs/img/osfs_example.png)
 
-
 ## Use with auth/credentials
 
 Any stretch of a `"url"` that is enclosed in double-brackets `{{VAR}}` will be treated as a template, and will be handled by `jupyter-fs`'s auth system. For example, you can pass a username/password to the `"samba guest share"` resource in the `Simple use` example above by modifying its `"url"` like so:
@@ -110,7 +107,7 @@ Any stretch of a `"url"` that is enclosed in double-brackets `{{VAR}}` will be t
 }
 ```
 
-When you save the above `"resouces"` config, a dialog box will pop asking for the `username` and `passwd` values:
+When you save the above `"resources"` config, a dialog box will pop asking for the `username` and `passwd` values:
 
 ![](https://raw.githubusercontent.com/jpmorganchase/jupyter-fs/main/docs/img/remote_example.png)
 
@@ -119,14 +116,13 @@ Once you enter those values and hit ok, the new filebrowsers will then immediate
 ### The auth dialog will only appear when needed
 
 The `jupyter-fs` auth dialog will only appear when:
-- JupyterLab first loads, if any fs resources require auth
-- a new fs resouce is added that requires auth, or its `"url"` field is modified
 
+- JupyterLab first loads, if any fs resources require auth
+- a new fs resource is added that requires auth, or its `"url"` field is modified
 
 > [!NOTE]
-> Additional options are overrideable via environment variables
+> Additional options are overridable via environment variables
 > by most backends for PyFilesystem and fsspec
-
 
 ## Supported filesystems
 
@@ -168,12 +164,13 @@ This field can be configured via JSON Settings or graphically.
 ### PyFilesystem
 
 The `"url"` field `jupyter-fs` config is based on the PyFilesystem [opener url](https://docs.pyfilesystem.org/en/latest/openers.html) standard. For more info on how to write these urls, see the documentation of the relevant PyFilesystem plugin:
+
 - S3: [S3FS docs](https://fs-s3fs.readthedocs.io/en/latest/)
 - smb: [fs.smbfs docs](https://github.com/althonos/fs.smbfs#usage)
 
 ### fsspec
-Similar to PyFilesystem, `fsspec` also allows for a `"url"` based opening scheme as documented [here](https://filesystem-spec.readthedocs.io/en/latest/api.html#fsspec.open).
 
+Similar to PyFilesystem, `fsspec` also allows for a `"url"` based opening scheme as documented [here](https://filesystem-spec.readthedocs.io/en/latest/api.html#fsspec.open).
 
 ## Server-side settings
 
@@ -213,11 +210,9 @@ ALternatively, you can add resource specifications alongside the basic `jupyter-
 
 Any filesystem resources specified in any server-side config file will be merged with the resources given in a user's settings.
 
-
 ## Development
 
 See [CONTRIBUTING.md](https://github.com/jpmorganchase/jupyter-fs/blob/main/.github/CONTRIBUTING.md) for guidelines.
-
 
 ## License
 

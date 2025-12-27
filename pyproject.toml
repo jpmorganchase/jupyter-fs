@@ -1,9 +1,5 @@
 [build-system]
-requires = [
-    "hatchling",
-    "hatch-jupyter-builder",
-    "jupyterlab>=4,<5",
-]
+requires = ["hatchling", "hatch-js", "jupyterlab>=4,<5"]
 build-backend="hatchling.build"
 
 [project]
@@ -13,7 +9,7 @@ description = "A Filesystem-like mult-contents manager backend for Jupyter"
 readme = "README.md"
 license = { text = "Apache-2.0" }
 version = "1.1.2"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 keywords = [
     "Jupyter",
     "JupyterLab",
@@ -31,11 +27,11 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "License :: OSI Approved :: Apache Software License",
 ]
 
@@ -49,8 +45,11 @@ develop = [
     "build",
     "bump-my-version",
     "check-manifest",
-    "hatch-jupyter-builder",
+    "codespell>=2.4,<2.5",
+    "hatch-js",
     "hatchling",
+    "mdformat>=0.7.22,<1.1",
+    "mdformat-tables>=1",
     "jupyterlab>=4,<5",
     "pytest",
     "pytest-asyncio",
@@ -93,6 +92,7 @@ Homepage = "https://github.com/jpmorganchase/jupyter-fs"
 current_version = "1.1.2"
 commit = true
 tag = true
+commit_args = "-s"
 
 [[tool.bumpversion.files]]
 filename = "jupyterfs/__init__.py"
@@ -111,7 +111,7 @@ replace = '"version": "{new_version}"'
 
 [tool.check-manifest]
 ignore = [
-    ".copier-answers.yml",
+    ".copier-answers.yaml",
     "js/pnpm-lock.yaml",
     "js/tsconfig.tsbuildinfo",
     "Makefile",
@@ -182,7 +182,10 @@ dependencies = [
 [tool.hatch.build.hooks.jupyter-builder.build-kwargs]
 path = "js"
 build_cmd = "build"
-npm = "pnpm"
+tool = "pnpm"
+targets = [
+    "jupyterfs/labextension/package.json",
+]
 
 [tool.pytest.ini_options]
 addopts = ["-vvv", "--junitxml=junit.xml"]
