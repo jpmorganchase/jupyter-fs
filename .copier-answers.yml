@@ -6,5 +6,5 @@ email: t.paine154@gmail.com
 github: jpmorganchase
 project_description: A Filesystem-like mult-contents manager backend for Jupyter
 project_name: jupyter-fs
-python_version_primary: '3.9'
+python_version_primary: '3.10'
 team: the jupyter-fs authors
