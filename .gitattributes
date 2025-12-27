@@ -12,4 +12,4 @@ Makefile linguist-documentation
 *.py text=auto eol=lf
 *.toml text=auto eol=lf
 *.ts text=auto eol=lf
-*.yml text=auto eol=lf
+*.yaml text=auto eol=lf
