@@ -167,20 +167,9 @@ packages = ["jupyterfs"]
 "jupyterfs/extension/install.json" = "share/jupyter/labextensions/jupyter-fs/install.json"
 "jupyterfs/extension/jupyter_server_config.d/jupyterfs.json" = "etc/jupyter/jupyter_server_config.d/jupyterfs.json"
 
-[tool.hatch.build.hooks.jupyter-builder]
-build-function = "hatch_jupyter_builder.npm_builder"
-ensured-targets = [
-    "jupyterfs/labextension/package.json",
-]
-skip-if-exists = [
-    "jupyterfs/labextension/package.json",
-]
-dependencies = [
-    "hatch-jupyter-builder",
-]
-
-[tool.hatch.build.hooks.jupyter-builder.build-kwargs]
+[tool.hatch.build.hooks.hatch-js]
 path = "js"
+install_cmd = "install"
 build_cmd = "build"
 tool = "pnpm"
 targets = [
