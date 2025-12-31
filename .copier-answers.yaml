@@ -1,10 +1,12 @@
 # Changes here will be overwritten by Copier
-_commit: '9689455'
+_commit: b74d698
 _src_path: https://github.com/python-project-templates/base.git
+add_docs: false
 add_extension: jupyter
+add_wiki: false
 email: t.paine154@gmail.com
 github: jpmorganchase
 project_description: A Filesystem-like mult-contents manager backend for Jupyter
 project_name: jupyter-fs
-python_version_primary: '3.9'
+python_version_primary: '3.10'
 team: the jupyter-fs authors

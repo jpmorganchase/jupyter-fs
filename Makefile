@@ -7,10 +7,20 @@ DOCKER_COMPOSE := podman-compose
 develop-py:
 	uv pip install -e .[develop]
 
-develop-js:
-	cd js; pnpm install
+develop-js: requirements-js
 
 develop: develop-js develop-py  ## setup project for development
+
+.PHONY: requirements-py requirements-js requirements
+requirements-py:  ## install prerequisite python build requirements
+	python -m pip install --upgrade pip toml
+	python -m pip install `python -c 'import toml; c = toml.load("pyproject.toml"); print("\n".join(c["build-system"]["requires"]))'`
+	python -m pip install `python -c 'import toml; c = toml.load("pyproject.toml"); print(" ".join(c["project"]["optional-dependencies"]["develop"]))'`
+
+requirements-js:  ## install prerequisite javascript build requirements
+	cd js; pnpm install && npx playwright install
+
+requirements: requirements-js requirements-py  ## setup project for development
 
 .PHONY: build-py build-js build
 build-py:
@@ -28,7 +38,7 @@ install:  ## install python library
 #########
 # LINTS #
 #########
-.PHONY: lint-py lint-js lint lints
+.PHONY: lint-py lint-js lint-docs lint lints
 lint-py:  ## run python linter with ruff
 	python -m ruff check jupyterfs
 	python -m ruff format --check jupyterfs
@@ -36,12 +46,16 @@ lint-py:  ## run python linter with ruff
 lint-js:  ## run js linter
 	cd js; pnpm lint
 
-lint: lint-js lint-py  ## run project linters
+lint-docs:  ## lint docs with mdformat and codespell
+	python -m mdformat --check README.md
+	python -m codespell_lib README.md
+
+lint: lint-js lint-py lint-docs  ## run project linters
 
 # alias
 lints: lint
 
-.PHONY: fix-py fix-js fix format
+.PHONY: fix-py fix-js fix-docs fix format
 fix-py:  ## fix python formatting with ruff
 	python -m ruff check --fix jupyterfs
 	python -m ruff format jupyterfs
@@ -49,7 +63,11 @@ fix-py:  ## fix python formatting with ruff
 fix-js:  ## fix js formatting
 	cd js; pnpm fix
 
-fix: fix-js fix-py  ## run project autoformatters
+fix-docs:  ## autoformat docs with mdformat and codespell
+	python -m mdformat README.md
+	python -m codespell_lib --write README.md
+
+fix: fix-js fix-py fix-docs  ## run project autoformatters
 
 # alias
 format: fix
@@ -147,7 +165,7 @@ major:  ## bump a major version
 ########
 .PHONY: dist dist-py dist-js dist-check publish
 
-dist-py:  # build python dists
+dist-py:  ## build python dists
 	python -m build -w -s
 
 dist-js:  # build js dists
@@ -158,7 +176,7 @@ dist-check:  ## run python dist checker with twine
 
 dist: clean build dist-js dist-py dist-check  ## build all dists
 
-publish: dist  # publish python assets
+publish: dist  ## publish python assets
 
 #########
 # CLEAN #

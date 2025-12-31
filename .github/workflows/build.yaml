@@ -29,20 +29,20 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ["3.11"]
-        node-version: [22.x]
+        os: [ubuntu-latest]
+        python-version: ["3.10"]
+        node-version: [20.x]
 
     steps:
     - uses: actions/checkout@v6
 
-    - uses: actions-ext/python/setup@v2
+    - uses: actions-ext/python/setup@main
       with:
         version: ${{ matrix.python-version }}
 
-    - uses: actions-ext/node/setup@v2
+    - uses: actions-ext/node/setup@main
       with:
-        version: ${{ matrix.node-version }}
+        version: 22.x
 
     - name: Install dependencies
       run: make develop
@@ -105,6 +105,11 @@ jobs:
         files: '**/junit.xml'
       if: matrix.os == 'ubuntu-latest'
 
+    - name: Upload coverage
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+
     - name: Make dist
       run: make dist
       if: matrix.os == 'ubuntu-latest'
@@ -114,3 +119,4 @@ jobs:
         name: dist-${{matrix.os}}
         path: dist
       if: matrix.os == 'ubuntu-latest'
+
