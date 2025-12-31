@@ -100,8 +100,8 @@ importers:
         specifier: ^4.5.1
         version: 4.5.1
       '@rjsf/utils':
-        specifier: ^5.24.13
-        version: 5.24.13(react@18.3.1)
+        specifier: ^6.1.2
+        version: 6.1.2(react@18.3.1)
       '@types/file-saver':
         specifier: ^2.0.7
         version: 2.0.7
@@ -1214,6 +1214,12 @@ packages:
     peerDependencies:
       react: ^16.14.0 || >=17
 
+  '@rjsf/utils@6.1.2':
+    resolution: {integrity: sha512-Px3FIkE1KK0745Qng9v88RZ0O7hcLf/1JUu0j00g+r6C8Zyokna42Hz/5TKyyQSKJqgVYcj2Z47YroVLenUM3A==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      react: '>=18'
+
   '@rtsao/scc@1.1.0':
     resolution: {integrity: sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g==}
 
@@ -1570,6 +1576,9 @@ packages:
     peerDependenciesMeta:
       webpack-dev-server:
         optional: true
+
+  '@x0k/json-schema-merge@1.0.2':
+    resolution: {integrity: sha512-1734qiJHNX3+cJGDMMw2yz7R+7kpbAtl5NdPs1c/0gO5kYT6s4dMbLXiIfpZNsOYhGZI3aH7FWrj4Zxz7epXNg==}
 
   '@xtuc/ieee754@1.2.0':
     resolution: {integrity: sha512-DX8nKgqcGwsc0eJSqYt5lwP4DH5FlHnmuWWBRy7X0NcaGR0ZtuyeESgMwTYVEtxmsNGY+qit4QYT/MIYTOTPeA==}
@@ -6135,6 +6144,16 @@ snapshots:
       react: 18.3.1
       react-is: 18.3.1
 
+  '@rjsf/utils@6.1.2(react@18.3.1)':
+    dependencies:
+      '@x0k/json-schema-merge': 1.0.2
+      fast-uri: 3.1.0
+      jsonpointer: 5.0.1
+      lodash: 4.17.21
+      lodash-es: 4.17.22
+      react: 18.3.1
+      react-is: 18.3.1
+
   '@rtsao/scc@1.1.0': {}
 
   '@sinclair/typebox@0.27.8': {}
@@ -6515,6 +6534,10 @@ snapshots:
     dependencies:
       webpack: 5.104.1(webpack-cli@5.1.4)
       webpack-cli: 5.1.4(webpack@5.104.1)
+
+  '@x0k/json-schema-merge@1.0.2':
+    dependencies:
+      '@types/json-schema': 7.0.15
 
   '@xtuc/ieee754@1.2.0': {}
 
