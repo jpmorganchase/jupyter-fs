@@ -10,7 +10,7 @@
 # 
 
 <p align="center">
-<a href="https://github.com/jpmorganchase/jupyter-fs/actions/workflows/build.yml"><img alt="build status" src="https://github.com/jpmorganchase/jupyter-fs/actions/workflows/build.yml/badge.svg?branch=main&event=push"></a>
+<a href="https://github.com/jpmorganchase/jupyter-fs/actions/workflows/build.yaml"><img alt="build status" src="https://github.com/jpmorganchase/jupyter-fs/actions/workflows/build.yaml/badge.svg?branch=main&event=push"></a>
 <a href="https://pypi.python.org/pypi/jupyter-fs"><img alt="pypi package" src="https://img.shields.io/pypi/v/jupyter-fs.svg"></a>
 <a href="https://www.npmjs.com/package/jupyter-fs"><img alt="npm package" src="https://img.shields.io/npm/v/jupyter-fs.svg"></a>
 <a href="https://mybinder.org/v2/gh/jpmorganchase/jupyter-fs/main?urlpath=lab"><img alt="binder link" src="https://mybinder.org/badge_logo.svg"></a>
