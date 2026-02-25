@@ -1,4 +1,38 @@
 #!/bin/bash
+set -eux
+
 python --version
 jupyter --version
-pip install .
+
+npm install -g pnpm
+pip install ".[fsspec]"
+
+# Configure jupyter-fs as the contents manager
+mkdir -p ~/.jupyter
+cat > ~/.jupyter/jupyter_server_config.json <<'EOF'
+{
+  "ServerApp": {
+    "contents_manager_class": "jupyterfs.metamanager.MetaManager"
+  }
+}
+EOF
+
+# Pre-configure jupyter-fs with a local filesystem resource for the demo
+SETTINGS_DIR="${HOME}/.jupyter/lab/user-settings"
+PLUGIN_DIR="${SETTINGS_DIR}/jupyter-fs"
+mkdir -p "${PLUGIN_DIR}"
+cat > "${PLUGIN_DIR}/plugin.jupyterlab-settings" <<'EOF'
+{
+  "resources": [
+    {
+      "name": "Home",
+      "url": "file:///home/jovyan",
+      "type": "fsspec"
+    }
+  ],
+  "options": {
+    "verbose": true
+  },
+  "display_columns": ["size", "last_modified"]
+}
+EOF

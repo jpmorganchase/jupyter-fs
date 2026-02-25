@@ -9,8 +9,8 @@ name: jupyter-fs-demo
 channels:
   - conda-forge
 dependencies:
-  - python >=3.8,<3.9.0a0
-  - jupyterlab >=3,<4.0.0a0
-  - nodejs=15.8
+  - python >=3.10,<3.13
+  - jupyterlab >=4,<5
+  - nodejs >=22,<25
   - pip
   - wheel
