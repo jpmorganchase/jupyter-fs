@@ -16,7 +16,7 @@ importers:
         version: 4.6.3
       '@jupyterlab/coreutils':
         specifier: ^6.5.3
-        version: 6.5.3
+        version: 6.5.5
       '@jupyterlab/docmanager':
         specifier: ^4.5.3
         version: 4.5.3
@@ -1022,8 +1022,8 @@ packages:
   '@jupyterlab/codeeditor@4.5.3':
     resolution: {integrity: sha512-7JERgaQt+HHnlhr+JQp6Bah+TeA/6R6iRTC3JO5zjZ20Q/WYRCGcIKy2fj/qbBAApIYENLd9OgMcfpPM3iW7Dg==}
 
-  '@jupyterlab/coreutils@6.5.3':
-    resolution: {integrity: sha512-JmEqPBflE93J5TwEkynQHIgAHuqG4Z+v0hsVagm44JO6flapTduU3v1wJUtOqrpYrkwNRrfYMwZct91u6mgPvQ==}
+  '@jupyterlab/coreutils@6.5.5':
+    resolution: {integrity: sha512-oaGByORCsretbnaQ+F9ZRKO6fYzqGJtcTL6dbib0sixL1eH/jPkVgEV8q5Ex+zUbVPY9L7q1BpyrDzVEX2P2aw==}
 
   '@jupyterlab/docmanager@4.5.3':
     resolution: {integrity: sha512-nUpXH6VSB0MxU61/yUyNoRvl/K7iIqYdfvN23zBH/9z9Z0SwaaFcBaMzCC8cTkgsnqdhdGHBOT/UbkuHg7Sewg==}
@@ -2479,6 +2479,7 @@ packages:
 
   glob@10.5.0:
     resolution: {integrity: sha512-DfXN8DfhJ7NH3Oe7cFmu3NCu1wKbkReJ8TorzSAFbSKrlNaQSKfIzqYqVY8zlbs2NLBbWpRiU52GX2PbaBVNkg==}
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
     hasBin: true
 
   glob@13.0.0:
@@ -2487,11 +2488,11 @@ packages:
 
   glob@7.1.7:
     resolution: {integrity: sha512-OvD9ENzPLbegENnYP5UUfJIirTg4+XwMWGaQfQTY0JenxNvvIKP3U3/tAQSPIu/lHxXYSZmpXlUHeqAIdKzBLQ==}
-    deprecated: Glob versions prior to v9 are no longer supported
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   glob@7.2.3:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
-    deprecated: Glob versions prior to v9 are no longer supported
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   globals@13.24.0:
     resolution: {integrity: sha512-AhO5QUcj8llrbG09iWhPU2B204J1xnPeL8kQmVorSsy+Sjj1sk8gIyh6cUocGmH4L0UuhAJy+hJMRA4mgA4mFQ==}
@@ -5604,7 +5605,7 @@ snapshots:
     dependencies:
       '@fortawesome/fontawesome-free': 5.15.4
       '@jupyterlab/apputils': 4.6.3
-      '@jupyterlab/coreutils': 6.5.3
+      '@jupyterlab/coreutils': 6.5.5
       '@jupyterlab/docregistry': 4.5.3
       '@jupyterlab/rendermime': 4.5.3(react@18.3.1)
       '@jupyterlab/rendermime-interfaces': 3.13.3
@@ -5629,7 +5630,7 @@ snapshots:
 
   '@jupyterlab/apputils@4.6.3':
     dependencies:
-      '@jupyterlab/coreutils': 6.5.3
+      '@jupyterlab/coreutils': 6.5.5
       '@jupyterlab/observables': 5.5.3
       '@jupyterlab/rendermime-interfaces': 3.13.3
       '@jupyterlab/services': 7.5.3(react@18.3.1)
@@ -5701,7 +5702,7 @@ snapshots:
       '@codemirror/state': 6.5.4
       '@jupyter/ydoc': 3.3.4
       '@jupyterlab/apputils': 4.6.3
-      '@jupyterlab/coreutils': 6.5.3
+      '@jupyterlab/coreutils': 6.5.5
       '@jupyterlab/nbformat': 4.5.3
       '@jupyterlab/observables': 5.5.3
       '@jupyterlab/statusbar': 4.5.3
@@ -5718,7 +5719,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@jupyterlab/coreutils@6.5.3':
+  '@jupyterlab/coreutils@6.5.5':
     dependencies:
       '@lumino/coreutils': 2.2.2
       '@lumino/disposable': 2.1.5
@@ -5730,7 +5731,7 @@ snapshots:
   '@jupyterlab/docmanager@4.5.3':
     dependencies:
       '@jupyterlab/apputils': 4.6.3
-      '@jupyterlab/coreutils': 6.5.3
+      '@jupyterlab/coreutils': 6.5.5
       '@jupyterlab/docregistry': 4.5.3
       '@jupyterlab/rendermime': 4.5.3(react@18.3.1)
       '@jupyterlab/services': 7.5.3(react@18.3.1)
@@ -5756,7 +5757,7 @@ snapshots:
       '@jupyter/ydoc': 3.3.4
       '@jupyterlab/apputils': 4.6.3
       '@jupyterlab/codeeditor': 4.5.3
-      '@jupyterlab/coreutils': 6.5.3
+      '@jupyterlab/coreutils': 6.5.5
       '@jupyterlab/observables': 5.5.3
       '@jupyterlab/rendermime': 4.5.3(react@18.3.1)
       '@jupyterlab/rendermime-interfaces': 3.13.3
@@ -5778,7 +5779,7 @@ snapshots:
   '@jupyterlab/filebrowser@4.5.3':
     dependencies:
       '@jupyterlab/apputils': 4.6.3
-      '@jupyterlab/coreutils': 6.5.3
+      '@jupyterlab/coreutils': 6.5.5
       '@jupyterlab/docmanager': 4.5.3
       '@jupyterlab/docregistry': 4.5.3
       '@jupyterlab/services': 7.5.3(react@18.3.1)
@@ -5824,7 +5825,7 @@ snapshots:
   '@jupyterlab/rendermime@4.5.3(react@18.3.1)':
     dependencies:
       '@jupyterlab/apputils': 4.6.3
-      '@jupyterlab/coreutils': 6.5.3
+      '@jupyterlab/coreutils': 6.5.5
       '@jupyterlab/nbformat': 4.5.3
       '@jupyterlab/observables': 5.5.3
       '@jupyterlab/rendermime-interfaces': 3.13.3
@@ -5843,7 +5844,7 @@ snapshots:
   '@jupyterlab/services@7.5.3(react@18.3.1)':
     dependencies:
       '@jupyter/ydoc': 3.3.4
-      '@jupyterlab/coreutils': 6.5.3
+      '@jupyterlab/coreutils': 6.5.5
       '@jupyterlab/nbformat': 4.5.3
       '@jupyterlab/settingregistry': 4.5.3(react@18.3.1)
       '@jupyterlab/statedb': 4.5.3
@@ -5895,7 +5896,7 @@ snapshots:
 
   '@jupyterlab/translation@4.5.3(react@18.3.1)':
     dependencies:
-      '@jupyterlab/coreutils': 6.5.3
+      '@jupyterlab/coreutils': 6.5.5
       '@jupyterlab/rendermime-interfaces': 3.13.3
       '@jupyterlab/services': 7.5.3(react@18.3.1)
       '@jupyterlab/statedb': 4.5.3
@@ -5909,7 +5910,7 @@ snapshots:
     dependencies:
       '@jupyter/react-components': 0.16.7
       '@jupyter/web-components': 0.16.7
-      '@jupyterlab/coreutils': 6.5.3
+      '@jupyterlab/coreutils': 6.5.5
       '@jupyterlab/observables': 5.5.3
       '@jupyterlab/rendermime-interfaces': 3.13.3
       '@jupyterlab/translation': 4.5.3(react@18.3.1)
