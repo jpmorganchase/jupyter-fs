@@ -37,7 +37,7 @@ importers:
         version: 4.5.3
       '@jupyterlab/statusbar':
         specifier: ^4.5.3
-        version: 4.5.3
+        version: 4.5.5
       '@jupyterlab/translation':
         specifier: ^4.5.3
         version: 4.5.5(react@18.3.1)
@@ -1038,6 +1038,9 @@ packages:
   '@jupyterlab/observables@5.5.3':
     resolution: {integrity: sha512-F+sVR8vxX9jtxR6up0yDE+z85mCdU89uarF1GAbhEox4sEEwErpfnkFRpIkHjTqI7wmQXD5P/zduJq1yKASciQ==}
 
+  '@jupyterlab/observables@5.5.5':
+    resolution: {integrity: sha512-Z2scWxokKlXN1OkXrbawFmE5R8wfNCsO9PBlwcR86JDlEfJ1/acFbmEf5QGB5vW/zNMfROKbl8aVAa2vevemDQ==}
+
   '@jupyterlab/rendermime-interfaces@3.13.3':
     resolution: {integrity: sha512-0DylbXQl38bj6+Y/Vc9V3enZZjGKXJizfHThwXbfdPI2e9zH2SIiHF0hhbdZo0xLW/00crNhRq6zUoSa/LHScg==}
 
@@ -1069,14 +1072,19 @@ packages:
   '@jupyterlab/statedb@4.5.5':
     resolution: {integrity: sha512-lBKtSkcSEkyiFY4zxcBn1pG9EZ3C7sBgXJjHEt4UutKKpDfvGNl9sn5oZSx6BZ/rZC4uoN0EMXFs9kvJZyQiUg==}
 
-  '@jupyterlab/statusbar@4.5.3':
-    resolution: {integrity: sha512-OihIXi76i/iYlIELtki52l874XMTi1j108M59HYrSdBJI82SfgoeZmWdui6lVyAUOfDd/shb1Tqcll3qsvb+qQ==}
+  '@jupyterlab/statusbar@4.5.5':
+    resolution: {integrity: sha512-XELj8Uy5X95xmDa+q3zJ8qVUqO9tdOqmeVHXDAQEola1hw0RHx1ZQhFDWOS2ETYwlI19vwOB9qHz7dJijefsKw==}
 
   '@jupyterlab/translation@4.5.5':
     resolution: {integrity: sha512-awLvHrLUvKVczuOZf1H0XK5zKt17u30BDrWz0hzN++XeNRQlcnnQ2NhX2GUle+Wi5Kng0qXDNH0olXlcD2PeMQ==}
 
   '@jupyterlab/ui-components@4.5.3':
     resolution: {integrity: sha512-f7b45zCinT+1m2a8PsrrVAeVTv9loTjrfDD+JJofKejLcwcbmTg7JBc9NTZpfUbCf9pU1Lf/1I15L44V/IzSLw==}
+    peerDependencies:
+      react: ^18.2.0
+
+  '@jupyterlab/ui-components@4.5.5':
+    resolution: {integrity: sha512-NkQ/OY1KiVkjjuax+GoUE0ZyI8lnuR6lhgUGzzkQxmQHte4tvfA57PuNuyq37/gFMwsGBA4bTRfucPuaZACJAA==}
     peerDependencies:
       react: ^18.2.0
 
@@ -5671,7 +5679,7 @@ snapshots:
       '@jupyterlab/services': 7.5.3(react@18.3.1)
       '@jupyterlab/settingregistry': 4.5.3(react@18.3.1)
       '@jupyterlab/statedb': 4.5.3
-      '@jupyterlab/statusbar': 4.5.3
+      '@jupyterlab/statusbar': 4.5.5
       '@jupyterlab/translation': 4.5.5(react@18.3.1)
       '@jupyterlab/ui-components': 4.5.3(react@18.3.1)
       '@lumino/algorithm': 2.0.4
@@ -5740,7 +5748,7 @@ snapshots:
       '@jupyterlab/coreutils': 6.5.5
       '@jupyterlab/nbformat': 4.5.3
       '@jupyterlab/observables': 5.5.3
-      '@jupyterlab/statusbar': 4.5.3
+      '@jupyterlab/statusbar': 4.5.5
       '@jupyterlab/translation': 4.5.5(react@18.3.1)
       '@jupyterlab/ui-components': 4.5.3(react@18.3.1)
       '@lumino/coreutils': 2.2.2
@@ -5771,7 +5779,7 @@ snapshots:
       '@jupyterlab/rendermime': 4.5.3(react@18.3.1)
       '@jupyterlab/services': 7.5.3(react@18.3.1)
       '@jupyterlab/statedb': 4.5.3
-      '@jupyterlab/statusbar': 4.5.3
+      '@jupyterlab/statusbar': 4.5.5
       '@jupyterlab/translation': 4.5.5(react@18.3.1)
       '@jupyterlab/ui-components': 4.5.3(react@18.3.1)
       '@lumino/algorithm': 2.0.4
@@ -5819,7 +5827,7 @@ snapshots:
       '@jupyterlab/docregistry': 4.5.3
       '@jupyterlab/services': 7.5.3(react@18.3.1)
       '@jupyterlab/statedb': 4.5.3
-      '@jupyterlab/statusbar': 4.5.3
+      '@jupyterlab/statusbar': 4.5.5
       '@jupyterlab/translation': 4.5.5(react@18.3.1)
       '@jupyterlab/ui-components': 4.5.3(react@18.3.1)
       '@lumino/algorithm': 2.0.4
@@ -5849,6 +5857,14 @@ snapshots:
       '@lumino/coreutils': 2.2.2
 
   '@jupyterlab/observables@5.5.3':
+    dependencies:
+      '@lumino/algorithm': 2.0.4
+      '@lumino/coreutils': 2.2.2
+      '@lumino/disposable': 2.1.5
+      '@lumino/messaging': 2.0.4
+      '@lumino/signaling': 2.1.5
+
+  '@jupyterlab/observables@5.5.5':
     dependencies:
       '@lumino/algorithm': 2.0.4
       '@lumino/coreutils': 2.2.2
@@ -5963,15 +5979,15 @@ snapshots:
       '@lumino/properties': 2.0.4
       '@lumino/signaling': 2.1.5
 
-  '@jupyterlab/statusbar@4.5.3':
+  '@jupyterlab/statusbar@4.5.5':
     dependencies:
-      '@jupyterlab/ui-components': 4.5.3(react@18.3.1)
+      '@jupyterlab/ui-components': 4.5.5(react@18.3.1)
       '@lumino/algorithm': 2.0.4
       '@lumino/coreutils': 2.2.2
       '@lumino/disposable': 2.1.5
       '@lumino/messaging': 2.0.4
       '@lumino/signaling': 2.1.5
-      '@lumino/widgets': 2.7.4
+      '@lumino/widgets': 2.7.5
       react: 18.3.1
     transitivePeerDependencies:
       - bufferutil
@@ -6007,6 +6023,33 @@ snapshots:
       '@lumino/signaling': 2.1.5
       '@lumino/virtualdom': 2.0.4
       '@lumino/widgets': 2.7.4
+      '@rjsf/core': 5.24.13(@rjsf/utils@5.24.13(react@18.3.1))(react@18.3.1)
+      '@rjsf/utils': 5.24.13(react@18.3.1)
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+      typestyle: 2.4.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
+  '@jupyterlab/ui-components@4.5.5(react@18.3.1)':
+    dependencies:
+      '@jupyter/react-components': 0.16.7
+      '@jupyter/web-components': 0.16.7
+      '@jupyterlab/coreutils': 6.5.5
+      '@jupyterlab/observables': 5.5.5
+      '@jupyterlab/rendermime-interfaces': 3.13.5
+      '@jupyterlab/translation': 4.5.5(react@18.3.1)
+      '@lumino/algorithm': 2.0.4
+      '@lumino/commands': 2.3.3
+      '@lumino/coreutils': 2.2.2
+      '@lumino/disposable': 2.1.5
+      '@lumino/messaging': 2.0.4
+      '@lumino/polling': 2.1.5
+      '@lumino/properties': 2.0.4
+      '@lumino/signaling': 2.1.5
+      '@lumino/virtualdom': 2.0.4
+      '@lumino/widgets': 2.7.5
       '@rjsf/core': 5.24.13(@rjsf/utils@5.24.13(react@18.3.1))(react@18.3.1)
       '@rjsf/utils': 5.24.13(react@18.3.1)
       react: 18.3.1
