@@ -77,6 +77,14 @@ const COLUMN_NAMES = [
   "mimetype",
 ];
 
+const COLUMN_DISPLAY_LABELS: Record<string, string> = {
+  path: "Name",
+  size: "Size",
+  last_modified: "Modified",
+  writable: "Writable",
+  mimetype: "Type",
+};
+
 
 export function idFromResource(resource: IFSResource): string {
   return [resource.name.split(" ").join(""), resource.drive].join("_");
@@ -327,7 +335,7 @@ export function createStaticCommands(
     }),
     app.commands.addCommand(commandIDs.toggleColumnPath, {
       execute: args => { /* no-op */ },
-      label: "path",
+      label: COLUMN_DISPLAY_LABELS.path ?? "Name",
       isEnabled: () => false,
       isToggled: () => true,
     }),
@@ -362,6 +370,11 @@ export function createStaticCommands(
 }
 
 
+export interface IDynamicCommandsResult {
+  disposable: IDisposable;
+  columnsMenu: Menu;
+}
+
 /**
  * Create commands whose count/IDs depend on settings/resources
  */
@@ -371,12 +384,12 @@ export async function createDynamicCommands(
   clipboard: JupyterClipboard,
   resources: IFSResource[],
   settings?: ISettingRegistry.ISettings,
-): Promise<IDisposable> {
+): Promise<IDynamicCommandsResult> {
   const columnCommands = [];
   const toggleState: {[key: string]: boolean} = {};
-  const colsToDisplay = settings?.composite.display_columns as string[] ?? ["size"];
+  const colsToDisplay = settings?.composite.display_columns as string[] ?? [];
   const columnsMenu = new Menu({ commands: app.commands });
-  columnsMenu.title.label = "Show/Hide Columns";
+  columnsMenu.title.label = "Visible Columns";
   columnsMenu.title.icon = filterListIcon;
   columnsMenu.addItem({ command: commandIDs.toggleColumnPath });
   for (const column of COLUMN_NAMES) {
@@ -387,7 +400,7 @@ export async function createDynamicCommands(
         toggleState[column] = !toggleState[column];
         await settings?.set("display_columns", COLUMN_NAMES.filter(k => toggleState[k]));
       },
-      label: column,
+      label: COLUMN_DISPLAY_LABELS[column] ?? column,
       isToggleable: true,
       isToggled: () => toggleState[column],
     }));
@@ -499,7 +512,7 @@ export async function createDynamicCommands(
   const selector = ".jp-tree-finder-sidebar";
   let contextMenuRank = 1;
 
-  return [
+  const disposable = [
     ...columnCommands,
     ...snippetCommands,
 
@@ -587,12 +600,6 @@ export async function createDynamicCommands(
       rank: contextMenuRank++,
     }),
     app.contextMenu.addItem({
-      type: "submenu",
-      submenu: columnsMenu,
-      selector,
-      rank: contextMenuRank++,
-    }),
-    app.contextMenu.addItem({
       args: { selection: true },
       command: commandIDs.refresh,
       selector,
@@ -601,6 +608,8 @@ export async function createDynamicCommands(
   ].reduce((set: DisposableSet, d) => {
     set.add(d); return set;
   }, new DisposableSet());
+
+  return { disposable, columnsMenu };
 }
 
 

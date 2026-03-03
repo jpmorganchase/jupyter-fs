@@ -297,6 +297,11 @@
           "type": "boolean",
           "default": false
         },
+        "showFilter": {
+          "description": "If true, show column filter inputs in the tree-finder header",
+          "type": "boolean",
+          "default": false
+        },
         "writtenVersion": {
           "description": "The version of the schema these settings were written with (do not edit)",
           "type": "string"
@@ -312,7 +317,7 @@
         "type": "string",
         "enum": ["size", "last_modified", "writable", "mimetype"]
       },
-      "default": ["size"],
+      "default": [],
       "maxItems": 4,
       "uniqueItems": true
     }

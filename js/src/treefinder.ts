@@ -31,13 +31,14 @@ import {
   refreshIcon,
   newFolderIcon,
   addIcon,
+  filterIcon,
 } from "@jupyterlab/ui-components";
 // import JSZip from "jszip";
 import { ArrayExt } from "@lumino/algorithm";
 import { CommandRegistry } from "@lumino/commands";
 import { PromiseDelegate } from "@lumino/coreutils";
 import { Message } from "@lumino/messaging";
-import { PanelLayout, Widget } from "@lumino/widgets";
+import { PanelLayout, Widget, Menu } from "@lumino/widgets";
 import { Content, ContentsModel, Format, Path, TreeFinderGridElement, TreeFinderPanelElement } from "@tree-finder/base";
 
 import { JupyterClipboard } from "./clipboard";
@@ -51,6 +52,14 @@ import { promptRename } from "./utils";
 import { Uploader, UploadButton } from "./upload";
 import { MimeData } from "@lumino/coreutils";
 import { Drag } from "@lumino/dragdrop";
+
+const COLUMN_LABELS: Record<string, string> = {
+  path: "Name",
+  size: "Size",
+  last_modified: "Modified",
+  writable: "Writable",
+  mimetype: "Type",
+};
 
 
 export class TreeFinderTracker extends WidgetTracker<TreeFinderSidebar> {
@@ -192,7 +201,11 @@ export class TreeFinderWidget extends DragDropWidget {
   }
 
   draw(props: { reset?: boolean } = {}) {
-    this.model?.requestDraw();
+    if (props.reset) {
+      this.model?.requestDraw({ autosize: true });
+    } else {
+      this.model?.requestDraw();
+    }
   }
 
   refresh() {
@@ -220,7 +233,7 @@ export class TreeFinderWidget extends DragDropWidget {
           writable: (x => x ? "✓" : "╳"),
         },
         doWindowResize: true,
-        showFilter: true,
+        showFilter: (this.settings?.composite?.options as any)?.showFilter ?? false,
       },
       modelOptions: {
         columnNames: this.columns,
@@ -246,6 +259,16 @@ export class TreeFinderWidget extends DragDropWidget {
         }
       }
 
+      // Capitalize column header labels, and tag with original name
+      for (const headerName of grid.querySelectorAll<HTMLSpanElement>("span.tf-header-name")) {
+        const raw = headerName.textContent?.trim() ?? "";
+        const label = COLUMN_LABELS[raw];
+        if (label) {
+          headerName.setAttribute("data-column", raw);
+          headerName.setAttribute("data-label", label);
+        }
+      }
+
       // Fix focus and tabbing
       let lastSelectIdx = this.model?.selectedLast ? this.model?.contents.indexOf(this.model.selectedLast) : -1;
       const lostFocus = document.activeElement !== this.node;
@@ -254,7 +277,8 @@ export class TreeFinderWidget extends DragDropWidget {
 
         if (tableHeader) {
           // If tableheader is path, do not make it draggable
-          if (tableHeader.innerText !== "path") {
+          const col = tableHeader.getAttribute("data-column") ?? tableHeader.textContent?.trim();
+          if (col !== "path" && col !== COLUMN_LABELS.path) {
             tableHeader.classList.add(this.dragHandleClass);
           }
         }
@@ -629,12 +653,102 @@ export class TreeFinderSidebar extends Widget {
     this.toolbar.addClass("jp-tree-finder-toolbar");
     this.preferredDir = preferredDir;
 
+    this.filterButton = new ToolbarButton({
+      icon: filterIcon,
+      onClick: () => {
+        this.toggleFilter();
+      },
+      tooltip: "Toggle File Filter",
+    });
+
+    this._filterBarEl = document.createElement("div");
+    this._filterBarEl.className = "jp-tree-finder-filterbar";
+    this._filterBarEl.setAttribute("slot", "filters");
+    const searchEl = document.createElement("jp-search") as HTMLInputElement;
+    searchEl.className = "jp-FilterBox";
+    searchEl.placeholder = "Filter files by name";
+    this._filterBarEl.appendChild(searchEl);
+    searchEl.addEventListener("input", () => {
+      const pattern = (searchEl as any).value ?? "";
+      const model = this.treefinder.model;
+      if (model) {
+        model.filterPatterns.set({ col: "path" as any, pattern });
+        void model.filter();
+      }
+    });
+    searchEl.addEventListener("keydown", (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        (searchEl as any).value = "";
+        searchEl.dispatchEvent(new Event("input"));
+        this.toggleFilter(false);
+      }
+    });
+
     this.treefinder = new TreeFinderWidget({ app, rootPath, columns, settings });
 
     this.layout = new PanelLayout();
     (this.layout as PanelLayout).addWidget(this.toolbar);
     (this.layout as PanelLayout).addWidget(this.treefinder);
 
+    void this.treefinder.ready.then(() => {
+      this._injectFilterBar();
+      this._observeFilterBar();
+    });
+
+  }
+
+  toggleFilter(show?: boolean) {
+    if (!this._filterBarEl.isConnected) {
+      this._injectFilterBar();
+    }
+    const active = this._filterBarEl.classList.contains("jp-mod-active");
+    const newState = show ?? !active;
+    this._filterBarEl.classList.toggle("jp-mod-active", newState);
+    this.filterButton.pressed = newState;
+    if (newState) {
+      const search = this._filterBarEl.querySelector<HTMLInputElement>("jp-search");
+      search?.focus();
+    } else {
+      const search = this._filterBarEl.querySelector<HTMLInputElement>("jp-search");
+      if (search && search.value) {
+        search.value = "";
+        search.dispatchEvent(new Event("input"));
+      }
+    }
+  }
+
+  private _observeFilterBar() {
+    const panel = this.treefinder.node;
+    this._panelObserver = new MutationObserver(() => {
+      if (!this._filterBarEl.isConnected) {
+        this._injectFilterBar();
+        this._reapplyFilter();
+      }
+    });
+    this._panelObserver.observe(panel, { childList: true });
+  }
+
+  private _injectFilterBar() {
+    const panel = this.treefinder.node;
+    const existing = panel.querySelector("[slot='filters']");
+    if (existing && existing !== this._filterBarEl) {
+      existing.replaceWith(this._filterBarEl);
+    } else if (!existing) {
+      const grid = panel.querySelector("tree-finder-grid");
+      if (grid) {
+        panel.insertBefore(this._filterBarEl, grid);
+      }
+    }
+  }
+
+  private _reapplyFilter() {
+    const search = this._filterBarEl.querySelector<HTMLInputElement>("jp-search");
+    const pattern = search?.value ?? "";
+    const model = this.treefinder.model;
+    if (model) {
+      model.filterPatterns.set({ col: "path" as any, pattern });
+      void model.filter();
+    }
   }
 
   restore() { // restore expansion prior to rebuild
@@ -682,7 +796,26 @@ export class TreeFinderSidebar extends Widget {
   }
 
   protected onResize(msg: any): void {
-    this.treefinder.draw();
+    this.treefinder.draw({ reset: true });
+  }
+
+  setColumnsMenu(menu: Menu) {
+    this._columnsMenu = menu;
+
+    void this.treefinder.ready.then(() => {
+      const grid = this.treefinder.node.querySelector("tree-finder-grid");
+      if (grid) {
+        grid.addEventListener("contextmenu", (e: Event) => {
+          const me = e as MouseEvent;
+          const target = me.target as HTMLElement;
+          if (target.closest("thead")) {
+            me.preventDefault();
+            me.stopPropagation();
+            this._columnsMenu?.open(me.clientX, me.clientY);
+          }
+        });
+      }
+    });
   }
 
   preferredDir: string | undefined;
@@ -691,6 +824,10 @@ export class TreeFinderSidebar extends Widget {
 
   readonly url: string;
   readonly type: string;
+  readonly filterButton: ToolbarButton;
+  private _filterBarEl: HTMLDivElement;
+  private _panelObserver: MutationObserver | undefined;
+  private _columnsMenu: Menu | undefined;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -794,6 +931,7 @@ export namespace TreeFinderSidebar {
     widget.toolbar.addItem("new file", new_file_button);
     widget.toolbar.addItem("upload", uploader_button);
     widget.toolbar.addItem("refresh", refresh_button);
+    widget.toolbar.addItem("filter", widget.filterButton);
 
     if (preferredDir) {
       void widget.treefinder.ready.then(async () => {
