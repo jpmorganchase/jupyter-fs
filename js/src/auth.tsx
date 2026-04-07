@@ -230,9 +230,9 @@ export class AskDialog<
     this.props.handleClose();
   }
 
-  protected async _onSubmit(
+  protected _onSubmit(
     event: React.FormEvent<HTMLFormElement>
-  ): Promise<void> {
+  ): void {
     event.preventDefault();
 
     this.props.handleSubmit(this.state.values);
