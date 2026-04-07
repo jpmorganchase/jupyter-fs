@@ -110,11 +110,12 @@ function _getRelativePaths(selectedFiles: Array<Content<ContentsProxy.IJupyterCo
 
 
 function _digestString(value: string): string {
+  // eslint-disable-next-line no-bitwise
   return value.split("").reduce((a: number, b: string) => (((a << 5) - a) + b.charCodeAt(0)) | 0, 0).toString(16);
 }
 
 
-async function _commandKeyForSnippet(snippet: Snippet): Promise<string>  {
+function _commandKeyForSnippet(snippet: Snippet): string {
   return `jupyterfs:snippet-${snippet.label}-${_digestString(snippet.label + snippet.caption + snippet.pattern.source + snippet.template)}`;
 }
 
@@ -350,7 +351,7 @@ export function createStaticCommands(
       },
     }),
     app.commands.addCommand(commandIDs.newLauncher, {
-      execute: async args => {
+      execute: _args => {
         void app.commands.execute("launcher:create");
       },
       label: "New Launcher",
@@ -400,7 +401,7 @@ export async function createDynamicCommands(
   const snippetCommands = [] as IDisposable[];
   const snippetIds = new Set<string>();
   for (const snippet of snippets) {
-    const key = await _commandKeyForSnippet(snippet);
+    const key = _commandKeyForSnippet(snippet);
     if (snippetIds.has(key)) {
       console.warn("Discarding duplicate snippet", snippet);
       continue;
