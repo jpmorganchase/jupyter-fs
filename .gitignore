@@ -11,6 +11,9 @@ __pycache__/
 *.exp
 *.lib
 
+# Rust
+target
+
 # Distribution / packaging
 .Python
 build/
@@ -55,25 +58,11 @@ junit.xml
 .hypothesis/
 .pytest_cache/
 
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
+# Django
 *.log
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
-
-# Flask stuff:
-instance/
-.webassets-cache
-
-# Scrapy stuff:
-.scrapy
-
-# PyBuilder
-target/
 
 # IPython
 profile_default/
@@ -85,15 +74,12 @@ ipython_config.py
 # pipenv
 Pipfile.lock
 
-# PEP 582; used by e.g. github.com/David-OConnor/pyflow
-__pypackages__/
-
-# Celery stuff
+# Celery
 celerybeat-schedule
 celerybeat.pid
 
-# SageMath parsed files
-*.sage.py
+# Airspeed Velocity
+.asv
 
 # Environments
 .env
@@ -126,11 +112,12 @@ dmypy.json
 /site
 index.md
 docs/_build/
-docs/src/_build/
 docs/api
-docs/index.md
 docs/html
+docs/index.md
 docs/jupyter_execute
+docs/src/_build/
+docs/superpowers
 index.md
 
 # JS
@@ -138,17 +125,16 @@ js/coverage
 js/dist
 js/lib
 js/node_modules
-js/test-results
 js/playwright-report
+js/test-results
+js/tsconfig.tsbuildinfo
 js/*.tgz
-jupyterfs/extension
 
 # Jupyter
 .ipynb_checkpoints
 .autoversion
 Untitled*.ipynb
-!jupyterfs/extension/jupyterfs.json
-!jupyterfs/extension/install.json
+jupyterfs/extension
 jupyterfs/nbextension
 jupyterfs/labextension
 
@@ -157,6 +143,15 @@ jupyterfs/labextension
 
 # Rust
 target
+
+# Hydra
+outputs/
+multirun/
+
+# AI
+ROADMAP.md
+AGENTS.md
+.github/hooks/sdlc.json
 
 # Local
 tmp.csv

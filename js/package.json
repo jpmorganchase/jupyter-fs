@@ -13,9 +13,10 @@
     "jupyterlab-extension"
   ],
   "scripts": {
-    "build": "pnpm run build:lib && pnpm run build:labextension",
+    "build": "pnpm run build:lib && pnpm run build:extension && pnpm run build:labextension",
+    "build:extension": "mkdirp ../jupyterfs/extension/ && cpy --flat 'src/extension/*' '../jupyterfs/extension/'",
     "build:labextension": "jupyter labextension build --development=True --source-map=True .",
-    "build:prod": "pnpm run build:lib && pnpm run build:labextension:prod",
+    "build:prod": "pnpm run build:lib && pnpm run build:extension && pnpm run build:labextension:prod",
     "build:labextension:prod": "jupyter labextension build --source-map=True .",
     "build:lib": "tsc -b",
     "clean": "rimraf dist lib tsconfig.tsbuildinfo",
@@ -81,6 +82,8 @@
     "@types/semver": "^7.7.1",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
+    "cpy": "^13.2.1",
+    "cpy-cli": "^7.0.0",
     "eslint": "^8.57.1",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jsdoc": "^62.7.1",

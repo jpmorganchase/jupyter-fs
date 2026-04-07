@@ -1,10 +1,16 @@
 [build-system]
-requires = ["hatchling", "hatch-js", "jupyterlab>=4,<5"]
-build-backend="hatchling.build"
+requires = [
+    "hatchling",
+    "hatch-js",
+    "jupyterlab>=4,<5",
+]
+build-backend = "hatchling.build"
 
 [project]
 name = "jupyter-fs"
-authors = [{name = "the jupyter-fs authors", email = "t.paine154@gmail.com"}]
+authors = [
+    {name = "the jupyter-fs authors", email = "t.paine154@gmail.com"},
+]
 description = "A Filesystem-like mult-contents manager backend for Jupyter"
 readme = "README.md"
 license = { text = "Apache-2.0" }
@@ -47,11 +53,11 @@ dependencies = [
 develop = [
     "build",
     "bump-my-version",
-    "check-manifest",
-    "codespell>=2.4,<2.5",
+    "check-dist",
+    "codespell",
     "hatch-js",
     "hatchling",
-    "mdformat>=0.7.22,<1.1",
+    "mdformat",
     "mdformat-tables>=1",
     "jupyterlab>=4,<5",
     "pytest",
@@ -60,8 +66,10 @@ develop = [
     "pytest-jupyter[server]",
     "pytest-sugar",
     "pytest-xdist",
-    "ruff>=0.9,<0.16",
+    "ruff",
     "twine",
+    "ty",
+    "uv",
     "wheel",
     # tests
     "boto3",
@@ -112,30 +120,12 @@ filename = "js/package.json"
 search = '"version": "{current_version}"'
 replace = '"version": "{new_version}"'
 
-[tool.check-manifest]
-ignore = [
-    ".copier-answers.yaml",
-    "js/pnpm-lock.yaml",
-    "js/tsconfig.tsbuildinfo",
-    "Makefile",
-    "README.md",
-    ".vscode/**/*",
-    "binder/**/*",
-    "ci/**/*",
-    "docs/**/*",
-    "examples/**/*",
-    "js/dist/**/*",
-    "js/lib/**/*",
-    "jupyterfs/extension/**",
-    "jupyterfs/labextension/**",
-    "jupyterfs/nbextension/**",
-]
-
 [tool.coverage.run]
 branch = true
 omit = [
     "jupyterfs/tests/integration/",
 ]
+
 [tool.coverage.report]
 exclude_also = [
     "raise NotImplementedError",
@@ -155,14 +145,22 @@ artifacts = [
 src = "/"
 
 [tool.hatch.build.targets.sdist]
-packages = ["jupyterfs", "js"]
+packages = [
+    "jupyterfs",
+    "js",
+]
 exclude = [
-    "/js/dist",
-    "/js/node_modules",
+    "js/dist",
+    "js/node_modules",
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["jupyterfs"]
+packages = [
+    "jupyterfs",
+]
+exclude = [
+    "js"
+]
 
 [tool.hatch.build.targets.wheel.shared-data]
 "jupyterfs/labextension" = "share/jupyter/labextensions/jupyter-fs"
@@ -180,21 +178,36 @@ targets = [
 ]
 
 [tool.pytest.ini_options]
-addopts = ["-vvv", "--junitxml=junit.xml"]
-asyncio_mode = "strict"
+addopts = [
+    "-vvv",
+    "--junitxml=junit.xml",
+]
 testpaths = "jupyterfs/tests"
 
 [tool.ruff]
 line-length = 150
 
 [tool.ruff.lint]
-extend-select = ["I"]
+extend-select = [
+    "I",
+]
 
 [tool.ruff.lint.isort]
 combine-as-imports = true
 default-section = "third-party"
-known-first-party = ["jupyterfs"]
-section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+known-first-party = [
+    "jupyterfs",
+]
+section-order = [
+    "future",
+    "standard-library",
+    "third-party",
+    "first-party",
+    "local-folder",
+]
 
 [tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401", "F403"]
+"__init__.py" = [
+    "F401",
+    "F403",
+]
