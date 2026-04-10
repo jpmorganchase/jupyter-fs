@@ -15,10 +15,9 @@ import { ISettingRegistry } from "@jupyterlab/settingregistry";
 import { IStatusBar } from "@jupyterlab/statusbar";
 import { ITranslator } from "@jupyterlab/translation";
 import { folderIcon, fileIcon, notebookIcon, IFormRendererRegistry } from "@jupyterlab/ui-components";
-import { IDisposable } from "@lumino/disposable";
 import * as semver from "semver";
 
-import { commandIDs, createDynamicCommands, createStaticCommands, idFromResource } from "./commands";
+import { commandIDs, createDynamicCommands, createStaticCommands, idFromResource, IDynamicCommandsResult } from "./commands";
 import { ContentsProxy } from "./contents_proxy";
 import { IFSOptions, IFSResource, IFSSettingsResource } from "./filesystem";
 import { FileUploadStatus } from "./progress";
@@ -58,7 +57,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
     editorRegistry: IFormRendererRegistry | null
   ): Promise<ITreeFinderMain> {
     const widgetMap : {[key: string]: TreeFinderSidebar} = {};
-    let commands: IDisposable | undefined;
+    let commands: IDynamicCommandsResult | undefined;
 
     // Attempt to load application settings
     let settings: ISettingRegistry.ISettings | undefined;
@@ -80,7 +79,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
       editorRegistry.addRenderer(`${BROWSER_ID}.snippets`, { fieldRenderer: snippetFormRender });
     }
 
-    let columns = settings?.composite.display_columns as Array<keyof ContentsProxy.IJupyterContentRow> ?? ["size"];
+    let columns = settings?.composite.display_columns as Array<keyof ContentsProxy.IJupyterContentRow> ?? [];
 
     const sharedSidebarProps: Omit<TreeFinderSidebar.ISidebarProps, "type" | "url"> = {
       app,
@@ -101,7 +100,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
         console.info(`jupyter-fs frontend received resources:\n${JSON.stringify(resources)}`);
       }
 
-      columns = settings?.composite.display_columns as Array<keyof ContentsProxy.IJupyterContentRow> ?? ["size"];
+      columns = settings?.composite.display_columns as Array<keyof ContentsProxy.IJupyterContentRow> ?? [];
       sharedSidebarProps.columns = columns;
 
       // create the fs resource frontends (ie FileTree instances)
@@ -124,6 +123,14 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
         resources,
         settings
       );
+
+      for (const r of resources) {
+        const id = idFromResource(r);
+        const w = widgetMap[id];
+        if (w && !w.isDisposed) {
+          w.setColumnsMenu(commands.columnsMenu);
+        }
+      }
     }
 
     async function refresh() {
@@ -135,7 +142,7 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
 
       function cleanup(all=false) {
         if (commands) {
-          commands.dispose();
+          commands.disposable.dispose();
           commands = undefined;
         }
         const keys = resources.map(idFromResource);
@@ -193,7 +200,6 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
     }
 
     themeManager.themeChanged.connect(() => {
-      // Update SVG icon fills (since we put them in pseudo-elements we cannot style with CSS)
       const primary = getComputedStyle(document.documentElement).getPropertyValue("--jp-ui-font-color1");
       style.textContent = iconStyleContent(
         folderIcon.svgstr.replace(/fill="([^"]{0,7})"/, `fill="${primary}"`),
@@ -202,7 +208,20 @@ export const browser: JupyterFrontEndPlugin<ITreeFinderMain> = {
       );
     });
 
-    style.textContent = iconStyleContent(folderIcon.svgstr, fileIcon.svgstr, notebookIcon.svgstr);
+    function applyThemedIcons() {
+      const primary = getComputedStyle(document.documentElement).getPropertyValue("--jp-ui-font-color1").trim();
+      if (primary) {
+        style.textContent = iconStyleContent(
+          folderIcon.svgstr.replace(/fill="([^"]{0,7})"/, `fill="${primary}"`),
+          fileIcon.svgstr.replace(/fill="([^"]{0,7})"/, `fill="${primary}"`),
+          notebookIcon.svgstr.replace(/fill="([^"]{0,7})"/, `fill="${primary}"`)
+        );
+      } else {
+        style.textContent = iconStyleContent(folderIcon.svgstr, fileIcon.svgstr, notebookIcon.svgstr);
+      }
+    }
+
+    applyThemedIcons();
 
     document.head.appendChild(style);
 
