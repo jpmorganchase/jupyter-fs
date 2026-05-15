@@ -75,6 +75,7 @@ develop = [
     "boto3",
     "fs-miniofs",
     "pysmb",
+    "pkg-resources-backport>=1.0.1",
     # fs
     "fs>=2.4.11",
     "fs-s3fs>=1.1.1",
@@ -88,6 +89,7 @@ fs = [
     "fs>=2.4.11",
     "fs-s3fs>=1.1.1",
     "fs.smbfs>=0.6.3",
+    "pkg-resources-backport>=1.0.1",
 ]
 fsspec = [
     "fsspec>=2023.6.0",
