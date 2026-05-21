@@ -51,7 +51,7 @@
         "type": {
           "description": "The backend type to use for the resource (PyFS or fsspec)",
           "type": "string",
-          "enum": ["pyfs", "fsspec"],
+          "enum": ["fsspec", "pyfs"],
           "default": "fsspec"
         },
         "preferredDir": {

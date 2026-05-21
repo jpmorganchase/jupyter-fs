@@ -79,6 +79,7 @@ develop = [
     "fs>=2.4.11",
     "fs-s3fs>=1.1.1",
     "fs.smbfs>=0.6.3",
+    "pkg-resources-backport",
     # fsspec
     "fsspec>=2023.6.0",
     "s3fs>=2024",
