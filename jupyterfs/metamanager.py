@@ -71,8 +71,8 @@ class MetaManagerShared:
                 self.log.warning("Resource %r missing 'auth' key, defaulting to 'ask'", resource)
                 resource["auth"] = "ask"
             if "type" not in resource or resource["type"] not in ("pyfs", "fsspec"):
-                resource["type"] = "pyfs"
-                self.log.warning("Resource %r missing 'type' key, defaulting to 'pyfs'", resource)
+                resource["type"] = "fsspec"
+                self.log.warning("Resource %r missing 'type' key, defaulting to 'fsspec'", resource)
 
             if resource.get("kwargs", None):
                 if isinstance(resource["kwargs"], str):

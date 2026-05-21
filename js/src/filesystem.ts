@@ -52,7 +52,7 @@ export interface IFSSettingsResource {
   /**
    * Backend type
    */
-  type: "pyfs" | "fsspec";
+  type: "fsspec" | "pyfs";
 
   /**
    * Fallback for determining if resource is writeable. Used only if the underlying PyFilesystem does not provide this information (eg S3)

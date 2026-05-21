@@ -30,6 +30,10 @@ class FSSpecManager(FileContentsManager):
 
         self._default_writable = default_writable
         if isinstance(fs, str):
+            # normalize osfs url to be compatible with fsspec
+            if fs.startswith("osfs://"):
+                fs = fs.replace("osfs://", "file://", 1)
+
             # fs is an fsspec url
             self._fs, root = fsspec.core.url_to_fs(fs, **kwargs)
             self.root = root

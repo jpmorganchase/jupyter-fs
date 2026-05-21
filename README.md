@@ -63,23 +63,23 @@ Add specifications for additional contents managers in your user settings (in th
     {
       "name": "root at test dir",
       "url": "osfs:///Users/foo/test",
-      "type": "pyfs"
+      "type": "fsspec"
     },
     {
       "name": "s3 test bucket",
       "url": "s3://test",
-      "type": "pyfs"
+      "type": "fsspec"
     },
     {
       "name": "s3 test key",
       "url": "s3://test-2/prefix/",
-      "type": "pyfs",
+      "type": "fsspec",
       "defaultWritable": false
     },
     {
       "name": "samba guest share",
       "url": "smb://guest@127.0.0.1/test?name-port=3669",
-      "type": "pyfs"
+      "type": "fsspec"
     }
   ]
 }
@@ -101,7 +101,7 @@ Any stretch of a `"url"` that is enclosed in double-brackets `{{VAR}}` will be t
     {
       "name": "samba share",
       "url": "smb://{{user}}:{{passwd}}@127.0.0.1/test?name-port=3669",
-      "type": "pyfs"
+      "type": "fsspec"
     }
   ]
 }
@@ -153,7 +153,7 @@ export FSSPEC_S3_SECRET=<YOUR SECRET>
 
 ## Choosing the backend
 
-Your resource can include a `"type"` field, set to either `pyfs` or `fsspec`.
+Your resource can include a `"type"` field, set to either `fsspec` or `pyfs`.
 The default is `fsspec`.
 This field can be configured via JSON Settings or graphically.
 
