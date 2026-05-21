@@ -14,7 +14,7 @@ authors = [
 description = "A Filesystem-like mult-contents manager backend for Jupyter"
 readme = "README.md"
 license = { text = "Apache-2.0" }
-version = "1.2.0"
+version = "1.2.1"
 requires-python = ">=3.10"
 keywords = [
     "Jupyter",
@@ -101,7 +101,7 @@ Repository = "https://github.com/jpmorganchase/jupyter-fs"
 Homepage = "https://github.com/jpmorganchase/jupyter-fs"
 
 [tool.bumpversion]
-current_version = "1.2.0"
+current_version = "1.2.1"
 commit = true
 tag = true
 commit_args = "-s"
