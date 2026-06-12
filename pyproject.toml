@@ -178,6 +178,9 @@ targets = [
     "jupyterfs/labextension/package.json",
 ]
 
+[tool.check-dist.sdist]
+absent = ["js/README.md"]
+
 [tool.pytest.ini_options]
 addopts = [
     "-vvv",
