@@ -26,8 +26,6 @@
     "fix": "pnpm run lint --fix",
     "integrity": "pnpm install && pnpm run deduplicate && pnpm install",
     "lint": "eslint -c .eslintrc.js --ext .js,.ts,.tsx src/ tests/",
-    "postpack": "shx rm README.md",
-    "prepack": "shx cp ../README.md .",
     "prepublishOnly": "pnpm run clean && pnpm run clean:labextension && pnpm run integrity && pnpm run build:prod",
     "test": "jest --coverage",
     "watch": "run-p watch:lib watch:labextension",

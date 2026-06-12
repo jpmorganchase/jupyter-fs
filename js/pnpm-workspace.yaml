@@ -1,0 +1,3 @@
+allowBuilds:
+  '@fortawesome/fontawesome-free': true
+  unrs-resolver: true
