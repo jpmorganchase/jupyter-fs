@@ -7,27 +7,64 @@
  *
  */
 
+/* --- Variable bridge: map --tf-* defaults to --jp-* theme tokens --- */
+.jp-tree-finder {
+  --tf-background: var(--jp-layout-color1);
+  --tf-font-color: var(--jp-ui-font-color1);
+
+  --tf-breadcrumb-hover-color: var(--jp-layout-color2);
+
+  --tf-row-hover-background: var(--jp-layout-color2);
+  --tf-row-hover-color: var(--jp-ui-font-color1);
+
+  --tf-select-background: var(--jp-brand-color1);
+  --tf-select-color: var(--jp-ui-inverse-font-color1);
+
+  --tf-font-size: var(--jp-ui-font-size1);
+  --tf-font-family: var(--jp-ui-font-family);
+
+  --tf-cell-padding: 4px 12px;
+  --tf-header-border-top: 1px solid var(--jp-border-color2);
+  --tf-header-border-bottom: 1px solid var(--jp-border-color2);
+  --tf-header-font-weight: 500;
+  --tf-breadcrumb-padding: 0 2px;
+  --tf-breadcrumb-border-radius: var(--jp-border-radius);
+}
+
+/* --- Sidebar root container --- */
 .jp-tree-finder-sidebar {
   flex-direction: column;
   display: flex;
   flex: 1 1 auto;
+  overflow: hidden;
   color: var(--jp-ui-font-color1);
   background: var(--jp-layout-color1);
-  /* This is needed so that all font sizing of children done in ems is
-   * relative to this base size */
   font-size: var(--jp-ui-font-size1);
 }
 
+/* --- Panel + grid overflow containment --- */
 tree-finder-panel {
   flex-direction: column;
   display: flex;
   flex: 1 1 auto;
+  overflow: hidden;
+  min-width: 0;
 }
 
 tree-finder-panel tree-finder-grid table {
   color: var(--jp-ui-font-color1);
+  width: 100% !important;
+  table-layout: fixed !important;
 }
 
+.jp-tree-finder tree-finder-grid {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--jp-ui-font-family);
+}
+
+/* --- Virtual-scroll clip-path rules (DO NOT TOUCH) --- */
 tree-finder-grid tbody td,
 tree-finder-grid thead th:not(.rt-group-corner) {
     transform: translate(var(--regular-table--transform-x, 0px), 0);
@@ -67,68 +104,171 @@ tree-finder-grid tbody tr:first-child td:first-of-type {
     );
 }
 
+/* --- Toolbar --- */
 .jp-tree-finder-toolbar {
-  padding: 0px;
+  padding: 0;
+  margin: 8px 12px 0;
   border-bottom: none;
   height: auto;
-  padding: 0px;
-  margin: 0px 0px 4px 0px;
-  border-bottom: 1px solid var(--jp-border-color0);
   box-shadow: none;
+  overflow: hidden;
+  min-width: 0;
   justify-content: flex-start;
 }
 
 .jp-tree-finder-toolbar.jp-Toolbar .jp-Toolbar-item {
   flex: 0 0 auto;
-  padding-left: 0px;
-  padding-right: 2px;
-}
-
-.jp-tree-finder-toolbar.jp-Toolbar .jp-Toolbar-item:nth-child(1) .jp-ToolbarButtonComponent {
-  width: 72px;
-  background: var(--jp-accept-color-normal, var(--jp-brand-color1));
-}
-.jp-tree-finder-toolbar.jp-Toolbar .jp-Toolbar-item:nth-child(1) .jp-ToolbarButtonComponent svg path {
-    fill: var(--jp-ui-inverse-font-color1) !important;
-}
-.jp-tree-finder-toolbar.jp-Toolbar .jp-Toolbar-item:nth-child(1) .jp-ToolbarButtonComponent:hover {
-    background-color: var(--jp-accept-color-hover);
+  padding-left: 0;
+  align-items: center;
+  height: unset;
 }
 
 .jp-tree-finder-toolbar.jp-Toolbar .jp-ToolbarButtonComponent {
-  width: 40px;
+  width: 28px;
 }
 
-.jp-tree-finder {
-  --tf-background: var(--jp-layout-color1);
-  --tf-font-color: var(--jp-ui-font-color1);
-
-  --tf-breadcrumb-hover-color: var(--jp-layout-color2);
-
-  --tf-row-hover-background: var(--jp-layout-color2);
-  --tf-row-hover-color: var(--jp-ui-font-color1);
-
-  --tf-select-background: var(--jp-brand-color1);
-  --tf-select-color: var(--jp-ui-inverse-font-color1);
-
-  --tf-font-size: var(--jp-ui-font-size1);
-  --tf-font-family: var(--jp-ui-font-family);
+/* Blue styling for the "+" launcher button (first toolbar item) — matches jp-ToolbarLabelComponent */
+.jp-tree-finder-toolbar.jp-Toolbar .jp-Toolbar-item:first-child .jp-ToolbarButtonComponent {
+  width: auto;
+  min-width: var(--jp-private-filebrowser-button-width, 48px);
+  background-color: var(--jp-accept-color-normal, var(--jp-brand-color1));
+  border-radius: var(--jp-border-radius);
+  padding: 0 12px;
+  height: 21px;
+  justify-content: center;
+}
+.jp-tree-finder-toolbar.jp-Toolbar .jp-Toolbar-item:first-child .jp-ToolbarButtonComponent:hover {
+  background-color: var(--jp-accept-color-hover, var(--jp-brand-color0));
+}
+.jp-tree-finder-toolbar.jp-Toolbar .jp-Toolbar-item:first-child svg,
+.jp-tree-finder-toolbar.jp-Toolbar .jp-Toolbar-item:first-child svg path,
+.jp-tree-finder-toolbar.jp-Toolbar .jp-Toolbar-item:first-child .jp-icon3,
+.jp-tree-finder-toolbar.jp-Toolbar .jp-Toolbar-item:first-child .jp-icon3[fill] {
+  fill: var(--jp-ui-inverse-font-color1) !important;
 }
 
-.jp-tree-finder tree-finder-grid {
-  font-family: var(--jp-ui-font-family);
+/* --- Column headers --- */
+.jp-tree-finder thead tr:last-child th {
+  border-top: 1px solid var(--jp-border-color2);
+  border-bottom: 1px solid var(--jp-border-color1);
+  box-shadow: var(--jp-toolbar-box-shadow);
+  padding: 4px 12px 2px;
 }
 
+.jp-tree-finder .tf-header {
+  border-right: 1px solid var(--jp-border-color1);
+}
+
+.jp-tree-finder .tf-header:last-child {
+  border-right: none;
+}
+
+.jp-tree-finder thead th {
+  font-weight: 500;
+}
+
+/* Override column header text with custom labels */
+.jp-tree-finder span.tf-header-name[data-label] {
+  font-size: 0;
+  line-height: 0;
+}
+.jp-tree-finder span.tf-header-name[data-label]::after {
+  content: attr(data-label);
+  font-size: var(--jp-ui-font-size1);
+  line-height: normal;
+}
+
+/* --- Sort indicator (CSS triangle, replaces broken SVG data-URIs) --- */
+.jp-tree-finder .tf-header-sort {
+  background: none !important;
+  min-width: 14px;
+  min-height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.jp-tree-finder .tf-header-sort-asc::after {
+  content: "";
+  display: block;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-bottom: 5px solid var(--jp-ui-font-color2);
+}
+.jp-tree-finder .tf-header-sort-desc::after {
+  content: "";
+  display: block;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--jp-ui-font-color2);
+}
+
+/* --- Filter bar (inside tree-finder-panel, uses slot="filters") --- */
+.jp-tree-finder-filterbar {
+  display: none;
+  margin: 4px 12px 4px;
+  padding: 0;
+}
+.jp-tree-finder-filterbar.jp-mod-active {
+  display: flex;
+}
+.jp-tree-finder-filterbar > .jp-FilterBox {
+  width: 100%;
+  --design-unit: 3;
+  --density: 0;
+}
+
+/* --- Row cells --- */
 .jp-tree-finder tree-finder-grid th,
 .jp-tree-finder tree-finder-grid td {
-  height: 1lh;
+  height: auto;
   line-height: normal;
+  padding: 4px 12px;
+}
+
+.jp-tree-finder tree-finder-grid td:last-child,
+.jp-tree-finder tree-finder-grid thead th:last-child {
+  text-align: right;
 }
 
 .jp-tree-finder tbody th {
   font-weight: normal;
 }
 
+/* --- Breadcrumbs --- */
+.jp-tree-finder tree-finder-breadcrumbs {
+  margin: 8px 12px;
+  padding: 0;
+}
+
+.jp-tree-finder tree-finder-breadcrumbs .tf-breadcrumbs-crumb {
+  padding: 0 2px;
+  margin: 0 2px;
+  border-radius: var(--jp-border-radius);
+}
+
+.jp-tree-finder tree-finder-breadcrumbs .tf-breadcrumbs-crumb:first-child {
+  margin-left: 0;
+}
+
+.jp-tree-finder tree-finder-breadcrumbs .tf-breadcrumbs-crumb:hover {
+  background-color: var(--jp-layout-color2);
+}
+
+.jp-tree-finder tree-finder-breadcrumbs .tf-breadcrumbs-icon {
+  background-size: 16px;
+  min-height: 15px;
+  min-width: 16px;
+}
+
+.jp-tree-finder tree-finder-breadcrumbs .tf-breadcrumbs-home {
+  align-items: center;
+}
+
+/* --- Loading spinners --- */
 .jp-tree-finder th.jfs-mod-loading span.rt-row-header-icon::before {
   content: "";
   background-color: var(--tf-background);
@@ -161,13 +301,12 @@ tree-finder-grid tbody tr:first-child td:first-of-type {
   width: 3em;
   height: 3em;
   left: calc(50% - 2em);
-  top: 4lh;
+  top: 4em;
 
   animation:
     load3 1s infinite linear,
     fadeIn 1s;
 }
-
 
 @keyframes fadeIn {
   0% {
@@ -189,10 +328,7 @@ tree-finder-grid tbody tr:first-child td:first-of-type {
   }
 }
 
-.jp-tree-finder thead th {
-  font-weight: 500;
-}
-
+/* --- Drag image --- */
 .jp-thead-drag-image {
   top: 0px;
   left: 0px;
@@ -201,6 +337,7 @@ tree-finder-grid tbody tr:first-child td:first-of-type {
   font-weight: 500;
 }
 
+/* --- Filter input --- */
 .jp-tree-finder .tf-filter-input {
   background-color: transparent;
   color: var(--jp-ui-font-color1);
@@ -209,19 +346,19 @@ tree-finder-grid tbody tr:first-child td:first-of-type {
   font-size: var(--tf-font-size);
 }
 
-/* Postion icons in the vertical center of the row */
+/* --- Icons (browser compat: 1em instead of 1lh) --- */
 .jp-tree-finder tree-finder-grid .tf-grid-filetype-icon:before {
   background-position: center;
   background-size: 1em;
-  min-height: 1lh;
+  min-height: 1em;
   min-width: 1em;
 }
 
-/* treefinder comes with file/directory icons, so inject notebook icon */
 .jp-tree-finder tree-finder-grid .tf-grid-notebook-icon:before {
   background-image: var(--tf-notebook-icon);
 }
 
+/* --- Tree group spacing --- */
 .jp-tree-finder span.rt-tree-group {
   height: 100%;
   margin-left: 0.45em;
@@ -231,14 +368,4 @@ tree-finder-grid tbody tr:first-child td:first-of-type {
 .jp-tree-finder tree-finder-grid td th span.rt-group-leaf,
 .jp-tree-finder tree-finder-grid th span.rt-group-leaf {
   margin-left: 1.2em;
-}
-
-.jp-tree-finder tree-finder-breadcrumbs .tf-breadcrumbs-icon {
-  background-size: 1em;
-  min-height: 1em;
-  min-width: 1em;
-}
-
-.jp-tree-finder tree-finder-breadcrumbs .tf-breadcrumbs-home {
-  align-items: center;
 }
