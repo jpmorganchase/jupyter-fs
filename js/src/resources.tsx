@@ -1,7 +1,7 @@
 import { PromiseDelegate } from "@lumino/coreutils";
 
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 
 import { askRequired, AskDialog } from "./auth";
 import { FSComm, IFSResource, IFSOptions } from "./filesystem";
@@ -30,11 +30,12 @@ export async function initResources(resources: IFSResource[], options: IFSOption
     // ask for url template values, if required
     const dialogElem = document.createElement("div");
     document.body.appendChild(dialogElem);
+    const root = createRoot(dialogElem);
 
     let submitted = false;
     const handleClose = () => {
       try {
-        ReactDOM.unmountComponentAtNode(dialogElem);
+        root.unmount();
         dialogElem.remove();
         if (!submitted) {
           delegate.resolve(resources);
@@ -57,14 +58,13 @@ export async function initResources(resources: IFSResource[], options: IFSOption
       }
     };
 
-    ReactDOM.render(
+    root.render(
       <AskDialog
         handleClose={handleClose}
         handleSubmit={handleSubmit}
         options={options}
         resources={resources}
       />,
-      dialogElem,
     );
 
   } else {

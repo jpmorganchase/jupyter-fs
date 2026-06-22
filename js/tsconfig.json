@@ -8,6 +8,7 @@
     "esModuleInterop": true,
     "incremental": true,
     "jsx": "react",
+    "ignoreDeprecations": "6.0",
     "lib": ["ES2019", "DOM", "DOM.Iterable"],
     "module": "esnext",
     "moduleResolution": "node",

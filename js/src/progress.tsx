@@ -210,26 +210,30 @@ export namespace FileUploadStatus {
      */
     private _uploadChanged = (
       uploader: Uploader,
-      uploads: IChangedArgs<IUploadProgress>
+      uploads: IChangedArgs<IUploadProgress | null>
     ) => {
       if (uploads.name === "start") {
+        const newValue = uploads.newValue!;
         this._items.push({
-          path: uploads.newValue.path,
-          progress: uploads.newValue.progress * 100,
+          path: newValue.path,
+          progress: newValue.progress * 100,
           complete: false,
         });
       } else if (uploads.name === "update") {
+        const oldValue = uploads.oldValue!;
+        const newValue = uploads.newValue!;
         const idx = ArrayExt.findFirstIndex(
           this._items,
-          val => val.path === uploads.oldValue.path
+          val => val.path === oldValue.path
         );
         if (idx !== -1) {
-          this._items[idx].progress = uploads.newValue.progress * 100;
+          this._items[idx].progress = newValue.progress * 100;
         }
       } else if (uploads.name === "finish") {
+        const oldValue = uploads.oldValue!;
         const finishedItem = ArrayExt.findFirstValue(
           this._items,
-          val => val.path === uploads.oldValue.path
+          val => val.path === oldValue.path
         );
 
         if (finishedItem) {
@@ -240,9 +244,10 @@ export namespace FileUploadStatus {
           }, UPLOAD_COMPLETE_MESSAGE_MILLIS);
         }
       } else if (uploads.name === "failure") {
+        const newValue = uploads.newValue!;
         ArrayExt.removeFirstWhere(
           this._items,
-          val => val.path === uploads.newValue.path
+          val => val.path === newValue.path
         );
       }
 

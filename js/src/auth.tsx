@@ -169,7 +169,7 @@ export class AskDialog<
     });
   }
 
-  protected _inputs(url: string): React.ReactNodeArray {
+  protected _inputs(url: string): React.ReactNode[] {
     return tokensFromUrl(url).map(token => (
       <TextField
         className="jfs-ask jfs-ask-input"
@@ -179,14 +179,14 @@ export class AskDialog<
         label={token}
         margin="dense"
         name={token}
-        onChange={this._onChange(url).bind(this)}
+        onChange={this._onChange(url)}
         type={this.state.visibility[url]?.[token] ? "text" : "password"}
         value={this.state.values[url]?.[token] || ""}
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">
               <IconButton
-                onClick={this._onClickVisiblity(url, token).bind(this)}
+                onClick={this._onClickVisiblity(url, token)}
                 onMouseDown={this._onMouseDownVisibility.bind(this)}
                 edge="end"
               >
@@ -204,14 +204,14 @@ export class AskDialog<
   }
 
   protected _onChange(url: string) {
-    return function(event: React.ChangeEvent<HTMLInputElement>) {
+    return (event: React.ChangeEvent<HTMLInputElement>) => {
       const target = event.target;
       this._setValue(url, target.name, target.value);
     };
   }
 
   protected _onClickVisiblity(url: string, key: string) {
-    return function() {
+    return () => {
       this._toggleVisibility(url, key);
     };
   }
@@ -231,7 +231,7 @@ export class AskDialog<
   }
 
   protected _onSubmit(
-    event: React.FormEvent<HTMLFormElement>
+    event: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>
   ): void {
     event.preventDefault();
 

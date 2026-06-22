@@ -1,3 +1,6 @@
 allowBuilds:
   '@fortawesome/fontawesome-free': true
   unrs-resolver: true
+overrides:
+  react: 19.2.7
+  react-dom: 19.2.7
