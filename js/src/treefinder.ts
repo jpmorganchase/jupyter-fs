@@ -580,7 +580,7 @@ export class TreeFinderWidget extends DragDropWidget {
   private _columns: Array<keyof ContentsProxy.IJupyterContentRow>;
   settings: ISettingRegistry.ISettings | undefined;
   uploader: Uploader | undefined;
-  readonly node: TreeFinderPanelElement<ContentsProxy.IJupyterContentRow>;
+  readonly node!: TreeFinderPanelElement<ContentsProxy.IJupyterContentRow>;
 
   readonly translator: ITranslator;
 

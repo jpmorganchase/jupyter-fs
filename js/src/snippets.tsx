@@ -10,10 +10,13 @@
 import { URLExt } from "@jupyterlab/coreutils";
 import { ServerConnection } from "@jupyterlab/services";
 import { ISettingRegistry } from "@jupyterlab/settingregistry";
+import type { IFormRenderer } from "@jupyterlab/ui-components";
 import * as React from "react";
 
-import type { FieldProps } from "@rjsf/utils";
 import { splitPathstrDrive } from "./contents_utils";
+
+type FieldRenderer = NonNullable<IFormRenderer["fieldRenderer"]>;
+type FieldRendererProps = FieldRenderer extends React.ComponentType<infer P> ? P : never;
 
 function _mknode(obj: any, paths: string[]) {
   for (const path of paths) {
@@ -27,7 +30,7 @@ function _mknode(obj: any, paths: string[]) {
  *
  * We use it to set the "template" to a "textarea" multiline input
  */
-export function snippetFormRender(props: FieldProps) {
+export function snippetFormRender(props: FieldRendererProps) {
   const ArrayField = props.registry.fields.ArrayField;
   const uiSchema = { ...props.uiSchema };
   const templateUiSchema = _mknode(uiSchema, ["items", "template"]);

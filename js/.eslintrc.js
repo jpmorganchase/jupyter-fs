@@ -107,23 +107,23 @@ module.exports = {
 
         // typescript rules that extend core eslint rules
         "@typescript-eslint/camelcase": "off",
-        "@typescript-eslint/indent": ["error", 2],
         "@typescript-eslint/no-use-before-define": "off",
         "@typescript-eslint/no-unused-expressions": "error",
         "@typescript-eslint/no-unused-vars": ["warn", { args: "none" }],
-        "@typescript-eslint/quotes": ["error", "double", { avoidEscape: true, allowTemplateLiterals: true }],
-        "@typescript-eslint/semi": "error",
         "indent": "off",
         "no-unused-expressions": "off",
         "no-unused-vars": "off",
-        "quotes": "off",
-        "semi": "off",
 
         // new rules added by recent update to @typescript-eslint plugin that aren't compatible with current codebase (consider turning on later)
+        "@typescript-eslint/no-base-to-string": "off",
+        "@typescript-eslint/no-empty-object-type": "off",
+        "@typescript-eslint/no-floating-promises": "off",
+        "@typescript-eslint/no-unnecessary-type-assertion": "off",
         "@typescript-eslint/no-unsafe-assignment": "off",
         "@typescript-eslint/no-unsafe-call": "off",
         "@typescript-eslint/no-unsafe-member-access": "off",
         "@typescript-eslint/no-unsafe-return": "off",
+        "@typescript-eslint/prefer-promise-reject-errors": "off",
       },
     },
   ],
