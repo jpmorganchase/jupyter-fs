@@ -66,6 +66,16 @@ class MetaManagerShared:
         managers = dict((("", self._default_root_manager),))
 
         for resource in resources:
+            # Validate the resource name: spaces are not allowed because the name is
+            # used to construct widget IDs and path-like identifiers in the frontend,
+            # which silently drop spaces and can cause duplicate IDs or broken widgets.
+            name = resource.get("name", "")
+            if " " in name:
+                raise ValueError(
+                    f"Resource name {name!r} contains a space. "
+                    "Resource names must not contain spaces."
+                )
+
             # server side resources don't have a default 'auth' key
             if "auth" not in resource or resource["auth"] not in ("ask", "env", "none"):
                 self.log.warning("Resource %r missing 'auth' key, defaulting to 'ask'", resource)
@@ -285,4 +295,8 @@ class MetaManagerHandler(APIHandler):
             if not isinstance(resource, dict):
                 raise web.HTTPError(400, f"Resources must be a list of dicts, got: {resource}")
 
-        self.finish(json.dumps(self.contents_manager.initResource(*resources, options=options)))
+        try:
+            result = self.contents_manager.initResource(*resources, options=options)
+        except ValueError as e:
+            raise web.HTTPError(400, str(e))
+        self.finish(json.dumps(result))

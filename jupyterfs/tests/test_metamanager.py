@@ -179,6 +179,26 @@ async def test_resource_validators_no_auth(tmp_path, jp_fetch, jp_server_config,
 
 @pytest.mark.parametrize("base_config", [base_config, sync_base_config])
 @pytest.mark.parametrize("our_config", [{}])
+async def test_resource_name_with_space_raises(tmp_path, jp_fetch, jp_server_config):
+    """Resource names containing spaces should be rejected with a 400 error.
+
+    A name like "homedir fsspec" is used to build widget IDs in the frontend
+    by stripping spaces (resource.name.split(" ").join("")), which silently
+    produces duplicate IDs when two names differ only by spacing. Rejecting
+    such names early gives users a clear error message.
+    """
+    from tornado.httpclient import HTTPClientError
+
+    cc = ContentsClient(jp_fetch)
+    with pytest.raises(HTTPClientError) as exc_info:
+        await cc.set_resources(
+            [{"name": "homedir fsspec", "url": f"osfs://{tmp_path.as_posix()}"}]
+        )
+    assert exc_info.value.code == 400
+
+
+@pytest.mark.parametrize("base_config", [base_config, sync_base_config])
+@pytest.mark.parametrize("our_config", [{}])
 async def test_basic_sanity_check(tmp_path, jp_fetch, jp_server_config):
     cc = ContentsClient(jp_fetch)
     resources = await cc.get("/")
