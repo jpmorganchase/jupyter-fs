@@ -40,6 +40,7 @@ import { Message } from "@lumino/messaging";
 import { PanelLayout, Widget } from "@lumino/widgets";
 import { Content, ContentsModel, Format, Path, TreeFinderGridElement, TreeFinderPanelElement } from "@tree-finder/base";
 
+import { patchContentsModelFiltering } from "./column_filter";
 import { JupyterClipboard } from "./clipboard";
 import { commandIDs, idFromResource } from "./commands";
 import { ContentsProxy } from "./contents_proxy";
@@ -226,6 +227,10 @@ export class TreeFinderWidget extends DragDropWidget {
         columnNames: this.columns,
       },
     });
+
+    if (this.model) {
+      patchContentsModelFiltering(this.model);
+    }
 
     const grid = this.node.querySelector<TreeFinderGridElement<ContentsProxy.IJupyterContentRow>>("tree-finder-grid");
 
