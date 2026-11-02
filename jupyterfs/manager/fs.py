@@ -328,13 +328,17 @@ class FSManager(FileContentsManager):
         if content:
             model["content"] = contents = []
 
-            for dir_entry in self._pyfilesystem_instance.scandir(path, namespaces=("basic", "access", "details", "stat")):
+            # Fetch metadata per entry: scandir can abort its iterator when a
+            # broken symlink (or another inaccessible entry) cannot be stat-ed.
+            for name in self._pyfilesystem_instance.listdir(path):
+                entry_path = f"{path}/{name}"
                 try:
-                    if self.should_list(dir_entry.name):
-                        if self.allow_hidden or not self._is_path_hidden(dir_entry.make_path(path), dir_entry):
+                    if self.should_list(name):
+                        dir_entry = self._pyfilesystem_instance.getinfo(entry_path, namespaces=("basic", "access", "details", "stat"))
+                        if self.allow_hidden or not self._is_path_hidden(entry_path, dir_entry):
                             contents.append(
                                 self.get(
-                                    path="%s/%s" % (path, dir_entry.name),
+                                    path=entry_path,
                                     content=False,
                                     info=dir_entry,
                                 )
@@ -346,7 +350,7 @@ class FSManager(FileContentsManager):
                     # us from listing other entries
                     pass
                 except Exception as e:
-                    self.log.warning("Error stat-ing %s: %s", dir_entry.make_path(path), e)
+                    self.log.warning("Error stat-ing %s: %s", entry_path, e)
 
             model["format"] = "json"
         return model
