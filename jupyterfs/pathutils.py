@@ -15,6 +15,7 @@ __all__ = [
     "getDrive",
     "isDrive",
     "stripDrive",
+    "rootDrivePath",
 ]
 
 # A reference implementation
@@ -191,3 +192,16 @@ def stripDrive(path):
     # strip any drives off the front of the filename
     first, *rest = path.strip("/").split("/")
     return "/".join([first.split(":", 1).pop(), *rest])
+
+
+def rootDrivePath(path):
+    """Rewrites a path in the root of a drive, e.g. "fooDrive:bar.txt", as
+    "fooDrive:/bar.txt", so that code splitting on "/" sees the drive as the
+    parent directory instead of treating "fooDrive:bar.txt" as a file name"""
+    stripped = path.strip("/")
+    first = stripped.split("/", 1)[0]
+    if ":" in first:
+        drive, rest = stripped.split(":", 1)
+        if rest and not rest.startswith("/"):
+            return f"{drive}:/{rest}"
+    return path

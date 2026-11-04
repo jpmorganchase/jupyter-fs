@@ -183,3 +183,26 @@ async def test_basic_sanity_check(tmp_path, jp_fetch, jp_server_config):
     cc = ContentsClient(jp_fetch)
     resources = await cc.get("/")
     assert resources["type"] == "directory"
+
+
+@pytest.mark.parametrize("fs", ["osfs", "local"])
+@pytest.mark.parametrize("to_drive_root", [True, False])
+async def test_copy_file_in_root_of_drive(tmp_path, fs, to_drive_root):
+    from jupyterfs.metamanager import MetaManager, SyncMetaManager
+
+    (tmp_path / "a.txt").write_text("hello")
+    resource = {"name": "test-copy", "url": f"{fs}://{tmp_path.as_posix()}"}
+    if fs == "local":
+        resource["type"] = "fsspec"
+
+    for manager_cls in (SyncMetaManager, MetaManager):
+        mm = manager_cls()
+        drive = mm.initResource(resource)[-1]["drive"]
+        args = (f"{drive}:a.txt", f"{drive}:") if to_drive_root else (f"{drive}:a.txt",)
+        model = mm.copy(*args)
+        if manager_cls is MetaManager:
+            model = await model
+        assert model["name"].startswith("a-Copy")
+
+    names = sorted(p.name for p in tmp_path.iterdir())
+    assert names == ["a-Copy1.txt", "a-Copy2.txt", "a.txt"]

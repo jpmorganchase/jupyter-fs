@@ -25,6 +25,7 @@ from .pathutils import (
     path_kwarg,
     path_old_new,
     path_second_arg,
+    rootDrivePath,
 )
 
 __all__ = (
@@ -193,7 +194,11 @@ class MetaManagerShared:
     delete_checkpoint = path_second_arg("delete_checkpoint", "checkpoint_id", False, sync=True)
 
 
-class SyncMetaManager(MetaManagerShared, ContentsManager): ...
+class SyncMetaManager(MetaManagerShared, ContentsManager):
+    def copy(self, from_path, to_path=None):
+        if to_path is not None:
+            to_path = rootDrivePath(to_path)
+        return super().copy(rootDrivePath(from_path), to_path)
 
 
 class MetaManager(MetaManagerShared, AsyncContentsManager):
@@ -214,6 +219,11 @@ class MetaManager(MetaManagerShared, AsyncContentsManager):
     list_checkpoints = path_first_arg("list_checkpoints", False, sync=False)
     restore_checkpoint = path_second_arg("restore_checkpoint", "checkpoint_id", False, sync=False)
     delete_checkpoint = path_second_arg("delete_checkpoint", "checkpoint_id", False, sync=False)
+
+    async def copy(self, from_path, to_path=None):
+        if to_path is not None:
+            to_path = rootDrivePath(to_path)
+        return await super().copy(rootDrivePath(from_path), to_path)
 
 
 class MetaManagerHandler(APIHandler):
