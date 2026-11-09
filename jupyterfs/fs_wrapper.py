@@ -8,6 +8,10 @@ def _fs_instance_and_root(fs_url, type="pyfs", **kwargs):
     if type == "fsspec":
         import fsspec
 
+        # Match the osfs alias supported by FSSpecManager.
+        if fs_url.startswith("osfs://"):
+            fs_url = fs_url.replace("osfs://", "file://", 1)
+
         return fsspec.core.url_to_fs(fs_url, **kwargs)
     else:
         import fs

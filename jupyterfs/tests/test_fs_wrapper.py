@@ -1,8 +1,9 @@
+import sys
 from pathlib import Path
 
 import pytest
 
-from jupyterfs import fs
+from jupyterfs import fs, fs_instance
 
 
 @pytest.fixture
@@ -16,6 +17,24 @@ def fsspec_instance():
 
 
 class TestFSWrapper:
+    @pytest.mark.parametrize("helper", [fs, fs_instance])
+    @pytest.mark.parametrize("kwargs", [{}, {"type": "fsspec"}])
+    def test_osfs_alias_without_pyfilesystem(self, tmp_path, monkeypatch, helper, kwargs):
+        monkeypatch.setitem(sys.modules, "fs", None)
+        sample = tmp_path / "sample.txt"
+        sample.write_text("local file content", encoding="utf-8")
+
+        inst = helper(f"osfs://{tmp_path}", **kwargs)
+
+        assert inst.read_text(str(sample)) == "local file content"
+
+    def test_osfs_alias_preserves_storage_options(self, tmp_path):
+        inst = fs(f"osfs://{tmp_path}", auto_mkdir=True)
+
+        inst.write_text("nested/sample.txt", "local file content")
+
+        assert (tmp_path / "nested" / "sample.txt").read_text(encoding="utf-8") == "local file content"
+
     @pytest.mark.parametrize(
         "fs_url,type", [(f"osfs://{str(Path(__file__).parent.resolve())}", "pyfs"), (f"local://{str(Path(__file__).parent.resolve())}", "fsspec")]
     )
