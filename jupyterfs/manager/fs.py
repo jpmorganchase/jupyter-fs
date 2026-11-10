@@ -328,13 +328,14 @@ class FSManager(FileContentsManager):
         if content:
             model["content"] = contents = []
 
-            # Fetch metadata per entry: scandir can abort its iterator when a
-            # broken symlink (or another inaccessible entry) cannot be stat-ed.
-            for name in self._pyfilesystem_instance.listdir(path):
+            namespaces = ("basic", "access", "details", "stat")
+            fs = self._pyfilesystem_instance
+
+            def add_entry(name, get_info):
                 entry_path = f"{path}/{name}"
                 try:
                     if self.should_list(name):
-                        dir_entry = self._pyfilesystem_instance.getinfo(entry_path, namespaces=("basic", "access", "details", "stat"))
+                        dir_entry = get_info()
                         if self.allow_hidden or not self._is_path_hidden(entry_path, dir_entry):
                             contents.append(
                                 self.get(
@@ -351,6 +352,20 @@ class FSManager(FileContentsManager):
                     pass
                 except Exception as e:
                     self.log.warning("Error stat-ing %s: %s", entry_path, e)
+
+            try:
+                # Fast path: scandir fetches the listing and metadata together
+                # (one round trip per directory on remote filesystems).
+                for dir_entry in fs.scandir(path, namespaces=namespaces):
+                    add_entry(dir_entry.name, lambda dir_entry=dir_entry: dir_entry)
+            except Exception as e:
+                # scandir can abort its iterator when a single entry (e.g. a
+                # broken symlink) cannot be stat-ed. Retry entry by entry so
+                # healthy siblings stay visible.
+                self.log.debug("scandir of %s failed (%s); listing entry by entry", path, e)
+                contents.clear()
+                for name in fs.listdir(path):
+                    add_entry(name, lambda name=name: fs.getinfo(f"{path}/{name}", namespaces=namespaces))
 
             model["format"] = "json"
         return model

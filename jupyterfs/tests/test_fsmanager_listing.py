@@ -46,6 +46,11 @@ def test_listing_skips_protected_entry(monkeypatch):
                 raise PermissionDenied(path)
             return getinfo(path, namespaces=namespaces)
 
+        def failing_scandir(path, namespaces=None, page=None):
+            raise OperationFailed(path)
+
+        # Force the entry-by-entry fallback, where per-entry errors are handled
+        monkeypatch.setattr(filesystem, "scandir", failing_scandir)
         monkeypatch.setattr(filesystem, "getinfo", protected_getinfo)
         assert [entry["name"] for entry in FSManager(filesystem).get("")["content"]] == ["healthy"]
 
@@ -56,6 +61,25 @@ def test_listing_propagates_directory_error(monkeypatch):
         def failed_listdir(path):
             raise OperationFailed(path)
 
+        def failed_scandir(path, namespaces=None, page=None):
+            raise OperationFailed(path)
+
+        monkeypatch.setattr(filesystem, "scandir", failed_scandir)
         monkeypatch.setattr(filesystem, "listdir", failed_listdir)
         with pytest.raises(OperationFailed):
             FSManager(filesystem).get("")
+
+
+def test_listing_uses_scandir_without_per_entry_getinfo(monkeypatch):
+    # Healthy directories keep the single-listing fast path (no per-entry round trip)
+    with MemoryFS() as filesystem:
+        filesystem.writetext("a", "a")
+        filesystem.writetext("b", "b")
+
+        def forbidden_getinfo(path, namespaces=None):
+            if path.strip("/") in {"a", "b"}:
+                raise AssertionError("per-entry getinfo used on the fast path")
+            return MemoryFS.getinfo(filesystem, path, namespaces=namespaces)
+
+        monkeypatch.setattr(filesystem, "getinfo", forbidden_getinfo)
+        assert sorted(entry["name"] for entry in FSManager(filesystem).get("")["content"]) == ["a", "b"]
