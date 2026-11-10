@@ -22,6 +22,23 @@ from .common import EPOCH_START, FileSystemLoadError
 __all__ = ("FSManager",)
 
 
+def _is_child_metadata_listing_error(exc):
+    """Return True if `exc` may come from failing to read a child's metadata.
+
+    Some backends abort a directory scandir() when a single entry cannot be
+    stat-ed (for example a broken symlink) and report that failure as an
+    error on the parent path. Other directory-level and backend errors must
+    not be retried with per-entry lookups.
+    """
+    from fs.errors import OperationFailed, PermissionDenied, ResourceNotFound
+
+    if isinstance(exc, (ResourceNotFound, PermissionDenied)):
+        return True
+    # Bare OperationFailed covers unmapped OS errors such as ELOOP.
+    # Subclasses like RemoteConnectionError or OperationTimeout must propagate.
+    return type(exc) is OperationFailed
+
+
 class FSManager(FileContentsManager):
     """This class bridges the gap between Pyfilesystem's filesystem class,
     and Jupyter Notebook's ContentsManager class. This allows Jupyter to
@@ -311,7 +328,7 @@ class FSManager(FileContentsManager):
         if content is requested, will include a listing of the directory
         info (<Info>): FS Info object for file/dir at path
         """
-        from fs.errors import PermissionDenied
+        from fs.errors import FSError, PermissionDenied
 
         four_o_four = "directory does not exist: %r" % path
 
@@ -327,18 +344,32 @@ class FSManager(FileContentsManager):
         model["size"] = None
         if content:
             model["content"] = contents = []
+            namespaces = ("basic", "access", "details", "stat")
+            listed = set()
 
-            for dir_entry in self._pyfilesystem_instance.scandir(path, namespaces=("basic", "access", "details", "stat")):
+            def entry_path_for(name, dir_entry=None):
+                if dir_entry is not None:
+                    return dir_entry.make_path(path)
+                return f"{path}/{name}" if path else name
+
+            def add_entry(name, dir_entry=None):
+                if name in listed:
+                    return
+                listed.add(name)
+                if not self.should_list(name):
+                    return
+                entry_path = entry_path_for(name, dir_entry)
                 try:
-                    if self.should_list(dir_entry.name):
-                        if self.allow_hidden or not self._is_path_hidden(dir_entry.make_path(path), dir_entry):
-                            contents.append(
-                                self.get(
-                                    path="%s/%s" % (path, dir_entry.name),
-                                    content=False,
-                                    info=dir_entry,
-                                )
+                    if dir_entry is None:
+                        dir_entry = self._pyfilesystem_instance.getinfo(entry_path, namespaces=namespaces)
+                    if self.allow_hidden or not self._is_path_hidden(entry_path, dir_entry):
+                        contents.append(
+                            self.get(
+                                path=entry_path,
+                                content=False,
+                                info=dir_entry,
                             )
+                        )
                 except PermissionDenied:
                     pass  # Don't provide clues about protected files
                 except web.HTTPError:
@@ -346,7 +377,22 @@ class FSManager(FileContentsManager):
                     # us from listing other entries
                     pass
                 except Exception as e:
-                    self.log.warning("Error stat-ing %s: %s", dir_entry.make_path(path), e)
+                    self.log.warning("Error stat-ing %s: %s", entry_path, e)
+
+            try:
+                # Keep the metadata-rich scandir path so a healthy directory is
+                # listed in one backend call. Some filesystems abort that
+                # iterator when a child (for example a broken symlink) cannot
+                # be stat-ed, and may attribute the error to the parent path.
+                for dir_entry in self._pyfilesystem_instance.scandir(path, namespaces=namespaces):
+                    add_entry(dir_entry.name, dir_entry)
+            except FSError as exc:
+                if not _is_child_metadata_listing_error(exc):
+                    raise
+                # If listdir also fails, the directory itself is not listable.
+                remaining = self._pyfilesystem_instance.listdir(path)
+                for name in remaining:
+                    add_entry(name)
 
             model["format"] = "json"
         return model
