@@ -165,13 +165,13 @@ class FSSpecManager(FileContentsManager):
         if "LastModified" in model:
             # S3FS format: datetime object from AWS S3 API
             last_modified = model["LastModified"]
-            model["last_modified"] = last_modified.isoformat()
+            model["last_modified"] = last_modified
         elif "mtime" in model:
             # Legacy/other implementations: Unix timestamp
-            model["last_modified"] = datetime.fromtimestamp(model["mtime"]).isoformat()
+            model["last_modified"] = datetime.fromtimestamp(model["mtime"])
         else:
             model["last_modified"] = EPOCH_START
-        model["created"] = datetime.fromtimestamp(model["created"]).isoformat() if "created" in model else EPOCH_START
+        model["created"] = datetime.fromtimestamp(model["created"]) if "created" in model else EPOCH_START
         model["content"] = None
         model["format"] = None
         model["mimetype"] = mimetypes.guess_type(path)[0]
