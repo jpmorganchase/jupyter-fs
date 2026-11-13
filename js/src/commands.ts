@@ -412,7 +412,7 @@ export async function createDynamicCommands(
       execute: async (args: unknown) => {
         const sidebar = tracker.currentWidget!;
         const content = sidebar.treefinder.selection![0];
-        const instantiated = instantiateSnippet(snippet.template, sidebar.url, sidebar.type, content.pathstr);
+        const instantiated = instantiateSnippet(snippet.template, sidebar.url, sidebar.type, content.pathstr, sidebar.kwargs);
         await navigator.clipboard.writeText(instantiated);
       },
       label: snippet.label,

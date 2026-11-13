@@ -118,13 +118,61 @@ export async function getAllSnippets(settings?: ISettingRegistry.ISettings): Pro
 
 
 /**
+ * Format a JSON value as a Python literal.
+ */
+function pythonLiteral(value: unknown): string {
+  if (value === null || value === undefined) {
+    return "None";
+  }
+  if (typeof value === "boolean") {
+    return value ? "True" : "False";
+  }
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? String(value) : "None";
+  }
+  if (typeof value === "string") {
+    // a JSON string literal is also a valid Python string literal
+    return JSON.stringify(value);
+  }
+  if (Array.isArray(value)) {
+    return `[${value.map(pythonLiteral).join(", ")}]`;
+  }
+  return `{${Object.entries(value as {[key: string]: unknown}).map(([k, v]) => `${JSON.stringify(k)}: ${pythonLiteral(v)}`).join(", ")}}`;
+}
+
+/**
+ * Format the kwargs of a resource as a Python dict literal.
+ *
+ * @param kwargs The kwargs of the resource, as an object or a JSON string
+ * @returns A Python dict literal, `{}` if there are no (valid) kwargs
+ */
+export function pythonKwargs(kwargs: unknown): string {
+  if (typeof kwargs === "string") {
+    if (kwargs.trim() === "") {
+      return "{}";
+    }
+    try {
+      kwargs = JSON.parse(kwargs);
+    } catch {
+      return "{}";
+    }
+  }
+  if (kwargs === null || typeof kwargs !== "object" || Array.isArray(kwargs)) {
+    return "{}";
+  }
+  return pythonLiteral(kwargs);
+}
+
+/**
  * Instantiate the template of a snippet.
  *
  * @param template The template to instantiate
- * @param resource The resource the entry belongs to
- * @param path The local path of the entry
+ * @param url The url of the resource the entry belongs to
+ * @param type The type of the resource the entry belongs to
+ * @param pathstr The path of the entry, including the drive
+ * @param kwargs The kwargs of the resource, as an object or a JSON string
  */
-export function instantiateSnippet(template: string, url: string, type: string, pathstr: string) {
+export function instantiateSnippet(template: string, url: string, type: string, pathstr: string, kwargs?: unknown) {
   const parsed = processUrlRegex.exec(url);
   const [drive, relativePath] = splitPathstrDrive(pathstr);
   const args = {
@@ -135,6 +183,7 @@ export function instantiateSnippet(template: string, url: string, type: string, 
     full_url: `${url.replace(/\/$/, "")}/${relativePath}`,
     full_path: `${drive}:/${relativePath}`,
     drive,
+    kwargs: pythonKwargs(kwargs),
   };
 
   let templated = template;
@@ -143,7 +192,8 @@ export function instantiateSnippet(template: string, url: string, type: string, 
       // match `key` wrapped in double curly-braces (and optionally whitespace padding within the braces)
       templateTokenFinders[key] = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, "g");
     }
-    templated = templated.replace(templateTokenFinders[key], args[key]);
+    // use a function, so that `$` in the value is not treated as a replacement pattern
+    templated = templated.replace(templateTokenFinders[key], () => args[key]);
   }
   return templated;
 }

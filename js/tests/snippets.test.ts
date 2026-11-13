@@ -13,7 +13,7 @@ import {
   SettingRegistry,
 } from "@jupyterlab/settingregistry";
 import { StateDB } from "@jupyterlab/statedb";
-import { getServerSnippets, getSettingsSnippets, instantiateSnippet, snippetFormRender } from "../src/snippets";
+import { getServerSnippets, getSettingsSnippets, instantiateSnippet, pythonKwargs, snippetFormRender } from "../src/snippets";
 
 import * as importedSchema from "../schema/plugin.json";
 import { ServerConnection } from "@jupyterlab/services";
@@ -68,6 +68,41 @@ describe("instantiateSnippet", () => {
   "protocol": "scheme",
   "resource": ""
 }`);
+  });
+
+  it("should replace kwargs with a Python dict literal", () => {
+    const template = "fs(\"{{url}}\", \"{{type}}\", **{{kwargs}})";
+    const kwargs = { anon: true, key: null, retries: 3, endpoint: "http://\"host\"", tags: ["a", false], nested: { b: 1.5 } };
+
+    const snippet = instantiateSnippet(template, "s3://bucket", "fsspec", "drivename/file.csv", kwargs);
+    expect(snippet).toEqual(
+      "fs(\"s3://bucket\", \"fsspec\", **{\"anon\": True, \"key\": None, \"retries\": 3, " +
+      "\"endpoint\": \"http://\\\"host\\\"\", \"tags\": [\"a\", False], \"nested\": {\"b\": 1.5}})"
+    );
+  });
+
+  it("should accept kwargs as a JSON string", () => {
+    const snippet = instantiateSnippet("{{kwargs}}", "s3://bucket", "fsspec", "drivename/file.csv", "{\"anon\": false}");
+    expect(snippet).toEqual("{\"anon\": False}");
+  });
+
+  it("should use an empty dict for missing or invalid kwargs", () => {
+    for (const kwargs of [undefined, null, "", "not json", "[1, 2]", 3]) {
+      expect(instantiateSnippet("{{kwargs}}", "s3://bucket", "fsspec", "drivename/file.csv", kwargs)).toEqual("{}");
+    }
+  });
+
+  it("should not treat $ in values as a replacement pattern", () => {
+    const snippet = instantiateSnippet("{{kwargs}}", "s3://bucket", "fsspec", "drivename/file.csv", { password: "$&$1" });
+    expect(snippet).toEqual("{\"password\": \"$&$1\"}");
+  });
+
+});
+
+describe("pythonKwargs", () => {
+
+  it("should format an object as a Python dict literal", () => {
+    expect(pythonKwargs({ a: true, b: [null, "x"] })).toEqual("{\"a\": True, \"b\": [None, \"x\"]}");
   });
 
 });
