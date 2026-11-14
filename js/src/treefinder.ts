@@ -614,6 +614,7 @@ export class TreeFinderSidebar extends Widget {
     id = "jupyterlab-tree-finder",
     settings,
     preferredDir,
+    kwargs,
   }: TreeFinderSidebar.IOptions) {
     super();
     this.id = id;
@@ -621,6 +622,7 @@ export class TreeFinderSidebar extends Widget {
 
     this.url = url;
     this.type = type;
+    this.kwargs = kwargs;
     this.title.icon = fileTreeIcon;
     this.title.caption = caption;
     this.addClass("jp-tree-finder-sidebar");
@@ -691,6 +693,10 @@ export class TreeFinderSidebar extends Widget {
 
   readonly url: string;
   readonly type: string;
+  /**
+   * The resource's kwargs, as an object or a JSON string
+   */
+  readonly kwargs: unknown;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -711,6 +717,7 @@ export namespace TreeFinderSidebar {
     translator?: ITranslator;
     settings?: ISettingRegistry.ISettings;
     preferredDir?: string;
+    kwargs?: unknown;
   }
 
   export interface ISidebarProps extends IOptions {
@@ -733,6 +740,7 @@ export namespace TreeFinderSidebar {
       preferredDir: resource.preferredDir,
       url: resource.url,
       type: resource.type,
+      kwargs: resource.kwargs,
     });
   }
 
@@ -748,12 +756,13 @@ export namespace TreeFinderSidebar {
     columns,
     settings,
     preferredDir,
+    kwargs,
     rootPath = "",
     caption = "TreeFinder",
     id = "jupyterlab-tree-finder",
     side = "left",
   }: TreeFinderSidebar.ISidebarProps): TreeFinderSidebar {
-    const widget = new TreeFinderSidebar({ app, rootPath, columns, caption, id, url, type, settings, preferredDir });
+    const widget = new TreeFinderSidebar({ app, rootPath, columns, caption, id, url, type, settings, preferredDir, kwargs });
     void widget.treefinder.ready.then(() => tracker.add(widget));
     app.shell.add(widget, side);
 

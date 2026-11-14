@@ -126,42 +126,42 @@
           "caption": "Read the contents of this CSV file as a pandas DataFrame",
           "pattern": "\\.csv$",
           "type": "pyfs",
-          "template": "# uses https://docs.pyfilesystem.org/en/latest/reference/base.html#fs.base.FS.openbin\nfrom jupyterfs import fs\nimport pandas\nwith fs(\"{{url}}\", \"{{type}}\") as fs_wrapper:\n    df = pandas.read_csv(fs_wrapper.open(\"{{path}}\"))"
+          "template": "# uses https://docs.pyfilesystem.org/en/latest/reference/base.html#fs.base.FS.openbin\nfrom jupyterfs import fs\nimport pandas\nwith fs(\"{{url}}\", \"{{type}}\", **{{kwargs}}) as fs_wrapper:\n    df = pandas.read_csv(fs_wrapper.open(\"{{path}}\"))"
         },
         {
           "label": "Read CSV as polars dataframe",
           "caption": "Read the contents of this CSV file as a polars DataFrame",
           "pattern": "\\.csv$",
           "type": "pyfs",
-          "template": "# uses https://docs.pyfilesystem.org/en/latest/reference/base.html#fs.base.FS.openbin\nfrom jupyterfs import fs\nimport polars\nwith fs(\"{{url}}\", \"{{type}}\") as fs_wrapper:\n    df = polars.read_csv(fs_wrapper.open(\"{{path}}\"))"
+          "template": "# uses https://docs.pyfilesystem.org/en/latest/reference/base.html#fs.base.FS.openbin\nfrom jupyterfs import fs\nimport polars\nwith fs(\"{{url}}\", \"{{type}}\", **{{kwargs}}) as fs_wrapper:\n    df = polars.read_csv(fs_wrapper.open(\"{{path}}\"))"
         },
         {
           "label": "Read CSV as pandas dataframe",
           "caption": "Read the contents of this CSV file as a pandas DataFrame",
           "pattern": "\\.csv$",
           "type": "fsspec",
-          "template": "# uses https://filesystem-spec.readthedocs.io/en/latest/api.html#fsspec.spec.AbstractFileSystem.open\nfrom jupyterfs import fs\nimport pandas\nwith fs(\"{{url}}\", \"{{type}}\") as fs_wrapper:\n    df = pandas.read_csv(fs_wrapper.open(\"{{path}}\"))"
+          "template": "# uses https://filesystem-spec.readthedocs.io/en/latest/api.html#fsspec.spec.AbstractFileSystem.open\nfrom jupyterfs import fs\nimport pandas\nwith fs(\"{{url}}\", \"{{type}}\", **{{kwargs}}) as fs_wrapper:\n    df = pandas.read_csv(fs_wrapper.open(\"{{path}}\"))"
         },
         {
           "label": "Read CSV as polars dataframe",
           "caption": "Read the contents of this CSV file as a polars DataFrame",
           "pattern": "\\.csv$",
           "type": "fsspec",
-          "template": "# uses https://filesystem-spec.readthedocs.io/en/latest/api.html#fsspec.spec.AbstractFileSystem.open\nfrom jupyterfs import fs\nimport polars\nwith fs(\"{{url}}\", \"{{type}}\") as fs_wrapper:\n    df = polars.read_csv(fs_wrapper.open(\"{{path}}\"))"
+          "template": "# uses https://filesystem-spec.readthedocs.io/en/latest/api.html#fsspec.spec.AbstractFileSystem.open\nfrom jupyterfs import fs\nimport polars\nwith fs(\"{{url}}\", \"{{type}}\", **{{kwargs}}) as fs_wrapper:\n    df = polars.read_csv(fs_wrapper.open(\"{{path}}\"))"
         },
         {
           "label": "Read contents",
           "caption": "Read the contents of this file with PyFilesystem",
           "pattern": "^(.*)(?!/)$",
           "type": "pyfs",
-          "template": "# uses https://docs.pyfilesystem.org/en/latest/reference/base.html#fs.base.FS.readbytes\nfrom jupyterfs import fs\nwith fs(\"{{url}}\", \"{{type}}\") as fs_wrapper:\n    contents = fs_wrapper.readbytes(\"{{path}}\")"
+          "template": "# uses https://docs.pyfilesystem.org/en/latest/reference/base.html#fs.base.FS.readbytes\nfrom jupyterfs import fs\nwith fs(\"{{url}}\", \"{{type}}\", **{{kwargs}}) as fs_wrapper:\n    contents = fs_wrapper.readbytes(\"{{path}}\")"
         },
         {
           "label": "Read contents",
           "caption": "Read the contents of this file with FSSpec",
           "pattern": "^(.*)(?!/)$",
           "type": "fsspec",
-          "template": "# uses https://filesystem-spec.readthedocs.io/en/latest/api.html#fsspec.spec.AbstractFileSystem.read_bytes\nfrom jupyterfs import fs\nwith fs(\"{{url}}\", \"{{type}}\") as fs_wrapper:\n    contents = fs_wrapper.read_bytes(\"{{path}}\")"
+          "template": "# uses https://filesystem-spec.readthedocs.io/en/latest/api.html#fsspec.spec.AbstractFileSystem.read_bytes\nfrom jupyterfs import fs\nwith fs(\"{{url}}\", \"{{type}}\", **{{kwargs}}) as fs_wrapper:\n    contents = fs_wrapper.read_bytes(\"{{path}}\")"
         },
         {
           "label": "Read contents (local)",
@@ -174,84 +174,84 @@
           "caption": "Read the contents of this file as text with PyFilesystem",
           "pattern": "^(.*)(?!/)$",
           "type": "pyfs",
-          "template": "# uses https://docs.pyfilesystem.org/en/latest/reference/base.html#fs.base.FS.readtext\nfrom jupyterfs import fs\nwith fs(\"{{url}}\", \"{{type}}\") as fs_wrapper:\n    contents = fs_wrapper.readtext(\"{{path}}\")"
+          "template": "# uses https://docs.pyfilesystem.org/en/latest/reference/base.html#fs.base.FS.readtext\nfrom jupyterfs import fs\nwith fs(\"{{url}}\", \"{{type}}\", **{{kwargs}}) as fs_wrapper:\n    contents = fs_wrapper.readtext(\"{{path}}\")"
         },
         {
           "label": "Read text",
           "caption": "Read the contents of this file as text with FSSpec",
           "pattern": "^(.*)(?!/)$",
           "type": "fsspec",
-          "template": "# uses https://filesystem-spec.readthedocs.io/en/latest/api.html#fsspec.spec.AbstractFileSystem.read_text\nfrom jupyterfs import fs\nwith fs(\"{{url}}\", \"{{type}}\") as fs_wrapper:\n    contents = fs_wrapper.read_text(\"{{path}}\")"
+          "template": "# uses https://filesystem-spec.readthedocs.io/en/latest/api.html#fsspec.spec.AbstractFileSystem.read_text\nfrom jupyterfs import fs\nwith fs(\"{{url}}\", \"{{type}}\", **{{kwargs}}) as fs_wrapper:\n    contents = fs_wrapper.read_text(\"{{path}}\")"
         },
         {
           "label": "List directory contents",
           "caption": "List the entries of this directory with PyFilesystem",
           "pattern": "^.*/$",
           "type": "pyfs",
-          "template": "# uses https://docs.pyfilesystem.org/en/latest/reference/base.html#fs.base.FS.listdir\nfrom jupyterfs import fs\nwith fs(\"{{url}}\", \"{{type}}\") as fs_wrapper:\n    entries = fs_wrapper.listdir(\"{{path}}\")"
+          "template": "# uses https://docs.pyfilesystem.org/en/latest/reference/base.html#fs.base.FS.listdir\nfrom jupyterfs import fs\nwith fs(\"{{url}}\", \"{{type}}\", **{{kwargs}}) as fs_wrapper:\n    entries = fs_wrapper.listdir(\"{{path}}\")"
         },
         {
           "label": "List directory contents",
           "caption": "List the entries of this directory with FSSpec",
           "pattern": "^.*/$",
           "type": "fsspec",
-          "template": "# uses https://filesystem-spec.readthedocs.io/en/latest/api.html#fsspec.spec.AbstractFileSystem.read_text\nfrom jupyterfs import fs\nwith fs(\"{{url}}\", \"{{type}}\") as fs_wrapper:\n    entries = fs_wrapper.listdir(\"{{path}}\")"
+          "template": "# uses https://filesystem-spec.readthedocs.io/en/latest/api.html#fsspec.spec.AbstractFileSystem.read_text\nfrom jupyterfs import fs\nwith fs(\"{{url}}\", \"{{type}}\", **{{kwargs}}) as fs_wrapper:\n    entries = fs_wrapper.listdir(\"{{path}}\")"
         },
         {
           "label": "Read Excel as pandas dataframe",
           "caption": "Read the contents of this Excel file as a pandas DataFrame",
           "pattern": "\\.(xls|xlsx|xlsm|xlsb)$",
           "type": "pyfs",
-          "template": "# uses https://docs.pyfilesystem.org/en/latest/reference/base.html#fs.base.FS.open\nfrom jupyterfs import fs\nimport pandas\nwith fs(\"{{url}}\", \"{{type}}\") as fs_wrapper:\n    df = pandas.read_excel(fs_wrapper.open(\"{{path}}\", mode=\"rb\"))"
+          "template": "# uses https://docs.pyfilesystem.org/en/latest/reference/base.html#fs.base.FS.open\nfrom jupyterfs import fs\nimport pandas\nwith fs(\"{{url}}\", \"{{type}}\", **{{kwargs}}) as fs_wrapper:\n    df = pandas.read_excel(fs_wrapper.open(\"{{path}}\", mode=\"rb\"))"
         },
         {
           "label": "Read Excel as polars dataframe",
           "caption": "Read the contents of this Excel file as a polars DataFrame",
           "pattern": "\\.(xls|xlsx|xlsm|xlsb)$",
           "type": "pyfs",
-          "template": "# uses https://docs.pyfilesystem.org/en/latest/reference/base.html#fs.base.FS.open\nfrom jupyterfs import fs\nimport polars\nwith fs(\"{{url}}\", \"{{type}}\") as fs_wrapper:\n    df = polars.read_excel(fs_wrapper.open(\"{{path}}\", mode=\"rb\"))"
+          "template": "# uses https://docs.pyfilesystem.org/en/latest/reference/base.html#fs.base.FS.open\nfrom jupyterfs import fs\nimport polars\nwith fs(\"{{url}}\", \"{{type}}\", **{{kwargs}}) as fs_wrapper:\n    df = polars.read_excel(fs_wrapper.open(\"{{path}}\", mode=\"rb\"))"
         },
         {
           "label": "Read Excel as pandas dataframe",
           "caption": "Read the contents of this Excel file as a pandas DataFrame",
           "pattern": "\\.(xls|xlsx|xlsm|xlsb)$",
           "type": "fsspec",
-          "template": "# uses https://filesystem-spec.readthedocs.io/en/latest/api.html#fsspec.spec.AbstractFileSystem.open\nfrom jupyterfs import fs\nimport pandas\nwith fs(\"{{url}}\", \"{{type}}\") as fs_wrapper:\n    df = pandas.read_excel(fs_wrapper.open(\"{{path}}\", mode=\"rb\"))"
+          "template": "# uses https://filesystem-spec.readthedocs.io/en/latest/api.html#fsspec.spec.AbstractFileSystem.open\nfrom jupyterfs import fs\nimport pandas\nwith fs(\"{{url}}\", \"{{type}}\", **{{kwargs}}) as fs_wrapper:\n    df = pandas.read_excel(fs_wrapper.open(\"{{path}}\", mode=\"rb\"))"
         },
         {
           "label": "Read Excel as polars dataframe",
           "caption": "Read the contents of this Excel file as a polars DataFrame",
           "pattern": "\\.(xls|xlsx|xlsm|xlsb)$",
           "type": "fsspec",
-          "template": "# uses https://filesystem-spec.readthedocs.io/en/latest/api.html#fsspec.spec.AbstractFileSystem.open\nfrom jupyterfs import fs\nimport polars\nwith fs(\"{{url}}\", \"{{type}}\") as fs_wrapper:\n    df = polars.read_excel(fs_wrapper.open(\"{{path}}\", mode=\"rb\"))"
+          "template": "# uses https://filesystem-spec.readthedocs.io/en/latest/api.html#fsspec.spec.AbstractFileSystem.open\nfrom jupyterfs import fs\nimport polars\nwith fs(\"{{url}}\", \"{{type}}\", **{{kwargs}}) as fs_wrapper:\n    df = polars.read_excel(fs_wrapper.open(\"{{path}}\", mode=\"rb\"))"
         },
         {
           "label": "Write dataframe as CSV",
           "caption": "Save a pandas/polars DF from the session to the given CSV file with PyFilesystem",
           "pattern": "\\.csv$",
           "type": "pyfs",
-          "template": "# uses https://docs.pyfilesystem.org/en/latest/reference/base.html#fs.base.FS.writetext\nfrom jupyterfs import fs\nwith fs(\"{{url}}\", \"{{type}}\") as fs_wrapper:\n    fs_wrapper.writetext(\"{{path}}\", YOUR_DF_VARIABLE.to_csv())"
+          "template": "# uses https://docs.pyfilesystem.org/en/latest/reference/base.html#fs.base.FS.writetext\nfrom jupyterfs import fs\nwith fs(\"{{url}}\", \"{{type}}\", **{{kwargs}}) as fs_wrapper:\n    fs_wrapper.writetext(\"{{path}}\", YOUR_DF_VARIABLE.to_csv())"
         },
         {
           "label": "Write dataframe as CSV",
           "caption": "Save a pandas/polars DF from the session to the given CSV file with FSSpec",
           "pattern": "\\.csv$",
           "type": "fsspec",
-          "template": "# https://filesystem-spec.readthedocs.io/en/latest/api.html#fsspec.spec.AbstractFileSystem.write_text\nfrom jupyterfs import fs\nwith fs(\"{{url}}\", \"{{type}}\") as fs_wrapper:\n    fs_wrapper.write_text(\"{{path}}\", YOUR_DF_VARIABLE.to_csv())"
+          "template": "# https://filesystem-spec.readthedocs.io/en/latest/api.html#fsspec.spec.AbstractFileSystem.write_text\nfrom jupyterfs import fs\nwith fs(\"{{url}}\", \"{{type}}\", **{{kwargs}}) as fs_wrapper:\n    fs_wrapper.write_text(\"{{path}}\", YOUR_DF_VARIABLE.to_csv())"
         },
         {
           "label": "Write contents",
           "caption": "Write the given contents (bytes) to the specified file with PyFilesystem",
           "pattern": "^(.*)(?!/)$",
           "type": "pyfs",
-          "template": "# uses https://docs.pyfilesystem.org/en/latest/reference/base.html#fs.base.FS.writebytes\nfrom jupyterfs import fs\nwith fs(\"{{url}}\", \"{{type}}\") as fs_wrapper:\n    fs_wrapper.writebytes(\"{{path}}\", YOUR_BYTES_CONTENT)"
+          "template": "# uses https://docs.pyfilesystem.org/en/latest/reference/base.html#fs.base.FS.writebytes\nfrom jupyterfs import fs\nwith fs(\"{{url}}\", \"{{type}}\", **{{kwargs}}) as fs_wrapper:\n    fs_wrapper.writebytes(\"{{path}}\", YOUR_BYTES_CONTENT)"
         },
         {
           "label": "Write contents",
           "caption": "Write the given contents (bytes) to the specified file with FSSpec",
           "pattern": "^(.*)(?!/)$",
           "type": "fsspec",
-          "template": "# uses https://filesystem-spec.readthedocs.io/en/latest/api.html#fsspec.spec.AbstractFileSystem.write_bytes\nfrom jupyterfs import fs\nwith fs(\"{{url}}\", \"{{type}}\") as fs_wrapper:\n    fs_wrapper.write_bytes(\"{{path}}\", YOUR_BYTES_CONTENT)"
+          "template": "# uses https://filesystem-spec.readthedocs.io/en/latest/api.html#fsspec.spec.AbstractFileSystem.write_bytes\nfrom jupyterfs import fs\nwith fs(\"{{url}}\", \"{{type}}\", **{{kwargs}}) as fs_wrapper:\n    fs_wrapper.write_bytes(\"{{path}}\", YOUR_BYTES_CONTENT)"
         },
         {
           "label": "Write contents (local)",
@@ -264,21 +264,21 @@
           "caption": "Write the given text to the specified file with PyFilesystem",
           "pattern": "^(.*)(?!/)$",
           "type": "pyfs",
-          "template": "# uses https://docs.pyfilesystem.org/en/latest/reference/base.html#fs.base.FS.writetext\nfrom jupyterfs import fs\nwith fs(\"{{url}}\", \"{{type}}\") as fs_wrapper:\n    fs_wrapper.writetext(\"{{path}}\", YOUR_TEXT_CONTENT)"
+          "template": "# uses https://docs.pyfilesystem.org/en/latest/reference/base.html#fs.base.FS.writetext\nfrom jupyterfs import fs\nwith fs(\"{{url}}\", \"{{type}}\", **{{kwargs}}) as fs_wrapper:\n    fs_wrapper.writetext(\"{{path}}\", YOUR_TEXT_CONTENT)"
         },
         {
           "label": "Write text",
           "caption": "Write the given text to the specified file with FSSpec",
           "pattern": "^(.*)(?!/)$",
           "type": "fsspec",
-          "template": "# uses https://filesystem-spec.readthedocs.io/en/latest/api.html#fsspec.spec.AbstractFileSystem.write_text\nfrom jupyterfs import fs\nwith fs(\"{{url}}\", \"{{type}}\") as fs_wrapper:\n    fs_wrapper.write_text(\"{{path}}\", YOUR_TEXT_CONTENT)"
+          "template": "# uses https://filesystem-spec.readthedocs.io/en/latest/api.html#fsspec.spec.AbstractFileSystem.write_text\nfrom jupyterfs import fs\nwith fs(\"{{url}}\", \"{{type}}\", **{{kwargs}}) as fs_wrapper:\n    fs_wrapper.write_text(\"{{path}}\", YOUR_TEXT_CONTENT)"
         },
         {
           "label": "Get FS Instance",
           "caption": "Create a PyFilesystem/FSSpec instance",
           "pattern": "^(.*)$",
           "type": "",
-          "template": "from jupyterfs import fs\nfs_instance = fs(\"{{url}}\", \"{{type}}\").instance()"
+          "template": "from jupyterfs import fs\nfs_instance = fs(\"{{url}}\", \"{{type}}\", **{{kwargs}}).instance()"
         }
       ]
     },
